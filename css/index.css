@@ -1,0 +1,165 @@
+* {
+    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+}
+
+::-moz-range-track {
+    background: #ccc;
+    border: 0;
+}
+
+input::-moz-focus-inner {
+    border: 0;
+}
+
+html {
+	background-color: black;
+	background: url(../img/bg-light-100206.gif);
+}
+
+body {
+    background-color: mediumturquoise;
+    border: 5px solid black;
+    min-width: 950px;
+    max-width: 1200px;
+    min-height: 400px;
+    position: fixed;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    top: 50%;
+}
+
+#entireBodyDiv {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 5000;
+    display: none;
+    /* background: url(../img/bg-light-100206.gif); */
+    /* background: url(../img/bg-light-100206_tran.gif); */
+    /* background: url(../img/bg-light-100206_tran2.gif); */
+}
+
+#entireBodyDiv.show {
+    display: block;
+}
+
+#progressbarDiv {
+    border: 2px solid rgb(83, 94, 135);
+    border: 2px solid rgba(255, 224, 0, 0.7);
+    border-radius: 5px;
+    background-image: url(../img/ProgressBar.gif);
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    display: none;
+    z-index: 5002;
+    position: fixed;
+    left: 50%;
+    transform: translate(-50%, 0%);
+    top: 5px;
+    width: 95%;
+    height: 10px;
+}
+
+#progressbarDiv.show {
+    display: block;
+}
+
+.modals {
+    display: none;
+    z-index: 5001;
+    position: fixed;
+    left: 50%;
+    transform: translate(-50%, -25%);
+    top: 25%;
+    background-color: goldenrod;
+    min-width: 600px;
+    min-height: 150px;
+    padding: 5px;
+    border-radius: 10px;
+    border: 4px double black;
+}
+
+.modals.show {
+    display: block;
+}
+
+.modals table td {
+    vertical-align: middle;
+    padding: 2px;
+}
+
+.modals table td input[type='text'] {
+    width: 100%;
+}
+
+.modals table td textarea {
+    height: 150px;
+    width: 550px;
+}
+.modals .modalTitle {
+    text-align: center;
+    font-size: 130%;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+#header {
+    border: 1px solid blue;
+    margin: 5px;
+}
+
+#apps {
+    border: 1px solid blue;
+    margin: 5px;
+}
+
+#commands {
+    border: 1px solid blue;
+    margin: 5px;
+}
+#commands_base {
+    border: 1px solid blue;
+    margin: 5px;
+}
+
+#output {
+    border: 1px solid blue;
+    margin: 5px;
+	overflow: auto;
+	min-height: 250px;
+}
+
+#footer {
+    border: 1px solid blue;
+    margin: 5px;
+}
+
+#app_select {}
+
+#app_new {}
+
+#cmd_select {}
+
+#cmd_new {}
+#cmd_run {}
+
+#output_text {
+    overflow: auto;
+    /* height: 90%; */
+    /* height: 100%; */
+    /* min-height: 250px; */
+    max-height: 350px;
+    height: 350px;
+    /* font-size: 10px; */
+    font-family: monospace;
+    white-space: pre-wrap;
+}
+
+.pre_nowrap{
+	white-space: pre !important;
+}

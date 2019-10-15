@@ -13,10 +13,13 @@ var shared = {
 		shared.DOM.commands_base             = document.querySelector("#commands_base")             ;
 		shared.DOM.output                    = document.querySelector("#output")                    ;
 		shared.DOM.output_text               = document.querySelector("#output_text")               ;
+		shared.DOM.sshPhpInstructions        = document.querySelector("#sshPhpInstructions")        ;
 
 		// Non-modal controls.
 		shared.DOM.app_select                = document.querySelector("#app_select")                ;
 		shared.DOM.cmd_select                = document.querySelector("#cmd_select")                ;
+		shared.DOM.cmd_select_base                = document.querySelector("#cmd_select_base")                ;
+
 		shared.DOM.app_new                   = document.querySelector("#app_new")                   ;
 		shared.DOM.cmd_new                   = document.querySelector("#cmd_new")                   ;
 		shared.DOM.cmd_run                   = document.querySelector("#cmd_run")                   ;
@@ -45,11 +48,15 @@ var shared = {
 		shared.DOM.modal_new_cmd_command     = document.querySelector("#modal_new_cmd_command")     ;
 		shared.DOM.modal_edit_cmd_label      = document.querySelector("#modal_edit_cmd_label")      ;
 		shared.DOM.modal_edit_cmd_command    = document.querySelector("#modal_edit_cmd_command")    ;
-		shared.DOM.modal_edit_cmd_sortorder  = document.querySelector("#modal_edit_cmd_sortorder")    ;
+		shared.DOM.modal_edit_cmd_sortorder  = document.querySelector("#modal_edit_cmd_sortorder")  ;
+
+		shared.DOM.modal_new_cmd_canrunfromweb  = document.querySelector("#modal_new_cmd_canrunfromweb")  ;
+		shared.DOM.modal_edit_cmd_canrunfromweb = document.querySelector("#modal_edit_cmd_canrunfromweb") ;
 
 		// Add event listeners.
 		shared.DOM.app_select   .addEventListener("change", funcs.getAppData, false);
-		// shared.DOM.cmd_select   .addEventListener("change", null, false);
+		shared.DOM.cmd_select_base   .addEventListener("change", funcs.showHideRunButton, false);
+		shared.DOM.cmd_select   .addEventListener("change", funcs.showHideRunButton, false);
 		shared.DOM.app_new      .addEventListener("click", modals.app_new, false);
 		shared.DOM.cmd_new      .addEventListener("click", modals.cmd_new, false);
 		shared.DOM.cmd_edit     .addEventListener("click", modals.cmd_edit, false);
@@ -58,14 +65,13 @@ var shared = {
 		shared.DOM.create_cmd   .addEventListener("click", funcs.create_cmd, false);
 		shared.DOM.edit_cmd     .addEventListener("click", funcs.edit_cmd, false);
 		shared.DOM.cmd_run      .addEventListener("click", funcs.cmd_run, false);
-
 		shared.DOM.cmd_run_base    .addEventListener("click", funcs.cmd_run_base, false);
 
 		shared.DOM.outputWrapping    .addEventListener("change", funcs.outputWrapping, false);
 
 		shared.DOM.entireBodyDiv.addEventListener("click", funcs.entireBodyDiv_clicked, false);
 		document                .addEventListener("keyup", function(e){ if(e.key=="Escape"){ funcs.entireBodyDiv_clicked(); } } , false);
-		shared.DOM.modalsClose.forEach(function(d){ d.addEventListener("click", funcs.entireBodyDiv_clicked, false); });
+		shared.DOM.modalsClose.forEach(function(d){ d.addEventListener("click", modals.hideAndClear_all, false); });
 
 		// Get the apps list from the DB.
 		funcs.getAppsList();
@@ -124,6 +130,37 @@ var shared = {
 //
 var funcs = {
 	// APPLICATIONS
+
+	showHideRunButton : function(){
+
+		shared.DOM.output_text.innerText="";
+
+		if     (this.id=="cmd_select"){
+			let select = shared.DOM.cmd_select;
+			let canrunfromweb = parseInt(select.options[select.selectedIndex].getAttribute("canrunfromweb"),10);
+			if(canrunfromweb){
+				shared.DOM.cmd_run.classList.remove("run_hidden");
+				shared.DOM.sshPhpInstructions.classList.remove("show");
+				shared.DOM.output.classList.remove("hide");
+			}
+			else             {
+				shared.DOM.cmd_run.classList.add("run_hidden");
+				shared.DOM.sshPhpInstructions.classList.add("show");
+				shared.DOM.output.classList.add("hide");
+			}
+		}
+		else if(this.id=="cmd_select_base"){
+			let select = shared.DOM.cmd_select_base;
+			let canrunfromweb = parseInt(select.options[select.selectedIndex].getAttribute("canrunfromweb"),10);
+			if(canrunfromweb){
+				shared.DOM.cmd_run_base.classList.remove("run_hidden");
+			}
+			else             {
+				shared.DOM.cmd_run_base.classList.add("run_hidden");
+			}
+		}
+		else { return; }
+	},
 
 	// Get the apps list from the database.
 	getAppsList : function(){
@@ -210,7 +247,8 @@ var funcs = {
 	// Populate the command list for the specific app.
 	display_cmds : function(json){
 		let select = shared.DOM.cmd_select;
-		let prevSelectValue = shared.DOM.cmd_select.value;
+		let prevSelectValue = select.value;
+		let prevSelectLength = select.options.length;
 
 		select.length=1;
 		let option;
@@ -222,16 +260,18 @@ var funcs = {
 			option=document.createElement("option");
 			option.value=row.commandId;
 			// option.text=row.label + " (U:"+(row.lastuse?row.lastuse:'UNUSED')+", C:"+row.created+")";
-			option.text=row.label;
+			option.text= (parseInt(row.canrunfromweb,10)==1 ? "  " : "X ") + row.label;
 			option.setAttribute("appId", row.appId);
 			option.setAttribute("command", row.command);
 			option.setAttribute("sortorder", row.sortorder);
+			option.setAttribute("canrunfromweb", row.canrunfromweb);
 			frag.appendChild(option);
 		}
 		select.appendChild(frag);
 
-		select.value = prevSelectValue;
-
+		if(prevSelectLength == select.options.length){
+			select.value = prevSelectValue;
+		}
 	},
 
 	// display_app_commands : function(){
@@ -239,6 +279,11 @@ var funcs = {
 	// },
 
 	// COMMANDS
+
+	//
+	// let cmd_canrunfromweb = shared.DOM.modal_edit_cmd_canrunfromweb.checked ? true : false;
+	// shared.DOM.modal_new_cmd_canrunfromweb
+	//
 
 	// Edit existing command for the selected app.
 	edit_cmd : function(){
@@ -250,6 +295,7 @@ var funcs = {
 		let cmd_label     = shared.DOM.modal_edit_cmd_label   ;
 		let cmd_command   = shared.DOM.modal_edit_cmd_command ;
 		let cmd_sortorder = parseInt(shared.DOM.modal_edit_cmd_sortorder.value,10);
+		let cmd_canrunfromweb = shared.DOM.modal_edit_cmd_canrunfromweb.checked ? 1 : 0;
 
 		// Make sure there is an app id and that it matches the selected appid.
 		if(! ((appid==app_select.value) && app_select.value!="" && appid!="") ){ alert("Error: Unmatched/missing appid."); return; }
@@ -267,13 +313,14 @@ var funcs = {
 		if(  cmd_sortorder.value == "" ){ alert("Error: Missing value for sortorder."); return; }
 
 		var formData = {
-			'_p'        : 'api/api_p.php'   ,
-			'o'         : 'command_edit'    ,
-			'appid'     : appid             ,
-			'comid'     : comid             ,
-			'label'     : cmd_label.value   ,
-			'command'   : cmd_command.value ,
-			'sortorder' : cmd_sortorder     ,
+			'_p'            : 'api/api_p.php'    ,
+			'o'             : 'command_edit'     ,
+			'appid'         : appid              ,
+			'comid'         : comid              ,
+			'label'         : cmd_label.value    ,
+			'command'       : cmd_command.value  ,
+			'sortorder'     : cmd_sortorder      ,
+			'canrunfromweb' : cmd_canrunfromweb  ,
 		};
 		var prom = shared.serverRequest( formData ).then(
 			function(res){
@@ -294,6 +341,7 @@ var funcs = {
 		let appid=parseInt(shared.DOM.modal_new_cmd.querySelector(".modal_app_appid"      ).innerText, 10);
 		let cmd_label   = shared.DOM.modal_new_cmd_label   ;
 		let cmd_command = shared.DOM.modal_new_cmd_command ;
+		let cmd_canrunfromweb = shared.DOM.modal_new_cmd_canrunfromweb ;
 
 		// Make sure there is an app id and that it matches the selected appid.
 		if(! ((appid==app_select.value) && app_select.value!="" && appid!="") ){ alert("Error: Unmatched/missing appid."); return; }
@@ -301,7 +349,7 @@ var funcs = {
 		// Make sure that a value for cmd_label was entered.
 		if(! (cmd_label.value.length) ){ alert("Error: Missing value for label."); return; }
 
-		// Make sure that a value for cmd_command was entered.
+		// Make sure that a value for canrunfromweb was entered.
 		if(! (cmd_command.value.length) ){ alert("Error: Missing value for command."); return; }
 
 		var formData = {
@@ -310,6 +358,7 @@ var funcs = {
 			'appid'   : appid           ,
 			'label'   : cmd_label.value   ,
 			'command' : cmd_command.value ,
+			'canrunfromweb' : cmd_canrunfromweb.checked ? 1 : 0 ,
 		};
 		var prom = shared.serverRequest( formData ).then(
 			function(res){
@@ -331,11 +380,19 @@ var funcs = {
 		if(app_select.value==""){ alert("Error: An application was not selected."); return; }
 		if(cmd_select.value==""){ alert("Error: A command was not selected.");      return; }
 
+		//
+		let canrunfromweb = parseInt(cmd_select.options[cmd_select.selectedIndex].getAttribute("canrunfromweb"),10);
+		if(!canrunfromweb){
+			alert("ERROR: This command can NOT be run from the web interface.");
+			return;
+		}
+
 		var formData = {
 			'_p'        : 'api/api_p.php'  ,
 			'o'         : 'runCommand'     ,
 			'appid'     : app_select.value ,
 			'commandid' : cmd_select.value ,
+			'canrunfromweb' : canrunfromweb ,
 		};
 		var prom = shared.serverRequest( formData ).then(
 			function(res){
@@ -431,6 +488,7 @@ var modals = {
 			shared.DOM.modals[i].classList.remove("show");
 
 			// Clear the values in the modal.
+			shared.DOM.modals[i].querySelectorAll("input[type='checkbox']"   ).forEach(function(d){ d.checked=false; });
 			shared.DOM.modals[i].querySelectorAll("input[type='text']"   ).forEach(function(d){ d.value=""; });
 			shared.DOM.modals[i].querySelectorAll("textarea").forEach(function(d){ d.value=""; });
 
@@ -438,6 +496,9 @@ var modals = {
 			shared.DOM.modals[i].querySelectorAll(".modal_app_appid").forEach(function(d){ d.innerHTML=""; });
 			shared.DOM.modals[i].querySelectorAll(".modal_app_appname").forEach(function(d){ d.innerHTML=""; });
 		}
+
+		shared.DOM.entireBodyDiv  .classList.remove("show");
+		shared.DOM.progressbarDiv .classList.remove("show");
 
 	},
 
@@ -474,6 +535,9 @@ var modals = {
 		let cmd_command = shared.DOM.modal_new_cmd_command ;
 		cmd_command.value = "../APPS/runCommand.sh " + app_selected.getAttribute("appspath") + " " + "COMMANDNAME";
 
+		// Set the default value for the canrunfromweb checkbox.
+		shared.DOM.modal_new_cmd_canrunfromweb.checked=false;
+
 		// Activate the modal.
 		shared.DOM.entireBodyDiv.classList.add("show");
 		shared.DOM.modal_new_cmd.classList.add("show");
@@ -503,6 +567,9 @@ var modals = {
 		shared.DOM.modal_edit_cmd_label    .value  =cmd_selected.text;
 		shared.DOM.modal_edit_cmd_command  .value=cmd_selected.getAttribute("command");
 		shared.DOM.modal_edit_cmd_sortorder.value=cmd_selected.getAttribute("sortorder");
+
+		// Set the existing value for the canrunfromweb checkbox.
+		shared.DOM.modal_edit_cmd_canrunfromweb.checked = parseInt(cmd_selected.getAttribute("canrunfromweb"),10);
 
 		// Activate the modal.
 		shared.DOM.entireBodyDiv.classList.add("show");

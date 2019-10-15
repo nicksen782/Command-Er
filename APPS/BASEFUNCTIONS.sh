@@ -155,16 +155,18 @@ function git_config {
 }
 
 function STARTUPINFO {
-	echo "(=================================================================)"
+	echo "(==============================================)"
 	echo " G_APPNAME     :" $G_APPNAME
-	echo " APP PATH      :" $G_APPHOME_DEV
-	echo " CMD-ER APP    :" $SCRIPT_PATH
-	echo "(=================================================================)"
+	# echo " BASE_PATH     :" $BASE_PATH
+	# echo " API_PATH      :" $API_PATH
+	# echo " APP PATH      :" $G_APPHOME_DEV
+	# echo " CMD-ER APP    :" $SCRIPT_PATH
+	echo "(==============================================)"
 	echo " DIRECTORY     :" $DIRECTORY
 	echo " COMMAND       :" $COMMAND
-	echo " RELATIVE CMD  :" $relcommand
-	echo " ABSOLUTE CMD  :" $fullcommand
-	echo "(=================================================================)"
+	# echo " RELATIVE CMD  :" $relcommand
+	# echo " ABSOLUTE CMD  :" $fullcommand
+	echo "(==============================================)"
 	echo
 }
 

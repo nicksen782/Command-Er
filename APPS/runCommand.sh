@@ -8,18 +8,16 @@ export DIRECTORY
 COMMAND=$2
 export COMMAND
 
-# Save the misc command-line argument
-MISC=$3
-export MISC
-
 # Make sure the command-line arguments have DIRECTORY and COMMAND.
 if [ "$DIRECTORY" == "" ]; then echo "ABORT: Missing script argument. (DIRECTORY)"; exit 1; fi
 if [ "$COMMAND"   == "" ]; then echo "ABORT: Missing script argument. (COMMAND)"  ; exit 1; fi
 
 # Navigate to the folder that this script lives in.
 BASE_PATH=$(dirname $(realpath -s $0))
+API_PATH=$(cd "$BASE_PATH/../api"; pwd)
 SCRIPT_PATH=$BASE_PATH/$DIRECTORY
 export BASE_PATH
+export API_PATH
 export SCRIPT_PATH
 cd $SCRIPT_PATH
 

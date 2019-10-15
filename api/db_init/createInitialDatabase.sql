@@ -16,5 +16,6 @@ CREATE TABLE 'commands' (
 	'command'   TEXT                              ,
 	'appid'     INTEGER                           ,
 	'created'   DATETIME                          ,
-	'lastuse'   DATETIME
+	'lastuse'   DATETIME                          ,
+	'canrunfromweb' INTEGER
 );

@@ -4,7 +4,10 @@
  *
  */
 
- // All requests to the server should go through this file.
+// VIA SSH/PHP COMMAND: ssh dev2.nicksen782.net php -d register_argc_argv=1 /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php cmd_selectAppThenCommand viaphp
+// VIA     PHP COMMAND: php -d register_argc_argv=1 /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php cmd_selectAppThenCommand viaphp
+
+// All requests to the server should go through this file.
 
 // This is the only place this flag is set. It is checked everywhere else insuring that all processes start here.
 $securityLoadedFrom_indexp = true;
@@ -15,32 +18,189 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_STRICT);
 ini_set('error_log', getcwd() . '/'.$appName.'-error.txt');
 ini_set("log_errors", 1);
 ini_set("display_errors", 1);
+ini_set('register_argc_argv', 1);
 
 // Configure timezone.
 define('TIMEZONE', 'America/Detroit');
 date_default_timezone_set(TIMEZONE);
 
-$_appdir  = getcwd().'/'                     ;
-$_db_file = $_appdir."/commander2.db" ;
+chdir(__DIR__);
+$_appdir        = getcwd().''              ;
+$_db_file       = $_appdir."/commander2.db" ;
+$viacommandline = false;
+
+// Was the program called via the command line and with arguments?
+if( isset($argv) ) { $viacommandline = true; }
 
 $dev=false;
-if      ( strpos($_SERVER['SERVER_NAME'], "dev.nicksen782.net") !== false ) { $dev=true; }
+if      ( strpos($_SERVER['SERVER_NAME'], "dev.nicksen782.net" ) !== false ) { $dev=true; }
 else if ( strpos($_SERVER['SERVER_NAME'], "dev2.nicksen782.net") !== false ) { $dev=true; }
+else if ( $viacommandline==true                                            ) { $dev=true; }
 
-if(!$dev){
-	exit('This application should only run from dev.');
-}
+if(!$dev){ exit('This application should only run from dev.'); }
 
 if( ! file_exists( $_db_file )){ createInitialDatabase(); }
 
 // Was a request received? Process it.
 if     ( $_POST['o'] ){ API_REQUEST( $_POST['o'], 'post' ); }
 else if( $_GET ['o'] ){ API_REQUEST( $_GET ['o'], 'get'  ); }
-else{
-	$stats['error']=true;
-	$stats['error_text']="***No 'o' value was provided.";
-	echo json_encode( $stats );
+else if($viacommandline){
+	// List of allowed functions via the php script method.
+	$whitelistedFunctions=[
+		"cmd_selectAppThenCommand" ,
+	];
+	if( in_array($argv[1], $whitelistedFunctions) && in_array("viaphp", $argv) ){
+		// Adjust the output based on what function was called.
+		switch($argv[1]){
+			case "cmd_selectAppThenCommand" : {
+				// Identify the program.
+				echo "\n";
+				echo "**********************\n";
+				echo "COMMAND-ER 2 (via PHP)\n";
+				echo "**********************\n";
+				echo "\n";
+
+				// Greet the user.
+				echo "Hello, " . shell_exec("whoami");
+				echo "\n";
+
+				// Get the apps list.
+				ob_end_clean ();
+				ob_start();
+				API_REQUEST( "getAppsList", 'cmd' );
+				$output1 = ob_get_contents();
+				$decoded_output1 = json_decode( $output1, true);
+				$data=$decoded_output1['data'];
+				ob_end_clean ();
+
+				// Display the choices.
+				$appids=[];
+				ob_start();
+				echo "ENTER THE APP ID FOR THE APP.\n";
+				for($i=0; $i<sizeof($data); $i+=1){
+					$appid    = str_pad($data[$i]['appid']   , 4 , " ", STR_PAD_RIGHT) ;
+					$appname  = str_pad($data[$i]['appname'] , 25, " ", STR_PAD_RIGHT) ;
+					$appspath = str_pad($data[$i]['appspath'], 0 , " ", STR_PAD_RIGHT) ;
+
+					$appids[$i]=intval(trim($data[$i]['appid']));;
+
+					echo "  " . $appid    . "> " ;
+					echo ""   . $appname         ;
+					echo " ( CMD-ER PATH: " . $appspath . " )";
+					echo "\n";
+				}
+				ob_end_flush();
+
+				// Ask the user to choose an app.
+				$fp = fopen('php://stdin', 'r');
+				$appid = fgets($fp);
+				fclose($fp);
+				$appid=intval(trim($appid));
+
+				// Make sure the provided appid is valid. (Exit if invalid.)
+				if( ! in_array($appid, $appids) ){
+					echo "INVALID CHOICE. ABORTING.";
+					exit("\n");
+				}
+
+				// Use the app id to get a list of commands.
+				ob_end_clean ();
+				ob_start();
+				$_POST['appid'] = $appid;
+				API_REQUEST( "getAppData", 'cmd' );
+				$output1 = ob_get_contents();
+				$decoded_output1 = json_decode( $output1, true);
+				$data=$decoded_output1['data'];
+				ob_end_clean ();
+
+				// Display those commands.
+				$cmdids=[];
+				ob_start();
+				echo "\n";
+				echo "ENTER THE COMMAND ID FOR THE COMMAND.\n";
+				for($i=0; $i<sizeof($data); $i+=1){
+					$commandId = str_pad($data[$i]['commandId'] , 4 , " ", STR_PAD_RIGHT) ;
+					$label     = str_pad($data[$i]['label']     , 25, " ", STR_PAD_RIGHT) ;
+					$lastuse   = str_pad($data[$i]['lastuse']   , 0 , " ", STR_PAD_RIGHT) ;
+
+					$cmdids[$i]=intval(trim($data[$i]['commandId']));;
+
+					echo "  "  . $commandId . "> " ;
+					echo ""    . $label            ;
+					echo " ( LASTUSE: " . $lastuse   . " )" ;
+					echo "\n";
+				}
+				ob_end_flush();
+
+				// Ask the user to choose a command.
+				$fp = fopen('php://stdin', 'r');
+				$cmdid = fgets($fp);
+				fclose($fp);
+				$cmdid=intval(trim($cmdid));
+
+				// Make sure the provided appid is valid. (Exit if invalid.)
+				if( ! in_array($cmdid, $cmdids) ){
+					echo "INVALID CHOICE. ABORTING.";
+					exit("\n");
+				}
+
+				// Show notice about the appearance of a hung script.
+				ob_start();
+				echo "\n";
+				echo "***********************************************************************\n";
+				echo " PLEASE NOTE: If the command takes a long time this script will APPEAR\n";
+				echo " to hang but it is just waiting for the command to finish.\n";
+				echo "***********************************************************************\n";
+				echo "\n";
+				ob_end_flush();
+
+				// Run that command.
+				ob_start();
+				$_POST['appid'    ] = $appid;
+				$_POST['commandid'] = $cmdid;
+				API_REQUEST( "runCommand", 'cmd' );
+				$output1 = ob_get_contents();
+				$decoded_output1 = json_decode( $output1, true);
+				$data=$decoded_output1['output'];
+				ob_end_clean ();
+
+				// Echo out the result of the command.
+				ob_start();
+				echo $data;
+				echo "\n";
+				ob_end_flush();
+				exit();
+
+				break;
+			}
+			default:{break;}
+		}
+
+		// Clear the output buffer. (It will not be used here.
+		ob_end_clean ();
+
+		// Output the response.
+		//
+
+	}
+	// No? Then this is an error.
+	else{
+		$stats['error_text']="*** No 'o' POST value was provided.";
+		$stats['$_POST'] = $_POST;
+		$stats['$_GET']  = $_GET;
+
+		// Return the error data.
+		echo json_encode( [
+			'stats'  => $stats ,
+			'$argv'  => $argv  ,
+			'$_POST' => $_POST ,
+			'$_GET'  => $_GET  ,
+		]);
+
+	}
+
 	exit();
+
 }
 
 function API_REQUEST( $api, $type ){
@@ -55,23 +215,19 @@ function API_REQUEST( $api, $type ){
 	$o_values=array();
 
 	// APIs
-	$o_values["getAppsList"]          = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, ] ;
-	$o_values["getAppData"]           = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, ] ;
-	$o_values["runCommand"]           = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, ] ;
-	$o_values["runCommand_base"]      = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, ] ;
-
-	$o_values["command_delete"]       = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, ] ;
-	$o_values["command_edit"]         = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, ] ;
-	$o_values["command_new"]          = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, ] ;
-
-	$o_values["app_delete"]           = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, ] ;
-	$o_values["app_edit"]             = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, ] ;
-	$o_values["app_new"]              = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, ] ;
-
-	$o_values["massReorder_apps"]     = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, ] ;
-	$o_values["massReorder_commands"] = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, ] ;
-
-	$o_values["createBaseCommands"]   = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, ] ;
+	$o_values["getAppsList"]          = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>1,] ;
+	$o_values["getAppData"]           = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>1,] ;
+	$o_values["runCommand"]           = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>1,] ;
+	$o_values["runCommand_base"]      = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
+	$o_values["runCommand_viaphp"]    = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
+	$o_values["command_delete"]       = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
+	$o_values["command_edit"]         = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
+	$o_values["command_new"]          = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
+	$o_values["app_delete"]           = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
+	$o_values["app_edit"]             = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
+	$o_values["app_new"]              = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
+	$o_values["massReorder_apps"]     = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
+	$o_values["massReorder_commands"] = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
 
 	// DETERMINE IF THE API IS AVAILABLE TO THE USER.
 
@@ -134,7 +290,7 @@ function app_delete (){
 		'data'         => array()   ,
 		// 'data'         => $results1 ,
 		'success'      => true      ,
-		'$_POST'       => $_POST    ,
+		// '$_POST'       => $_POST    ,
 	) );
 }
 function app_edit   (){
@@ -190,7 +346,7 @@ function app_edit   (){
 		'data'       => array()    ,
 		// 'data'    => $results1  ,
 		'success'    => true       ,
-		'$_POST'     => $_POST     ,
+		// '$_POST'     => $_POST     ,
 		'$sql1'      => $sql1      ,
 		'$sql2'      => $sql2      ,
 		'$isDefault' => $isDefault ,
@@ -231,7 +387,7 @@ function massReorder_apps(){
 	echo json_encode(array(
 		'data'      => array() ,
 		'success'   => true    ,
-		'$_POST'    => $_POST  ,
+		// '$_POST'    => $_POST  ,
 		'$data'     => $data   ,
 		'$prp1'     => $data   ,
 		'$retval1'  => $retval1   ,
@@ -269,7 +425,7 @@ function massReorder_commands(){
 	echo json_encode(array(
 		'data'      => array() ,
 		'success'   => true    ,
-		'$_POST'    => $_POST  ,
+		// '$_POST'    => $_POST  ,
 		'$data'     => $data   ,
 		'$prp1'     => $data   ,
 		'$retval1'  => $retval1   ,
@@ -326,6 +482,7 @@ function command_edit  (){
 			  "label"     = :label     --
 			, "sortorder" = :sortorder --
 			, "command"   = :command   --
+			, "canrunfromweb"   = :canrunfromweb   --
 		WHERE
 			comid = :comid
 			AND
@@ -339,12 +496,14 @@ function command_edit  (){
 	$command   = trim($_POST['command']  );
 	$comid     = trim($_POST['comid']    );
 	$appid     = trim($_POST['appid']    );
+	$canrunfromweb     = trim($_POST['canrunfromweb']    );
 
 	$dbhandle->bind(':label'     , $label     ) ;
 	$dbhandle->bind(':sortorder' , $sortorder ) ;
 	$dbhandle->bind(':command'   , $command   ) ;
 	$dbhandle->bind(':comid'     , $comid     ) ;
 	$dbhandle->bind(':appid'     , $appid     ) ;
+	$dbhandle->bind(':canrunfromweb'     , $canrunfromweb     ) ;
 
 	$retval1    = $dbhandle->execute()        ;
 
@@ -363,7 +522,7 @@ function runCommand (){
 
 	$sql1     =
 	'
-	SELECT command, label
+	SELECT command, label, canrunfromweb
 	FROM commands
 	WHERE appid = :appid AND comid = :commandid
 	;';
@@ -378,8 +537,26 @@ function runCommand (){
 	$retval1    = $dbhandle->execute()        ;
 	$results1= $dbhandle->statement->fetchAll(PDO::FETCH_ASSOC) ;
 	$command=$results1[0]['command'];
-	// $label=$results1[0]['label'];
 
+	// Was this command initiated via the command-line or from the web?
+	// If this is the web make sure it is allowed to run from the web.
+	global $viacommandline;
+	if( !$viacommandline && $results1[0]['canrunfromweb'] != 1){
+		echo json_encode(array(
+			'success'             => false     ,
+			'data'                => []       ,
+			'output'              => "ERROR: This command can not be run from the web."  ,
+			'command'             => $command ,
+			'label'               => $label   ,
+			'results1'               => $results1   ,
+			// '$_POST'              => $_POST   ,
+			// '$results1' => $results1 ,
+		));
+
+		return;
+	}
+
+	// Command is allowed to run.
 	exec($command . " 2>&1", $output);
 	$output = implode("\n", $output) ;
 
@@ -405,7 +582,7 @@ function runCommand (){
 		'output'              => $output  ,
 		'command'             => $command ,
 		'label'               => $label   ,
-		'$_POST'              => $_POST   ,
+		// '$_POST'              => $_POST   ,
 		// '$results1' => $results1 ,
 	));
 }
@@ -421,9 +598,10 @@ function runCommand_base (){
 		'data'                => []       ,
 		'output'              => $output  ,
 		'command'             => $command ,
-		'$_POST'              => $_POST   ,
+		// '$_POST'              => $_POST   ,
 	));
 }
+
 function getAppData (){
 	// Pull in some globals.
 	global $_appdir;
@@ -442,6 +620,7 @@ function getAppData (){
 		, appid                            AS appId
 		, created                          AS created
 		, datetime(lastuse, \'localtime\') AS lastuse
+		, canrunfromweb                    AS canrunfromweb
 	FROM commands
 	WHERE appid = :appid
 	ORDER BY sortorder ASC
@@ -485,6 +664,7 @@ function command_new   (){
 		, :appid                                              -- appid
 		, CURRENT_TIMESTAMP                                   -- created
 		, NULL                                                -- lastuse
+		, :canrunfromweb                                      -- canrunfromweb
 	);';
 
 	$prp1       = $dbhandle->prepare($s_SQL1) ;
@@ -492,10 +672,12 @@ function command_new   (){
 	$appid   = trim($_POST['appid'])  ;
 	$label   = trim($_POST['label'])  ;
 	$command = trim($_POST['command']);
+	$canrunfromweb = trim($_POST['canrunfromweb']);
 
 	$dbhandle->bind(':appid'     , $appid       ) ;
 	$dbhandle->bind(':label'     , $label       ) ;
 	$dbhandle->bind(':command'   , $command     ) ;
+	$dbhandle->bind(':canrunfromweb'   , $canrunfromweb     ) ;
 
 	$retval1    = $dbhandle->execute()        ;
 	// $newComId = $dbhandle->dbh->lastInsertId();
@@ -518,7 +700,7 @@ function getAppsList(){
 	$s_SQL1     =
 	'
 	SELECT
-		 "appid"
+		  "appid"
 		, "appname"
 		, "description"
 		, "appspath"
@@ -627,11 +809,11 @@ function app_new    (){
 		fwrite($fh, $line1.$line2);
 		fclose($fh);
 
-		// Create the initial nextGitCommit.txt
-		$myFile = $newDir.'nextGitCommit.txt';
-		$fh = fopen($myFile, 'w') or exit("can't open file");
-		fwrite($fh, "");
-		fclose($fh);
+		// // Create the initial nextGitCommit.txt
+		// $myFile = $newDir.'nextGitCommit.txt';
+		// $fh = fopen($myFile, 'w') or exit("can't open file");
+		// fwrite($fh, "");
+		// fclose($fh);
 
 		// Restore the umask.
 		umask($oldmask);
@@ -667,6 +849,8 @@ function createInitialDatabase(){
 		$prp1       = $dbhandle->prepare($s_SQL1) ;
 		$retval1    = $dbhandle->execute()        ;
 	}
+
+	chmod($_db_file, 770);
 }
 class sqlite3_DB_PDO{
 	public $dbh;              // The DB handle.

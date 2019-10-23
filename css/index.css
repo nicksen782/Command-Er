@@ -21,6 +21,7 @@ html {
 body {
     background-color: mediumturquoise;
     background-color: cadetblue;
+    background-color: #162434;
     /* border: 5px solid black; */
     border-radius: 10px;
     min-width: 900px;
@@ -118,6 +119,7 @@ body {
     border: 1px solid black;
     padding: 5px;
     background-color: mediumaquamarine;
+    /* background-color: #162434; */
     margin-bottom: 0.25em;
     border-radius: 5px;
 }

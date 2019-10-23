@@ -547,7 +547,7 @@ function runCommand (){
 			'data'                => []       ,
 			'output'              => "ERROR: This command can not be run from the web."  ,
 			'command'             => $command ,
-			'label'               => $label   ,
+			// 'label'               => $label   ,
 			'results1'               => $results1   ,
 			// '$_POST'              => $_POST   ,
 			// '$results1' => $results1 ,
@@ -579,9 +579,10 @@ function runCommand (){
 	echo json_encode(array(
 		'success'             => true     ,
 		'data'                => []       ,
-		'output'              => $output  ,
+		'output'              => htmlentities($output)  ,
 		'command'             => $command ,
-		'label'               => $label   ,
+		'DEBUG'               => "RAN WEB PROGRAM" ,
+		// 'label'               => $label   ,
 		// '$_POST'              => $_POST   ,
 		// '$results1' => $results1 ,
 	));
@@ -648,13 +649,14 @@ function command_new   (){
 	$s_SQL1     =
 	'
 	INSERT INTO "commands" (
-			"comid"
+		  "comid"
 		, "sortorder"
 		, "label"
 		, "command"
 		, "appid"
 		, "created"
 		, "lastuse"
+		, "canrunfromweb"
 	)
 	VALUES (
 			NULL                                                -- comid
@@ -782,13 +784,21 @@ function app_new    (){
 	$appspath = $dbhandle->statement->fetchAll(PDO::FETCH_ASSOC)[0]['appspath'] ;
 
 	$error="";
-	$newDir = $_appdir.'../APPS/'.$appspath;
+	$newDir = $_appdir.'/../APPS/'.$appspath;
+
+	// [23-Oct-2019 10:06:31 America/Detroit] PHP Warning:  mkdir(): No such file or directory in /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php on line 802
+	// [23-Oct-2019 10:06:31 America/Detroit] PHP Warning:  chmod(): No such file or directory in /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php on line 802
+	// [23-Oct-2019 10:06:31 America/Detroit] PHP Warning:  copy(/home/nicksen782/workspace/web/ACTIVE/Command-Er2/api../APPS/template_basesettings.sh): failed to open stream: No such file or directory in /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php on line 803
+	// [23-Oct-2019 10:06:31 America/Detroit] PHP Warning:  chmod(): No such file or directory in /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php on line 803
+	// [23-Oct-2019 10:06:31 America/Detroit] PHP Warning:  copy(/home/nicksen782/workspace/web/ACTIVE/Command-Er2/api../APPS/template_app_commands.sh): failed to open stream: No such file or directory in /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php on line 804
+	// [23-Oct-2019 10:06:31 America/Detroit] PHP Warning:  chmod(): No such file or directory in /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php on line 804
+	// [23-Oct-2019 10:06:31 America/Detroit] PHP Warning:  fopen(/home/nicksen782/workspace/web/ACTIVE/Command-Er2/api../APPS/0012_test/basesettings.sh): failed to open stream: No such file or directory in /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php on line 808
 
 	// Does the folder NOT exist? Create it.
 	if (!file_exists($newDir)) {
 		// Files to create/copy.
-		$file1_src=$_appdir . '../APPS/template_basesettings.sh';
-		$file2_src=$_appdir . '../APPS/template_app_commands.sh';
+		$file1_src=$_appdir . '/../APPS/template_basesettings.sh';
+		$file2_src=$_appdir . '/../APPS/template_app_commands.sh';
 		$file1_dst=$newDir  . '/basesettings.sh'                ;
 		$file2_dst=$newDir  . '/app_commands.sh'                ;
 
@@ -803,7 +813,9 @@ function app_new    (){
 
 		// Append to basesettings.txt.
 		$myFile = $file1_dst ; // $newDir.'/basesettings.sh';
-		$fh = fopen($myFile, 'a') or exit("can't open file");
+		// $fh = fopen($myFile, 'a') || echo "can't open file";
+		$fh = fopen($myFile, 'a') ;
+		if(!$fh){ echo "CAN'T OPEN FILE"; }
 		$line1 = "G_APPNAME=\""     . $appname     . "\" \n";
 		$line2 = "G_APPHOME_DEV=\"" . $appcodepath . "\" \n";
 		fwrite($fh, $line1.$line2);
@@ -827,6 +839,7 @@ function app_new    (){
 		'data'     => array()   ,
 		'newAppId' => $newAppId ,
 		'error'    => $error    ,
+		'newDir'   => $newDir   ,
 	]);
 }
 function createInitialDatabase(){

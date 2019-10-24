@@ -15,10 +15,13 @@ var shared = {
 		shared.DOM.output_text               = document.querySelector("#output_text")               ;
 		shared.DOM.sshPhpInstructions        = document.querySelector("#sshPhpInstructions")        ;
 
+		shared.DOM.selected_appid            = document.querySelector("#selected_appid")            ;
+		shared.DOM.selected_cmdid            = document.querySelector("#selected_cmdid")            ;
+
 		// Non-modal controls.
 		shared.DOM.app_select                = document.querySelector("#app_select")                ;
 		shared.DOM.cmd_select                = document.querySelector("#cmd_select")                ;
-		shared.DOM.cmd_select_base                = document.querySelector("#cmd_select_base")                ;
+		shared.DOM.cmd_select_base           = document.querySelector("#cmd_select_base")           ;
 
 		shared.DOM.app_new                   = document.querySelector("#app_new")                   ;
 		shared.DOM.cmd_new                   = document.querySelector("#cmd_new")                   ;
@@ -54,23 +57,22 @@ var shared = {
 		shared.DOM.modal_edit_cmd_canrunfromweb = document.querySelector("#modal_edit_cmd_canrunfromweb") ;
 
 		// Add event listeners.
-		shared.DOM.app_select   .addEventListener("change", funcs.getAppData, false);
-		shared.DOM.cmd_select_base   .addEventListener("change", funcs.showHideRunButton, false);
-		shared.DOM.cmd_select   .addEventListener("change", funcs.showHideRunButton, false);
-		shared.DOM.app_new      .addEventListener("click", modals.app_new, false);
-		shared.DOM.cmd_new      .addEventListener("click", modals.cmd_new, false);
-		shared.DOM.cmd_edit     .addEventListener("click", modals.cmd_edit, false);
-		shared.DOM.cmd_del      .addEventListener("click", modals.cmd_del, false);
-		shared.DOM.create_app   .addEventListener("click", funcs.create_app, false);
-		shared.DOM.create_cmd   .addEventListener("click", funcs.create_cmd, false);
-		shared.DOM.edit_cmd     .addEventListener("click", funcs.edit_cmd, false);
-		shared.DOM.cmd_run      .addEventListener("click", funcs.cmd_run, false);
-		shared.DOM.cmd_run_base    .addEventListener("click", funcs.cmd_run_base, false);
+		shared.DOM.app_select     .addEventListener("change", funcs.getAppData, false);
+		shared.DOM.cmd_select_base.addEventListener("change", funcs.showHideRunButton, false);
+		shared.DOM.cmd_select     .addEventListener("change", funcs.showHideRunButton, false);
+		shared.DOM.app_new        .addEventListener("click" , modals.app_new, false);
+		shared.DOM.cmd_new        .addEventListener("click" , modals.cmd_new, false);
+		shared.DOM.cmd_edit       .addEventListener("click" , modals.cmd_edit, false);
+		shared.DOM.cmd_del        .addEventListener("click" , modals.cmd_del, false);
+		shared.DOM.create_app     .addEventListener("click" , funcs.create_app, false);
+		shared.DOM.create_cmd     .addEventListener("click" , funcs.create_cmd, false);
+		shared.DOM.edit_cmd       .addEventListener("click" , funcs.edit_cmd, false);
+		shared.DOM.cmd_run        .addEventListener("click" , funcs.cmd_run, false);
+		shared.DOM.cmd_run_base   .addEventListener("click" , funcs.cmd_run_base, false);
+		shared.DOM.outputWrapping .addEventListener("change", funcs.outputWrapping, false);
 
-		shared.DOM.outputWrapping    .addEventListener("change", funcs.outputWrapping, false);
-
-		shared.DOM.entireBodyDiv.addEventListener("click", funcs.entireBodyDiv_clicked, false);
-		document                .addEventListener("keyup", function(e){ if(e.key=="Escape"){ funcs.entireBodyDiv_clicked(); } } , false);
+		shared.DOM.entireBodyDiv  .addEventListener("click", funcs.entireBodyDiv_clicked, false);
+		document                  .addEventListener("keyup", function(e){ if(e.key=="Escape"){ funcs.entireBodyDiv_clicked(); } } , false);
 		shared.DOM.modalsClose.forEach(function(d){ d.addEventListener("click", modals.hideAndClear_all, false); });
 
 		// Get the apps list from the DB.
@@ -132,12 +134,16 @@ var funcs = {
 	// APPLICATIONS
 
 	showHideRunButton : function(){
-
+		// Clear the output.
 		shared.DOM.output_text.innerText="";
+		shared.DOM.output_text.innerHTML="";
 
 		if     (this.id=="cmd_select"){
-			let select = shared.DOM.cmd_select;
+			let select  = shared.DOM.cmd_select;
+			let select2 = shared.DOM.app_select;
+
 			let canrunfromweb = parseInt(select.options[select.selectedIndex].getAttribute("canrunfromweb"),10);
+
 			if(canrunfromweb){
 				shared.DOM.cmd_run.classList.remove("run_hidden");
 				shared.DOM.sshPhpInstructions.classList.remove("show");
@@ -147,6 +153,9 @@ var funcs = {
 				shared.DOM.cmd_run.classList.add("run_hidden");
 				shared.DOM.sshPhpInstructions.classList.add("show");
 				shared.DOM.output.classList.add("hide");
+
+				shared.DOM.selected_appid.innerHTML=select2.value;
+				shared.DOM.selected_cmdid.innerHTML=select.value;
 			}
 		}
 		else if(this.id=="cmd_select_base"){
@@ -182,6 +191,8 @@ var funcs = {
 		let len = json.length;
 		let frag = document.createDocumentFragment();
 
+		let defaultAppid=undefined;
+
 		for(let i=0; i<len; i+=1){
 			let row = json[i];
 			option=document.createElement("option");
@@ -190,10 +201,17 @@ var funcs = {
 			option.setAttribute("appname"    , row.appname);
 			option.setAttribute("appspath"   , row.appspath);
 			option.setAttribute("appcodepath", row.appcodepath);
+
+			if( undefined==defaultAppid && row.default=="1" ){ defaultAppid=row.appid; };
+
 			frag.appendChild(option);
 		}
 		select.appendChild(frag);
 
+		if(undefined != defaultAppid){
+			select.value=defaultAppid;
+			funcs.getAppData();
+		};
 	},
 	// Create new app.
 	create_app : function(){
@@ -212,12 +230,11 @@ var funcs = {
 		};
 		var prom = shared.serverRequest( formData ).then(
 			function(res){
-				console.log("create_app:", res);
 				modals.hideAndClear_all();
-				shared.DOM.app_select.length=1;
-				shared.DOM.app_select.value="";
-				shared.DOM.cmd_select.length=1;
-				shared.DOM.cmd_select.value="";
+				shared.DOM.app_select.length = 1  ;
+				shared.DOM.app_select.value  = "" ;
+				shared.DOM.cmd_select.length = 1  ;
+				shared.DOM.cmd_select.value  = "" ;
 				funcs.getAppsList();
 			},
 			function(){}
@@ -236,7 +253,6 @@ var funcs = {
 		};
 		var prom = shared.serverRequest( formData ).then(
 			function(res){
-				console.log(res);
 				funcs.display_cmds(res.data);
 			},
 			function(){}
@@ -259,12 +275,19 @@ var funcs = {
 			let row = json[i];
 			option=document.createElement("option");
 			option.value=row.commandId;
+
 			// option.text=row.label + " (U:"+(row.lastuse?row.lastuse:'UNUSED')+", C:"+row.created+")";
-			option.text= (parseInt(row.canrunfromweb,10)==1 ? "  " : "X ") + row.label;
-			option.setAttribute("appId", row.appId);
-			option.setAttribute("command", row.command);
-			option.setAttribute("sortorder", row.sortorder);
+
+			let canrunfromweb = parseInt(row.canrunfromweb,10) ;
+			if(canrunfromweb){ option.text = "(WEB) " + row.label; }
+			else             { option.text = "(CMD) " + row.label; }
+
+			option.setAttribute("appId"        , row.appId        );
+			option.setAttribute("command"      , row.command      );
+			option.setAttribute("sortorder"    , row.sortorder    );
 			option.setAttribute("canrunfromweb", row.canrunfromweb);
+			option.setAttribute("_label"       , row.label        );
+
 			frag.appendChild(option);
 		}
 		select.appendChild(frag);
@@ -396,11 +419,10 @@ var funcs = {
 		};
 		var prom = shared.serverRequest( formData ).then(
 			function(res){
-				console.log(res);
-				shared.DOM.output_text.innerHTML=res.output;
 				// modals.hideAndClear_all();
 				// shared.DOM.entireBodyDiv.classList.remove("show");
 				// shared.DOM.modal_new_cmd.classList.remove("show");
+				shared.DOM.output_text.innerHTML=res.output;
 			},
 			function(){}
 		);
@@ -423,11 +445,10 @@ var funcs = {
 		};
 		var prom = shared.serverRequest( formData ).then(
 			function(res){
-				console.log(res);
-				shared.DOM.output_text.innerHTML=res.output;
 				// modals.hideAndClear_all();
 				// shared.DOM.entireBodyDiv.classList.remove("show");
 				// shared.DOM.modal_new_cmd.classList.remove("show");
+				shared.DOM.output_text.innerHTML=res.output;
 			},
 			function(){}
 		);
@@ -495,6 +516,9 @@ var modals = {
 			// Clear the application title.
 			shared.DOM.modals[i].querySelectorAll(".modal_app_appid").forEach(function(d){ d.innerHTML=""; });
 			shared.DOM.modals[i].querySelectorAll(".modal_app_appname").forEach(function(d){ d.innerHTML=""; });
+
+			// Clear previous output.
+			shared.DOM.output_text.innerHTML="";
 		}
 
 		shared.DOM.entireBodyDiv  .classList.remove("show");
@@ -551,7 +575,7 @@ var modals = {
 		// Make sure that both an app and a command are selected.
 		let app_select   = shared.DOM.app_select;
 		let app_selected = app_select.options[app_select.selectedIndex];
-		let cmd_select = shared.DOM.cmd_select;
+		let cmd_select   = shared.DOM.cmd_select;
 		let cmd_selected = cmd_select.options[cmd_select.selectedIndex];
 		if(app_select.value==""){ alert("Error: An application was not selected."); return; }
 		if(cmd_select.value==""){ alert("Error: A command was not selected.");      return; }
@@ -564,7 +588,7 @@ var modals = {
 		shared.DOM.modal_edit_cmd.querySelector(".modal_app_appcodepath").innerHTML=app_selected.getAttribute("appcodepath");
 
 		// Set the existing values for the label and the command.
-		shared.DOM.modal_edit_cmd_label    .value  =cmd_selected.text;
+		shared.DOM.modal_edit_cmd_label    .value=cmd_selected.getAttribute("_label");
 		shared.DOM.modal_edit_cmd_command  .value=cmd_selected.getAttribute("command");
 		shared.DOM.modal_edit_cmd_sortorder.value=cmd_selected.getAttribute("sortorder");
 
@@ -583,14 +607,14 @@ var modals = {
 	cmd_del : function(){
 		// cmd_del
 		let app_select   = shared.DOM.app_select;
-		let cmd_select = shared.DOM.cmd_select;
+		let cmd_select   = shared.DOM.cmd_select;
 		let cmd_selected = cmd_select.options[cmd_select.selectedIndex];
 
 		if(app_select.value==""){ alert("Error: An application was not selected."); return; }
 		if(cmd_select.value==""){ alert("Error: A command was not selected.");      return; }
 
 		let str = "Are you sure that you want to delete the selected command?\n";
-		str    += "LABEL: " + cmd_selected.text;
+		str    += "LABEL: " + cmd_selected.getAttribute("_label");
 
 		let conf = confirm(str);
 		if(!conf){ return; }

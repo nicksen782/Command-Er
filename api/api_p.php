@@ -4,8 +4,8 @@
  *
  */
 
-// VIA SSH/PHP COMMAND: ssh dev2.nicksen782.net php -d register_argc_argv=1 /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php cmd_selectAppThenCommand viaphp
-// VIA     PHP COMMAND: php -d register_argc_argv=1 /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php cmd_selectAppThenCommand viaphp
+// VIA SSH/PHP COMMAND: ssh dev2.nicksen782.net php -d register_argc_argv=1 /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php cmd_main_menu viaphp
+// VIA     PHP COMMAND: php -d register_argc_argv=1 /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php cmd_main_menu viaphp
 
 // All requests to the server should go through this file.
 
@@ -47,23 +47,25 @@ else if( $_GET ['o'] ){ API_REQUEST( $_GET ['o'], 'get'  ); }
 else if($viacommandline){
 	// List of allowed functions via the php script method.
 	$whitelistedFunctions=[
-		"cmd_selectAppThenCommand" ,
+		"cmd_main_menu" ,
+		"cmd_run1AppCommand" ,
 	];
+
 	if( in_array($argv[1], $whitelistedFunctions) && in_array("viaphp", $argv) ){
+		// Identify the program.
+		echo "\n";
+		echo "**********************\n";
+		echo "COMMAND-ER 2 (via PHP)\n";
+		echo "**********************\n";
+		echo "\n";
+
+		// Greet the user.
+		echo "Hello, " . shell_exec("whoami");
+		echo "\n";
+
 		// Adjust the output based on what function was called.
 		switch($argv[1]){
-			case "cmd_selectAppThenCommand" : {
-				// Identify the program.
-				echo "\n";
-				echo "**********************\n";
-				echo "COMMAND-ER 2 (via PHP)\n";
-				echo "**********************\n";
-				echo "\n";
-
-				// Greet the user.
-				echo "Hello, " . shell_exec("whoami");
-				echo "\n";
-
+			case "cmd_main_menu" : {
 				// Get the apps list.
 				ob_end_clean ();
 				ob_start();
@@ -76,7 +78,7 @@ else if($viacommandline){
 				// Display the choices.
 				$appids=[];
 				ob_start();
-				echo "ENTER THE APP ID FOR THE APP.\n";
+				echo "ENTER THE ID FOR THE APP.\n";
 				for($i=0; $i<sizeof($data); $i+=1){
 					$appid    = str_pad($data[$i]['appid']   , 4 , " ", STR_PAD_RIGHT) ;
 					$appname  = str_pad($data[$i]['appname'] , 25, " ", STR_PAD_RIGHT) ;
@@ -117,7 +119,7 @@ else if($viacommandline){
 				$cmdids=[];
 				ob_start();
 				echo "\n";
-				echo "ENTER THE COMMAND ID FOR THE COMMAND.\n";
+				echo "ENTER THE ID FOR THE COMMAND.\n";
 				for($i=0; $i<sizeof($data); $i+=1){
 					$commandId = str_pad($data[$i]['commandId'] , 4 , " ", STR_PAD_RIGHT) ;
 					$label     = str_pad($data[$i]['label']     , 25, " ", STR_PAD_RIGHT) ;
@@ -173,6 +175,51 @@ else if($viacommandline){
 
 				break;
 			}
+			case "cmd_run1AppCommand" : {
+				$appid = intval(trim($argv[2])) ;
+				$cmdid = intval(trim($argv[3])) ;
+
+				// Test that the appid and cmdid are valid.
+				$data = isAppidAndCommandid_Valid($appid, $cmdid);
+
+				// echo "FUNCTION : " . "cmd_run1AppCommand" . "\n";
+				echo "APP ID   : " . $appid . " (" . $data['appname'] . ")" . "\n";
+				echo "CMD ID   : " . $cmdid . " (" . $data['label']   . ")" . "\n";
+				echo "VALID?   : " . ($data['success'] ? "true" : "false")  . "\n";
+
+				if( $data['success'] ){
+					// Show notice about the appearance of a hung script.
+					ob_start();
+					echo "\n";
+					echo "***********************************************************************\n";
+					echo " PLEASE NOTE: If the command takes a long time this script will APPEAR\n";
+					echo " to hang but it is just waiting for the command to finish.\n";
+					echo "***********************************************************************\n";
+					echo "\n";
+					ob_end_flush();
+
+					// Run that command.
+					ob_start();
+					$_POST['appid'    ] = $appid;
+					$_POST['commandid'] = $cmdid;
+					API_REQUEST( "runCommand", 'cmd' );
+					$output1 = ob_get_contents();
+					$decoded_output1 = json_decode( $output1, true);
+					$data=$decoded_output1['output'];
+					ob_end_clean ();
+
+					// Echo out the result of the command.
+					ob_start();
+					echo $data;
+					echo "\n";
+					ob_end_flush();
+					exit();
+				}
+				else{
+				}
+
+				break;
+			}
 			default:{break;}
 		}
 
@@ -203,6 +250,47 @@ else if($viacommandline){
 
 }
 
+function isAppidAndCommandid_Valid($appid, $commandid){
+	// Pull in some globals.
+	global $_appdir;
+	global $_db_file;
+
+	// Create the file. By trying to open the file it will be created!
+	$dbhandle = new sqlite3_DB_PDO($_db_file) or exit("cannot open the database");
+
+	$sql1     =
+	'
+	SELECT
+		apps.appname AS appname    ,
+		commands.label AS label
+	FROM commands
+	JOIN apps ON apps.appid = commands.appid
+	WHERE apps.appid = :appid AND commands.comid = :commandid
+	;';
+
+	$prp1       = $dbhandle->prepare($sql1) ;
+
+	$dbhandle->bind(':appid'     , $appid ) ;
+	$dbhandle->bind(':commandid' , $commandid ) ;
+
+	$retval1    = $dbhandle->execute()        ;
+	$results1= $dbhandle->statement->fetchAll(PDO::FETCH_ASSOC) ;
+
+	if(sizeof($results1)){
+		return [
+			"success" => true                     ,
+			"appname"  => $results1[0]['appname'] ,
+			"label"    => $results1[0]['label']   ,
+		];
+	}
+	else                 {
+		return [
+			"success" => false                    ,
+			"appname"  => $results1[0]['appname'] ,
+			"label"    => $results1[0]['label']   ,
+		];
+	}
+}
 function API_REQUEST( $api, $type ){
 	$stats = array(
 		'error'      => false ,
@@ -576,10 +664,17 @@ function runCommand (){
 	$dbhandle->bind(':commandid' , $commandid ) ;
 	$retval2    = $dbhandle->execute()        ;
 
+	// If the output is for the command line then print is as is.
+	if($viacommandline){ $output = $output; }
+	// If the output is for the web then use htmlentities.
+	else{
+		$output = htmlentities($output);
+	}
+
 	echo json_encode(array(
 		'success'             => true     ,
 		'data'                => []       ,
-		'output'              => htmlentities($output)  ,
+		'output'              => $output  ,
 		'command'             => $command ,
 		'DEBUG'               => "RAN WEB PROGRAM" ,
 		// 'label'               => $label   ,
@@ -702,7 +797,7 @@ function getAppsList(){
 	$s_SQL1     =
 	'
 	SELECT
-		  "appid"
+		"appid"
 		, "appname"
 		, "description"
 		, "appspath"
@@ -749,9 +844,12 @@ function app_new    (){
 		VALUES (
 			NULL
 			, :appname
-			, (SELECT substr(\'0000\' || (COALESCE(MAX(appid),0)+1) , -4, 4) || :appspath FROM apps)
+			--, (SELECT substr(\'0000\' || (COALESCE(MAX(appid),0)+1) , -4, 4) || :appspath FROM apps)
+
+			, (SELECT substr(\'0000\' || (COALESCE( (SELECT seq FROM sqlite_sequence WHERE name="apps") ,0)+1) , -4, 4) || :appspath FROM apps)
+
 			, :description
-			, (SELECT COALESCE(MAX(sortorder),0)+1 FROM apps)
+			, (SELECT COALESCE( MAX(sortorder) ,0)+1 FROM apps)
 			, CURRENT_TIMESTAMP
 			, 0
 			, :appcodepath

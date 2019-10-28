@@ -22,6 +22,7 @@
 	</div>
 
 	<div id="maincontainer">
+		<!-- MODALS -->
 		<div id="modal_new_app" class="modals">
 			<div class="modalTitle">CREATING NEW APPLICATION</div>
 			<br>
@@ -85,6 +86,36 @@
 			<input type="button" id="edit_cmd" value="Edit existing command">
 			<input type="button" class="modalsClose" value="Cancel">
 		</div>
+
+		<div id="modal_sort_cmds" class="modals">
+			<div class="modalTitle">EDIT SORT ORDER FOR ALL COMMANDS</div>
+			<br>
+
+			<table>
+				<tr><td>APP NAME   </td><td><span class="modal_app_appname"></span>     </td></tr>
+				<tr><td>APP ID     </td><td><span class="modal_app_appid"></span>       </td></tr>
+				<tr><td>APPSPATH   </td><td><span class="modal_app_appspath"></span>    </td></tr>
+				<tr><td>APPCODEPATH</td><td><span class="modal_app_appcodepath"></span> </td></tr>
+			</table>
+			<br>
+
+			<table id="modal_cmd_reorder_table" class="blueTable">
+				<caption>COMMANDS</caption>
+				<thead>
+					<tr>
+						<th>SORTORDER</th>
+						<th>APPID</th>
+						<th>COMID</th>
+						<th>LABEL</th>
+					</tr>
+				</thead>
+			</table>
+			<br>
+
+			<input type="button" id="edit_cmd_sort" value="Re-sort">
+			<input type="button" class="modalsClose" value="Cancel">
+		</div>
+
 		<div id="apps">
 			APPLICATION:
 			<select id="app_select">
@@ -116,6 +147,7 @@
 			<input type="button" id="cmd_edit" value="EDIT">
 			<input type="button" id="cmd_new" value="NEW">
 			<input type="button" id="cmd_del" value="DELETE">
+			<input type="button" id="cmd_sortall" value="SORT ALL">
 
 			<div id="sshPhpInstructions">
 				<br>

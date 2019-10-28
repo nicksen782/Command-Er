@@ -19,6 +19,7 @@ ini_set('error_log', getcwd() . '/'.$appName.'-error.txt');
 ini_set("log_errors", 1);
 ini_set("display_errors", 1);
 ini_set('register_argc_argv', 1);
+set_time_limit(60);
 
 // Configure timezone.
 define('TIMEZONE', 'America/Detroit');
@@ -482,8 +483,9 @@ function massReorder_apps(){
 	) );
 }
 function massReorder_commands(){
-	// This will be a prepare, bind, execute, re-bind, execute query.
+	$updatedData = json_decode($_POST['updatedData'],true);
 
+	// This will be a prepare, bind, execute, re-bind, execute query.
 	// Pull in some globals.
 	global $_appdir;
 	global $_db_file;
@@ -495,29 +497,26 @@ function massReorder_commands(){
 	'
 		UPDATE "commands"
 			SET
-			  "sortorder" = :sortorder --
+			"sortorder" = :sortorder --
 		WHERE
-			id = :commandId AND appid = :appId
+			comid = :commandId AND appid = :appId
 	;';
 
 	$prp1       = $dbhandle->prepare($s_SQL1) ;
 
-	$data      = json_decode($_POST['data'], true) ;
-	for($i=0; $i<sizeof($data); $i+=1){
-		$dbhandle->bind(':appId'     , $data[$i]["appId"]     ) ;
-		$dbhandle->bind(':commandId' , $data[$i]["commandId"] ) ;
-		$dbhandle->bind(':sortorder' , $data[$i]["sortorder"] ) ;
+	for($i=0; $i<sizeof($updatedData); $i+=1){
+		$dbhandle->bind( ':appId'     , $updatedData[$i]["appid"]     ) ;
+		$dbhandle->bind( ':commandId' , $updatedData[$i]["comid"]     ) ;
+		$dbhandle->bind( ':sortorder' , $updatedData[$i]["sortorder"] ) ;
 		$retval1[$i]    = $dbhandle->execute()        ;
 	}
 
-	echo json_encode(array(
-		'data'      => array() ,
-		'success'   => true    ,
-		// '$_POST'    => $_POST  ,
-		'$data'     => $data   ,
-		'$prp1'     => $data   ,
-		'$retval1'  => $retval1   ,
-	) );
+	echo json_encode(
+		[
+			'data'      => array() ,
+			'success'   => true    ,
+		]
+	);
 }
 
 //
@@ -940,6 +939,7 @@ function app_new    (){
 		'newDir'   => $newDir   ,
 	]);
 }
+
 function createInitialDatabase(){
 	// Pull in some globals.
 	global $_appdir;

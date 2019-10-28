@@ -28,6 +28,7 @@ var shared = {
 		shared.DOM.cmd_run                   = document.querySelector("#cmd_run")                   ;
 		shared.DOM.cmd_edit                  = document.querySelector("#cmd_edit")                  ;
 		shared.DOM.cmd_del                   = document.querySelector("#cmd_del")                   ;
+		shared.DOM.cmd_sortall                   = document.querySelector("#cmd_sortall")                   ;
 		shared.DOM.cmd_run_base              = document.querySelector("#cmd_run_base")              ;
 		shared.DOM.cmd_select_base           = document.querySelector("#cmd_select_base")           ;
 		shared.DOM.outputWrapping            = document.querySelector("#outputWrapping")            ;
@@ -37,12 +38,14 @@ var shared = {
 		shared.DOM.modal_new_app             = document.querySelector("#modal_new_app")             ;
 		shared.DOM.modal_new_cmd             = document.querySelector("#modal_new_cmd")             ;
 		shared.DOM.modal_edit_cmd            = document.querySelector("#modal_edit_cmd")            ;
+		shared.DOM.modal_sort_cmds            = document.querySelector("#modal_sort_cmds")            ;
 
 		// Modal controls.
 		shared.DOM.modalsClose               = document.querySelectorAll(".modalsClose")            ;
 		shared.DOM.create_app                = document.querySelector("#create_app")                ;
 		shared.DOM.create_cmd                = document.querySelector("#create_cmd")                ;
 		shared.DOM.edit_cmd                  = document.querySelector("#edit_cmd")                  ;
+		shared.DOM.edit_cmd_sort                  = document.querySelector("#edit_cmd_sort")                  ;
 
 		shared.DOM.modal_new_app_appcodepath = document.querySelector("#modal_new_app_appcodepath") ;
 		shared.DOM.modal_new_app_appname     = document.querySelector("#modal_new_app_appname")     ;
@@ -55,6 +58,10 @@ var shared = {
 
 		shared.DOM.modal_new_cmd_canrunfromweb  = document.querySelector("#modal_new_cmd_canrunfromweb")  ;
 		shared.DOM.modal_edit_cmd_canrunfromweb = document.querySelector("#modal_edit_cmd_canrunfromweb") ;
+
+
+		shared.DOM.modal_cmd_reorder_table = document.querySelector("#modal_cmd_reorder_table") ;
+
 
 		// Add event listeners.
 		shared.DOM.app_select     .addEventListener("change", funcs.getAppData, false);
@@ -70,6 +77,9 @@ var shared = {
 		shared.DOM.cmd_run        .addEventListener("click" , funcs.cmd_run, false);
 		shared.DOM.cmd_run_base   .addEventListener("click" , funcs.cmd_run_base, false);
 		shared.DOM.outputWrapping .addEventListener("change", funcs.outputWrapping, false);
+
+		shared.DOM.cmd_sortall.addEventListener("click" , modals.resort_cmds, false);
+		shared.DOM.edit_cmd_sort .addEventListener("click" , funcs.resort_cmds, false);
 
 		shared.DOM.entireBodyDiv  .addEventListener("click", funcs.entireBodyDiv_clicked, false);
 		document                  .addEventListener("keyup", function(e){ if(e.key=="Escape"){ funcs.entireBodyDiv_clicked(); } } , false);
@@ -171,6 +181,55 @@ var funcs = {
 		else { return; }
 	},
 
+	resort_cmds : function(){
+		let table = shared.DOM.modal_cmd_reorder_table ;
+
+		let updatedData = [];
+
+		for(let i=0; i<table.rows.length; i+=1){
+			// Skip the first row.
+			if(i==0){ continue; }
+
+			let row = table.rows[i];
+			let sortorder = row.querySelector("td:nth-child(1) input").value;
+			let appid     = row.querySelector("td:nth-child(2) ").innerText;
+			let comid     = row.querySelector("td:nth-child(3) ").innerText;
+			let label     = row.querySelector("td:nth-child(4) ").innerText;
+
+			updatedData.push({
+				"sortorder" : sortorder ,
+				"appid"     : appid     ,
+				"comid"     : comid     ,
+				// "label"     : label     ,
+			});
+			// console.log(
+				// 	"sortorder:", sortorder ,
+				// 	", appid:",    appid     ,
+				// 	", comid:",   comid     ,
+			// 	", label:",     label     ,
+			// 	""
+			// );
+		}
+
+		var formData = {
+			'_p'          : 'api/api_p.php'        ,
+			'o'           : 'massReorder_commands' ,
+			'updatedData' : JSON.stringify(updatedData)            ,
+		};
+		var prom = shared.serverRequest( formData ).then(
+			function(res){
+				// funcs.display_apps(res.data);
+				// window.reload();
+				// funcs.getAppData();
+				modals.hideAndClear_all();
+				shared.DOM.entireBodyDiv.classList.remove("show");
+				shared.DOM.modal_new_cmd.classList.remove("show");
+				funcs.getAppData();
+			},
+			function(){}
+		);
+
+	},
 	// Get the apps list from the database.
 	getAppsList : function(){
 		// Get the apps list from the DB.
@@ -279,8 +338,8 @@ var funcs = {
 			// option.text=row.label + " (U:"+(row.lastuse?row.lastuse:'UNUSED')+", C:"+row.created+")";
 
 			let canrunfromweb = parseInt(row.canrunfromweb,10) ;
-			if(canrunfromweb){ option.text = "(WEB) " + row.label; }
-			else             { option.text = "(CMD) " + row.label; }
+			if(canrunfromweb){ option.text = "(WEB) => " + row.label; }
+			else             { option.text = "(CMD) => " + row.label; }
 
 			option.setAttribute("appId"        , row.appId        );
 			option.setAttribute("command"      , row.command      );
@@ -620,6 +679,71 @@ var modals = {
 		if(!conf){ return; }
 
 		funcs.cmd_del(app_select.value, cmd_selected.value);
+	},
+
+	// Shows all commands for the selected app. Allows for mass update of their sortorders.
+	resort_cmds : function(){
+		// Make sure that both an app and a command are selected.
+		let app_select   = shared.DOM.app_select;
+		let app_selected = app_select.options[app_select.selectedIndex];
+		let cmd_select   = shared.DOM.cmd_select;
+		let cmd_selected = cmd_select.options[cmd_select.selectedIndex];
+		if(app_select.value==""){ alert("Error: An application was not selected."); return; }
+		// if(cmd_select.value==""){ alert("Error: A command was not selected.");      return; }
+
+		// shared.DOM.modal_cmd_reorder_table
+		// shared.DOM.edit_cmd_sort
+
+		let APP_NAME    = app_select.options[app_select.selectedIndex].getAttribute("appname")     ;
+		let APP_ID      = app_select.options[app_select.selectedIndex].getAttribute("value")       ;
+		let APPSPATH    = app_select.options[app_select.selectedIndex].getAttribute("appspath")    ;
+		let APPCODEPATH = app_select.options[app_select.selectedIndex].getAttribute("appcodepath") ;
+
+		shared.DOM.modal_sort_cmds.querySelector(".modal_app_appname")    .innerHTML = APP_NAME    ;
+		shared.DOM.modal_sort_cmds.querySelector(".modal_app_appid")      .innerHTML = APP_ID      ;
+		shared.DOM.modal_sort_cmds.querySelector(".modal_app_appspath")   .innerHTML = APPSPATH    ;
+		shared.DOM.modal_sort_cmds.querySelector(".modal_app_appcodepath").innerHTML = APPCODEPATH ;
+
+		var table    = shared.DOM.modal_cmd_reorder_table;
+		for(let i = table.rows.length - 1; i > 0; i--){ table.deleteRow(i); }
+		var fragTable=document.createDocumentFragment();
+
+		// Go through the command list. Get commandid value, appid, and label.
+		for(let i=0; i<cmd_select.options.length; i+=1){
+			// Skip blank entries.
+			if( ! cmd_select.options[i].value && cmd_select.options[i].value != "0" ) {
+				console.log("Skipping the blank entry.", cmd_select.options[i]);
+				continue;
+			}
+
+			let value     = cmd_select.options[i].getAttribute("value")     ;
+			let appid     = cmd_select.options[i].getAttribute("appid")     ;
+			let label     = cmd_select.options[i].getAttribute("_label")    ;
+			let sortorder = cmd_select.options[i].getAttribute("sortorder") ;
+
+			var temp_tr   = document.createElement("tr");
+			var temp_sortorder  = document.createElement("td"); temp_tr.appendChild(temp_sortorder);
+			var temp_appid      = document.createElement("td"); temp_tr.appendChild(temp_appid);
+			var temp_value      = document.createElement("td"); temp_tr.appendChild(temp_value);
+			var temp_label      = document.createElement("td"); temp_tr.appendChild(temp_label);
+
+			temp_sortorder.innerHTML = '<input type="number" onclick="this.select();" class="cmds_sortorder" min="1" max="1000" step="1" value="'+sortorder+'"></input>' ;
+
+			temp_appid    .innerText = appid    ;
+			temp_value    .innerText = value    ;
+			temp_label    .innerText = label    ;
+
+			fragTable.appendChild(temp_tr);
+		}
+		table.appendChild(fragTable);
+
+		// Activate the modal.
+		shared.DOM.entireBodyDiv.classList.add("show");
+		shared.DOM.modal_sort_cmds.classList.add("show");
+
+		// Focus the command box.
+		table.querySelector("input").focus();
+		table.querySelector("input").select();
 	},
 };
 

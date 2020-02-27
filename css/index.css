@@ -110,8 +110,8 @@ body {
 
 .modals table td textarea {
 	height: 100px;
-	/* width: 550px; */
-	width: 100%;
+	width: 650px;
+	/* width: 100%; */
 	white-space: nowrap;
 }
 
@@ -300,3 +300,8 @@ table.blueTable {
 	padding: 2px 8px;
 	border-radius: 5px;
   }
+
+
+select#cmd_select {
+    width: 450px;
+}

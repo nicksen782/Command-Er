@@ -4,8 +4,12 @@
  *
  */
 
+// VIA SSH/PHP COMMAND: ssh dev2.nicksen782.net php -d register_argc_argv=1 /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php cmd_run1AppCommand 1 25 viaphp
 // VIA SSH/PHP COMMAND: ssh dev2.nicksen782.net php -d register_argc_argv=1 /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php cmd_main_menu viaphp
 // VIA     PHP COMMAND: php -d register_argc_argv=1 /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php cmd_main_menu viaphp
+// VIA     PHP COMMAND: php -d register_argc_argv=1 /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php cmd_runQueuedTasks viaphp
+
+// /home/nicksen782/SERVER/SCRIPTS/runCommand-Er_scheduledTasks.sh
 
 // All requests to the server should go through this file.
 
@@ -48,6 +52,7 @@ else if( $_GET ['o'] ){ API_REQUEST( $_GET ['o'], 'get'  ); }
 else if($viacommandline){
 	// List of allowed functions via the php script method.
 	$whitelistedFunctions=[
+		"cmd_runQueuedTasks" ,
 		"cmd_main_menu" ,
 		"cmd_run1AppCommand" ,
 	];
@@ -66,6 +71,10 @@ else if($viacommandline){
 
 		// Adjust the output based on what function was called.
 		switch($argv[1]){
+			case "cmd_runQueuedTasks" : {
+				cmd_runQueuedTasks();
+				break;
+			}
 			case "cmd_main_menu" : {
 				// Get the apps list.
 				ob_end_clean ();
@@ -180,44 +189,7 @@ else if($viacommandline){
 				$appid = intval(trim($argv[2])) ;
 				$cmdid = intval(trim($argv[3])) ;
 
-				// Test that the appid and cmdid are valid.
-				$data = isAppidAndCommandid_Valid($appid, $cmdid);
-
-				// echo "FUNCTION : " . "cmd_run1AppCommand" . "\n";
-				echo "APP ID   : " . $appid . " (" . $data['appname'] . ")" . "\n";
-				echo "CMD ID   : " . $cmdid . " (" . $data['label']   . ")" . "\n";
-				echo "VALID?   : " . ($data['success'] ? "true" : "false")  . "\n";
-
-				if( $data['success'] ){
-					// Show notice about the appearance of a hung script.
-					ob_start();
-					echo "\n";
-					echo "***********************************************************************\n";
-					echo " PLEASE NOTE: If the command takes a long time this script will APPEAR\n";
-					echo " to hang but it is just waiting for the command to finish.\n";
-					echo "***********************************************************************\n";
-					echo "\n";
-					ob_end_flush();
-
-					// Run that command.
-					ob_start();
-					$_POST['appid'    ] = $appid;
-					$_POST['commandid'] = $cmdid;
-					API_REQUEST( "runCommand", 'cmd' );
-					$output1 = ob_get_contents();
-					$decoded_output1 = json_decode( $output1, true);
-					$data=$decoded_output1['output'];
-					ob_end_clean ();
-
-					// Echo out the result of the command.
-					ob_start();
-					echo $data;
-					echo "\n";
-					ob_end_flush();
-					exit();
-				}
-				else{
-				}
+				cmd_run1AppCommand($appid, $cmdid);
 
 				break;
 			}
@@ -249,6 +221,200 @@ else if($viacommandline){
 
 	exit();
 
+}
+function cmd_run1AppCommand( $appid, $cmdid ){
+	// Test that the appid and cmdid are valid.
+	$data = isAppidAndCommandid_Valid($appid, $cmdid);
+	echo "FUNCTION : " . "cmd_run1AppCommand" . "\n";
+	echo "APP ID   : " . $appid . " (" . $data['appname'] . ")" . "\n";
+	echo "CMD ID   : " . $cmdid . " (" . $data['label']   . ")" . "\n";
+	echo "VALID?   : " . ($data['success'] ? "true" : "false")  . "\n";
+
+	if( $data['success'] ){
+		// Show notice about the appearance of a hung script.
+		ob_start();
+		echo "\n";
+		echo "***********************************************************************\n";
+		echo " PLEASE NOTE: If the command takes a long time this script will APPEAR\n";
+		echo " to hang but it is just waiting for the command to finish.\n";
+		echo "***********************************************************************\n";
+		echo "\n";
+		ob_end_flush();
+
+		// Run that command.
+		ob_start();
+		$_POST['appid'    ] = $appid;
+		$_POST['commandid'] = $cmdid;
+		API_REQUEST( "runCommand", 'cmd' );
+		$output1 = ob_get_contents();
+		$decoded_output1 = json_decode( $output1, true);
+		$data=$decoded_output1['output'];
+		ob_end_clean ();
+
+		// Echo out the result of the command.
+		ob_start();
+		echo $data;
+		echo "\n";
+		ob_end_flush();
+
+		return $data;
+
+		exit();
+	}
+	else{
+	}
+
+}
+
+function cmd_runQueuedTasks(){
+	global $_appdir;
+
+	$inputFilename="cmd_runQueuedTasks_input.txt";
+	$outputFilename="cmd_runQueuedTasks_output.txt";
+
+	// Create the files if they do not exist yet.
+	if( ! file_exists ($inputFilename) ) {
+		$oldmask = umask(0);
+		$dest    = $inputFile ;
+		chmod($dest, 0666);
+		file_put_contents($inputFilename, "");
+		umask($oldmask);
+	}
+	if( ! file_exists ($outputFilename) ) {
+		$oldmask = umask(0);
+		$dest    = $outputFile ;
+		chmod($dest, 0666);
+		file_put_contents($outputFilename, "");
+		umask($oldmask);
+	}
+
+	// Get the input file.
+	$inputFileData  = file_get_contents($inputFilename);
+
+	// Parse the input file explode on "\n" to get the individual tasks.
+	$pre_tasks = preg_split ('/\n/', $inputFileData);
+
+	// Clean up the input.
+	$tasks = [];
+	for($i=0; $i<sizeof($pre_tasks); $i+=1){
+		// Get this task line.
+		$task = $pre_tasks[$i];
+		$task = trim($task);
+		if($task != ""){ array_push($tasks, $task); }
+	}
+
+	// Are there inputs?
+	if( sizeof($tasks) ){
+		// Clear the tasks file. (Just in case a task takes longer than a minute.)
+		file_put_contents($inputFilename , "");
+
+		//
+		$startDatetime = "SCHEDULED TASKS STARTED : " . date("Y-m-d H:i:s") . "\n" ;
+
+		// Perform the tasks.
+		for($i=0; $i<sizeof($tasks); $i+=1){
+			// Get this task line.
+			$task = $tasks[$i];
+
+			// Break up the line and separate into appid and cmdid.
+			$task_parts = explode(" ", $task);
+			$appid = $task_parts[0];
+			$cmdid = $task_parts[1];
+
+			// Confirm this command is valid. Receive some extra data.
+			$data = isAppidAndCommandid_Valid($appid, $cmdid);
+
+			// Only run the command if the validation check passes.
+			if( $data['success'] ){
+				// Run the command and receive the result.
+				$cmd_start = date("Y-m-d H:i:s");
+				$cmdOutput = cmd_run1AppCommand( $appid, $cmdid );
+				$cmd_end   = date("Y-m-d H:i:s");
+
+				// Create the output entry.
+				$outputText .=
+				"********************************************************************************\n" .
+				"********************************************************************************\n" .
+				"TASK #    : " . $i               . "\n" .
+				"appname   : " . $data['appname'] . "\n" .
+				"label     : " . $data['label']   . "\n" .
+				"cmd_start : " . $cmd_start       . "\n" .
+				"cmd_end   : " . $cmd_end         . "\n" .
+				"appid     : " . $appid           . "\n" .
+				"cmdid     : " . $cmdid           . "\n" .
+				"********************************************************************************\n" .
+				$cmdOutput .
+				"\n" .
+				"********************************************************************************\n" .
+				"********************************************************************************\n" .
+				"\n" . ""
+				;
+			}
+		}
+
+		//
+		$endDatetime .= "SCHEDULED TASKS FINISHED: " . date("Y-m-d H:i:s") . "\n" ;
+
+
+		$outputText = $startDatetime . $endDatetime . $outputText . "\n\n";
+
+		// Write the output.
+		file_put_contents($outputFilename, $outputText);
+	}
+	// No input? Nothing to do.
+	else{
+		echo "No tasks.";
+		// echo "<pre>"; print_r($pre_tasks); echo "</pre>";
+		// echo "<pre>"; print_r($tasks);     echo "</pre>";
+		echo "\n";
+	}
+}
+function queue_task(){
+	$appid = $_POST['appid'    ] ;
+	$cmdid = $_POST['commandid'] ;
+
+	global $_appdir;
+
+	$success=false;
+
+	$inputFilename="cmd_runQueuedTasks_input.txt";
+	$outputFilename="cmd_runQueuedTasks_output.txt";
+
+	// Create the files if they do not exist yet.
+	if( ! file_exists ($inputFilename) ) {
+		$oldmask = umask(0);
+		$dest    = $inputFilename ;
+		chmod($dest, 0666);
+		file_put_contents($inputFilename, "");
+		umask($oldmask);
+	}
+	if( ! file_exists ($outputFilename) ) {
+		$oldmask = umask(0);
+		$dest    = $outputFilename ;
+		chmod($dest, 0666);
+		file_put_contents($outputFilename, "");
+		umask($oldmask);
+	}
+
+	// Confirm this command is valid. Receive some extra data.
+	$data = isAppidAndCommandid_Valid($appid, $cmdid);
+
+	// Only run the command if the validation check passes.
+	if( $data['success'] ){
+		$newEntry = $appid . " " . $cmdid . "\n" ;
+		file_put_contents($inputFilename, $newEntry , FILE_APPEND | LOCK_EX);
+		$success=true;
+	}
+	else{
+		$success=false;
+	}
+
+	echo json_encode(array(
+		'data'         => array()   ,
+		'success'      => $success  ,
+		'$_POST'       => $_POST    ,
+		'cur_datetime' => date("Y-m-d H:i:s") ,
+	) );
 }
 
 function isAppidAndCommandid_Valid($appid, $commandid){
@@ -308,7 +474,7 @@ function API_REQUEST( $api, $type ){
 	$o_values["getAppData"]           = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>1,] ;
 	$o_values["runCommand"]           = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>1,] ;
 	$o_values["runCommand_base"]      = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
-	$o_values["runCommand_viaphp"]    = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
+	// $o_values["runCommand_viaphp"]    = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
 	$o_values["command_delete"]       = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
 	$o_values["command_edit"]         = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
 	$o_values["command_new"]          = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
@@ -317,6 +483,8 @@ function API_REQUEST( $api, $type ){
 	$o_values["app_new"]              = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
 	$o_values["massReorder_apps"]     = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
 	$o_values["massReorder_commands"] = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
+
+	$o_values["queue_task"]             = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
 
 	// DETERMINE IF THE API IS AVAILABLE TO THE USER.
 

@@ -4,6 +4,9 @@ var shared = {
 	init : function(){
 		// Populate the DOM cache.
 
+		// Schedule task button.
+		shared.DOM.queue_task_btn              = document.querySelector("#queue_task_btn")              ;
+
 		// Modal background, progress bar.
 		shared.DOM.entireBodyDiv             = document.querySelector("#entireBodyDiv")             ;
 		shared.DOM.progressbarDiv            = document.querySelector("#progressbarDiv")            ;
@@ -59,9 +62,7 @@ var shared = {
 		shared.DOM.modal_new_cmd_canrunfromweb  = document.querySelector("#modal_new_cmd_canrunfromweb")  ;
 		shared.DOM.modal_edit_cmd_canrunfromweb = document.querySelector("#modal_edit_cmd_canrunfromweb") ;
 
-
 		shared.DOM.modal_cmd_reorder_table = document.querySelector("#modal_cmd_reorder_table") ;
-
 
 		// Add event listeners.
 		shared.DOM.app_select     .addEventListener("change", funcs.getAppData, false);
@@ -137,6 +138,14 @@ var shared = {
 				setTimeout(function() { xhr.send(fd); }, 1);
 			});
 	},
+
+	vars : {
+		queue_task_lastRequest : {
+			"appid"     : 0 ,
+			"commandid" : 0 ,
+			"lastUse_ts": performance.now() ,
+		},
+	},
 };
 
 //
@@ -153,6 +162,15 @@ var funcs = {
 			let select2 = shared.DOM.app_select;
 
 			let canrunfromweb = parseInt(select.options[select.selectedIndex].getAttribute("canrunfromweb"),10);
+
+			// Update the queue task button.
+			let appid = parseInt(select2.value,10) ;
+			let cmdid = parseInt(select.value ,10) ;
+			shared.DOM.queue_task_btn.innerText = "Run within 60 seconds. (appid: "+appid+", cmdid: "+cmdid+")";
+			shared.DOM.queue_task_btn.setAttribute("title", "(appid: "+appid+", cmdid: "+cmdid+")");
+			shared.DOM.queue_task_btn.onclick=function(){
+				funcs.queue_task(appid, cmdid);
+			};
 
 			if(canrunfromweb){
 				shared.DOM.cmd_run.classList.remove("run_hidden");
@@ -179,6 +197,63 @@ var funcs = {
 			}
 		}
 		else { return; }
+	},
+
+	queue_task : function(appid, commandid){
+		// funcs.queue_task(9,4);
+
+		// Make sure that the user cannot add the same task directly after adding the task.
+		let prev_appid     = shared.vars.queue_task_lastRequest.appid;
+		let prev_commandid = shared.vars.queue_task_lastRequest.commandid;
+		let lastUse_ts     = shared.vars.queue_task_lastRequest.lastUse_ts;
+		if(
+			(prev_appid==appid && prev_commandid==commandid)
+			&&
+			(performance.now()-lastUse_ts < 5000)
+
+			){
+				alert("ABORT: You cannot schdule the same command as before until 5 seconds have passed.");
+				return;
+			}
+
+		if(!appid || !commandid){
+			alert("ABORT: Invalid values were passed.\n appid: "+appid + "\n commandid: " + commandid);
+			return;
+		}
+
+		// Save the previous appid and cmdid.
+		shared.vars.queue_task_lastRequest.appid      = appid ;
+		shared.vars.queue_task_lastRequest.commandid  = commandid ;
+		shared.vars.queue_task_lastRequest.lastUse_ts = performance.now() ;
+
+		var formData = {
+			'_p'          : 'api/api_p.php' ,
+			'o'           : 'queue_task'      ,
+			'appid'       : appid           ,
+			'commandid'   : commandid       ,
+		};
+
+		var prom = shared.serverRequest( formData ).then(
+			function(res){
+				console.log(res);
+				// funcs.display_apps(res.data);
+				// window.reload();
+				// funcs.getAppData();
+
+				modals.hideAndClear_all();
+				shared.DOM.entireBodyDiv.classList.remove("show");
+				shared.DOM.modal_new_cmd.classList.remove("show");
+				funcs.getAppData();
+
+				if(res.success){
+					alert("SUCCESS: Task added!");
+				}
+				else{
+					alert("FAILURE: Task add had an error!");
+				}
+			},
+			function(){}
+		);
 	},
 
 	resort_cmds : function(){

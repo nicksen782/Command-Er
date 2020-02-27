@@ -151,19 +151,31 @@
 
 			<div id="sshPhpInstructions">
 				<br>
-				Must be run via SSH/PHP or just PHP.
+				Must be run via SSH, PHP or be queued to run.
 				<hr>
 
 				<b><u>RUN THIS COMMAND VIA SSH:</u></b><br>
 
-				ssh dev2.nicksen782.net php -d register_argc_argv=1
+				ssh dev2.nicksen782.net \<br>
+				php -d register_argc_argv=1
 				/home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php
 				cmd_run1AppCommand <span id="selected_appid"></span> <span id="selected_cmdid"></span> viaphp
 				<hr>
 
 				<b><u>MAIN MENU VIA SSH:</u></b><br>
 
-				ssh dev2.nicksen782.net php -d register_argc_argv=1 /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php cmd_main_menu viaphp
+				ssh dev2.nicksen782.net \<br>
+				php -d register_argc_argv=1 /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php cmd_main_menu viaphp
+				<hr>
+
+				<b><u>QUEUE THIS COMMAND:</u></b><br>
+				<br>
+				<button id="queue_task_btn">Run within 60 seconds.</button>
+
+				<!-- funcs.queue_task(9,4); -->
+
+				<!-- ssh dev2.nicksen782.net \<br>
+				php -d register_argc_argv=1 /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php cmd_main_menu viaphp -->
 				<hr>
 
 			</div>

@@ -143,11 +143,13 @@
 			<select id="cmd_select">
 				<option value="">...SELECT</option>
 			</select>
+			<br>
 			<input type="button" class="customRun run_hidden" id="cmd_run" value="RUN">
 			<input type="button" id="cmd_edit" value="EDIT">
 			<input type="button" id="cmd_new" value="NEW">
 			<input type="button" id="cmd_del" value="DELETE">
 			<input type="button" id="cmd_sortall" value="SORT ALL">
+			<button onclick="funcs.getLastQueuedResults();">Show Results of last Queued</button>
 
 			<div id="sshPhpInstructions">
 				<br>
@@ -158,6 +160,7 @@
 
 				ssh dev2.nicksen782.net \<br>
 				php -d register_argc_argv=1
+
 				/home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php
 				cmd_run1AppCommand <span id="selected_appid"></span> <span id="selected_cmdid"></span> viaphp
 				<hr>
@@ -169,7 +172,7 @@
 				<hr>
 
 				<b><u>QUEUE THIS COMMAND:</u></b><br>
-				<br>
+				<!-- <br> -->
 				<button id="queue_task_btn">Run within 60 seconds.</button>
 
 				<!-- funcs.queue_task(9,4); -->
@@ -181,10 +184,12 @@
 			</div>
 
 		</div>
+
 		<div id="output">
 			OUTPUT:
 			<br>
 			&nbsp;&nbsp;OPTION: <label><input id="outputWrapping" type="checkbox"> Do not wrap text</label>
+
 			<hr>
 			<div id="output_text"></div>
 		</div>

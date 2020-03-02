@@ -1,5 +1,7 @@
+"use strict";
+
 //
-var shared = {
+let shared = {
 	// Creates DOM cache, attaches event listeners, retrieves app list.
 	init : function(){
 		// Populate the DOM cache.
@@ -97,7 +99,7 @@ var shared = {
 		if(autoDarken==undefined){ autoDarken=true; }
 		return new Promise(function(resolve, reject) {
 			// Event handlers.
-			var finished = function() {
+			let finished = function() {
 				if(autoDarken){
 					shared.DOM.entireBodyDiv.classList.remove("show");
 					shared.DOM.progressbarDiv.classList.remove("show");
@@ -111,7 +113,7 @@ var shared = {
 					resolve(JSON.parse(this.responseText));
 				}
 			};
-			var error = function(data) {
+			let error = function(data) {
 				reject({
 					type: data.type,
 					xhr: xhr
@@ -119,13 +121,13 @@ var shared = {
 			};
 
 			// Create the form.
-			var fd = new FormData();
-			var o = formData.o ;
+			let fd = new FormData();
+			let o = formData.o ;
 
-			for (var prop in formData) {
+			for (let prop in formData) {
 				fd.append(prop , formData[prop] ); }
 
-				var xhr = new XMLHttpRequest();
+				let xhr = new XMLHttpRequest();
 				xhr.addEventListener("load", finished);
 				xhr.addEventListener("error", error);
 				xhr.open("POST", formData._p+"/o=" +o+ "?r=" + (new Date()).getTime(), true);
@@ -149,7 +151,7 @@ var shared = {
 };
 
 //
-var funcs = {
+let funcs = {
 	// APPLICATIONS
 
 	showHideRunButton : function(){
@@ -199,6 +201,59 @@ var funcs = {
 		else { return; }
 	},
 
+	getLastQueuedResults : function(){
+		let formData = {
+			'_p'          : 'api/api_p.php' ,
+			'o'           : 'getLastQueuedResults'  ,
+		};
+
+		let prom = shared.serverRequest( formData ).then(
+			function(res){
+				// console.log(res);
+
+				// Remove "hide" from shared.DOM.output.
+				shared.DOM.output.classList.remove("hide");
+
+				// Put results in shared.DOM.output_text.
+				// shared.DOM.output_text.innerHTML = res.data;
+				shared.DOM.output_text.innerText = res.data;
+			},
+			function(){}
+		);
+	},
+
+	STATUSDAEMON : function(){
+		let formData = {
+			'_p'          : 'api/api_p.php' ,
+			'o'           : 'STATUSDAEMON'  ,
+		};
+
+		let prom = shared.serverRequest( formData ).then(
+			function(res){
+				// console.log(res);
+				// funcs.display_apps(res.data);
+				// window.reload();
+				// funcs.getAppData();
+
+				modals.hideAndClear_all();
+				shared.DOM.entireBodyDiv.classList.remove("show");
+				shared.DOM.modal_new_cmd.classList.remove("show");
+				funcs.getAppData();
+
+				if(res.data == "0"){
+					console.log("The daemon is NOT running.", res.data);
+					// alert("The daemon is NOT running. " + res.data);
+					return false;
+				}
+				else{
+					console.log("The daemon IS running.", res.data);
+					// alert("The daemon IS running. " + res.data);
+					return true;
+				}
+			},
+			function(){}
+		);
+	},
 	queue_task : function(appid, commandid){
 		// funcs.queue_task(9,4);
 
@@ -207,8 +262,7 @@ var funcs = {
 		let prev_commandid = shared.vars.queue_task_lastRequest.commandid;
 		let lastUse_ts     = shared.vars.queue_task_lastRequest.lastUse_ts;
 		if(
-			(prev_appid==appid && prev_commandid==commandid)
-			&&
+			(prev_appid==appid && prev_commandid==commandid) &&
 			(performance.now()-lastUse_ts < 5000)
 
 			){
@@ -226,14 +280,14 @@ var funcs = {
 		shared.vars.queue_task_lastRequest.commandid  = commandid ;
 		shared.vars.queue_task_lastRequest.lastUse_ts = performance.now() ;
 
-		var formData = {
+		let formData = {
 			'_p'          : 'api/api_p.php' ,
 			'o'           : 'queue_task'      ,
 			'appid'       : appid           ,
 			'commandid'   : commandid       ,
 		};
 
-		var prom = shared.serverRequest( formData ).then(
+		let prom = shared.serverRequest( formData ).then(
 			function(res){
 				console.log(res);
 				// funcs.display_apps(res.data);
@@ -286,12 +340,12 @@ var funcs = {
 			// );
 		}
 
-		var formData = {
+		let formData = {
 			'_p'          : 'api/api_p.php'        ,
 			'o'           : 'massReorder_commands' ,
 			'updatedData' : JSON.stringify(updatedData)            ,
 		};
-		var prom = shared.serverRequest( formData ).then(
+		let prom = shared.serverRequest( formData ).then(
 			function(res){
 				// funcs.display_apps(res.data);
 				// window.reload();
@@ -308,11 +362,11 @@ var funcs = {
 	// Get the apps list from the database.
 	getAppsList : function(){
 		// Get the apps list from the DB.
-		var formData = {
+		let formData = {
 			'_p'        : 'api/api_p.php' ,
 			'o'         : 'getAppsList' ,
 		};
-		var prom = shared.serverRequest( formData ).then(
+		let prom = shared.serverRequest( formData ).then(
 			function(res){ funcs.display_apps(res.data); },
 			function(){}
 		);
@@ -325,7 +379,7 @@ var funcs = {
 		let len = json.length;
 		let frag = document.createDocumentFragment();
 
-		let defaultAppid=undefined;
+		let defaultAppid;//=undefined;
 
 		for(let i=0; i<len; i+=1){
 			let row = json[i];
@@ -336,7 +390,7 @@ var funcs = {
 			option.setAttribute("appspath"   , row.appspath);
 			option.setAttribute("appcodepath", row.appcodepath);
 
-			if( undefined==defaultAppid && row.default=="1" ){ defaultAppid=row.appid; };
+			if( undefined==defaultAppid && row.default=="1" ){ defaultAppid=row.appid; }
 
 			frag.appendChild(option);
 		}
@@ -345,7 +399,7 @@ var funcs = {
 		if(undefined != defaultAppid){
 			select.value=defaultAppid;
 			funcs.getAppData();
-		};
+		}
 	},
 	// Create new app.
 	create_app : function(){
@@ -354,7 +408,7 @@ var funcs = {
 		let appcodepath = shared.DOM.modal_new_app_appcodepath.value ;
 		let appspath    = appname.replace(/[\W_]+/g,"_").replace(/ /g, "_");
 
-		var formData = {
+		let formData = {
 			'_p'         : 'api/api_p.php' ,
 			'o'          : 'app_new'       ,
 			'appname'    : appname         ,
@@ -362,7 +416,7 @@ var funcs = {
 			'appspath'   : appspath        ,
 			'appcodepath': appcodepath     ,
 		};
-		var prom = shared.serverRequest( formData ).then(
+		let prom = shared.serverRequest( formData ).then(
 			function(res){
 				modals.hideAndClear_all();
 				shared.DOM.app_select.length = 1  ;
@@ -380,12 +434,12 @@ var funcs = {
 		let app_select = shared.DOM.app_select;
 		let app_selected = app_select.options[app_select.selectedIndex];
 
-		var formData = {
+		let formData = {
 			'_p'        : 'api/api_p.php'    ,
 			'o'         : 'getAppData'       ,
 			'appid'     : app_selected.value ,
 		};
-		var prom = shared.serverRequest( formData ).then(
+		let prom = shared.serverRequest( formData ).then(
 			function(res){
 				funcs.display_cmds(res.data);
 			},
@@ -469,7 +523,7 @@ var funcs = {
 		// Make sure that a value for cmd_command was entered.
 		if(  cmd_sortorder.value == "" ){ alert("Error: Missing value for sortorder."); return; }
 
-		var formData = {
+		let formData = {
 			'_p'            : 'api/api_p.php'    ,
 			'o'             : 'command_edit'     ,
 			'appid'         : appid              ,
@@ -479,7 +533,7 @@ var funcs = {
 			'sortorder'     : cmd_sortorder      ,
 			'canrunfromweb' : cmd_canrunfromweb  ,
 		};
-		var prom = shared.serverRequest( formData ).then(
+		let prom = shared.serverRequest( formData ).then(
 			function(res){
 				modals.hideAndClear_all();
 				shared.DOM.entireBodyDiv.classList.remove("show");
@@ -509,7 +563,7 @@ var funcs = {
 		// Make sure that a value for canrunfromweb was entered.
 		if(! (cmd_command.value.length) ){ alert("Error: Missing value for command."); return; }
 
-		var formData = {
+		let formData = {
 			'_p'      : 'api/api_p.php' ,
 			'o'       : 'command_new'   ,
 			'appid'   : appid           ,
@@ -517,7 +571,7 @@ var funcs = {
 			'command' : cmd_command.value ,
 			'canrunfromweb' : cmd_canrunfromweb.checked ? 1 : 0 ,
 		};
-		var prom = shared.serverRequest( formData ).then(
+		let prom = shared.serverRequest( formData ).then(
 			function(res){
 				modals.hideAndClear_all();
 				shared.DOM.entireBodyDiv.classList.remove("show");
@@ -544,14 +598,14 @@ var funcs = {
 			return;
 		}
 
-		var formData = {
+		let formData = {
 			'_p'        : 'api/api_p.php'  ,
 			'o'         : 'runCommand'     ,
 			'appid'     : app_select.value ,
 			'commandid' : cmd_select.value ,
 			'canrunfromweb' : canrunfromweb ,
 		};
-		var prom = shared.serverRequest( formData ).then(
+		let prom = shared.serverRequest( formData ).then(
 			function(res){
 				// modals.hideAndClear_all();
 				// shared.DOM.entireBodyDiv.classList.remove("show");
@@ -571,13 +625,13 @@ var funcs = {
 		if(app_select.value==""){ alert("Error: An application was not selected."); return; }
 		if(cmd_select.value==""){ alert("Error: A command was not selected.");      return; }
 
-		var formData = {
+		let formData = {
 			'_p'      : 'api/api_p.php'   ,
 			'o'       : 'runCommand_base' ,
 			'app'     : app_select.options[app_select.selectedIndex].getAttribute("appspath") ,
 			'command' : cmd_select.options[cmd_select.selectedIndex].text ,
 		};
-		var prom = shared.serverRequest( formData ).then(
+		let prom = shared.serverRequest( formData ).then(
 			function(res){
 				// modals.hideAndClear_all();
 				// shared.DOM.entireBodyDiv.classList.remove("show");
@@ -590,14 +644,14 @@ var funcs = {
 	},
 	// Remove the selected custom command for the selected app.
 	cmd_del : function(appid, comid){
-		var formData = {
+		let formData = {
 			'_p'    : 'api/api_p.php'  ,
 			'o'     : 'command_delete'     ,
 			'appid' : app_select.value ,
 			'comid' : cmd_select.value ,
 		};
 
-		var prom = shared.serverRequest( formData ).then(
+		let prom = shared.serverRequest( formData ).then(
 			function(res){
 				shared.DOM.cmd_select.value = "";
 				funcs.getAppData();
@@ -632,7 +686,7 @@ var funcs = {
 };
 
 //
-var modals = {
+let modals = {
 	// MODAL CLEAR
 
 	// Hides and clears all modals.
@@ -779,9 +833,9 @@ var modals = {
 		shared.DOM.modal_sort_cmds.querySelector(".modal_app_appspath")   .innerHTML = APPSPATH    ;
 		shared.DOM.modal_sort_cmds.querySelector(".modal_app_appcodepath").innerHTML = APPCODEPATH ;
 
-		var table    = shared.DOM.modal_cmd_reorder_table;
+		let table    = shared.DOM.modal_cmd_reorder_table;
 		for(let i = table.rows.length - 1; i > 0; i--){ table.deleteRow(i); }
-		var fragTable=document.createDocumentFragment();
+		let fragTable=document.createDocumentFragment();
 
 		// Go through the command list. Get commandid value, appid, and label.
 		for(let i=0; i<cmd_select.options.length; i+=1){
@@ -796,11 +850,11 @@ var modals = {
 			let label     = cmd_select.options[i].getAttribute("_label")    ;
 			let sortorder = cmd_select.options[i].getAttribute("sortorder") ;
 
-			var temp_tr   = document.createElement("tr");
-			var temp_sortorder  = document.createElement("td"); temp_tr.appendChild(temp_sortorder);
-			var temp_appid      = document.createElement("td"); temp_tr.appendChild(temp_appid);
-			var temp_value      = document.createElement("td"); temp_tr.appendChild(temp_value);
-			var temp_label      = document.createElement("td"); temp_tr.appendChild(temp_label);
+			let temp_tr   = document.createElement("tr");
+			let temp_sortorder  = document.createElement("td"); temp_tr.appendChild(temp_sortorder);
+			let temp_appid      = document.createElement("td"); temp_tr.appendChild(temp_appid);
+			let temp_value      = document.createElement("td"); temp_tr.appendChild(temp_value);
+			let temp_label      = document.createElement("td"); temp_tr.appendChild(temp_label);
 
 			temp_sortorder.innerHTML = '<input type="number" onclick="this.select();" class="cmds_sortorder" min="1" max="1000" step="1" value="'+sortorder+'"></input>' ;
 

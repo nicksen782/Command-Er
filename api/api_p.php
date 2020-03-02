@@ -1,20 +1,18 @@
 <?php
-/**
- *
- *
- */
-
-// VIA SSH/PHP COMMAND: ssh dev2.nicksen782.net php -d register_argc_argv=1 /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php cmd_run1AppCommand 1 25 viaphp
-// VIA SSH/PHP COMMAND: ssh dev2.nicksen782.net php -d register_argc_argv=1 /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php cmd_main_menu viaphp
-// VIA     PHP COMMAND: php -d register_argc_argv=1 /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php cmd_main_menu viaphp
-// VIA     PHP COMMAND: php -d register_argc_argv=1 /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php cmd_runQueuedTasks viaphp
-
-// /home/nicksen782/SERVER/SCRIPTS/runCommand-Er_scheduledTasks.sh
-
 // All requests to the server should go through this file.
 
 // This is the only place this flag is set. It is checked everywhere else insuring that all processes start here.
 $securityLoadedFrom_indexp = true;
+
+// EXAMPLE USAGES VIA SSH:
+// VIA SSH/PHP COMMAND: ssh SERVERNAME php -d register_argc_argv=1 /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php cmd_run1AppCommand 1 25 viaphp
+// VIA SSH/PHP COMMAND: ssh SERVERNAME php -d register_argc_argv=1 /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php cmd_main_menu viaphp
+// VIA SSH/PHP COMMAND: ssh SERVERNAME php -d register_argc_argv=1 /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php cmd_runQueuedTasks viaphp
+
+// EXAMPLE USAGES VIA COMMAND-LINE:
+// VIA     PHP COMMAND: php -d register_argc_argv=1 /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php cmd_run1AppCommand 1 25 viaphp
+// VIA     PHP COMMAND: php -d register_argc_argv=1 /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php cmd_main_menu viaphp
+// VIA     PHP COMMAND: php -d register_argc_argv=1 /home/nicksen782/workspace/web/ACTIVE/Command-Er2/api/api_p.php cmd_runQueuedTasks viaphp
 
 // Configure error reporting
 $appName='COMMANDER2';
@@ -38,9 +36,8 @@ $viacommandline = false;
 if( isset($argv) ) { $viacommandline = true; }
 
 $dev=false;
-if      ( strpos($_SERVER['SERVER_NAME'], "dev.nicksen782.net" ) !== false ) { $dev=true; }
-else if ( strpos($_SERVER['SERVER_NAME'], "dev2.nicksen782.net") !== false ) { $dev=true; }
-else if ( $viacommandline==true                                            ) { $dev=true; }
+if      ( strpos($_SERVER['SERVER_NAME'], "dev2.nicksen782.net" ) !== false ) { $dev=true; }
+else if ( $viacommandline==true                                             ) { $dev=true; }
 
 if(!$dev){ exit('This application should only run from dev.'); }
 
@@ -222,51 +219,99 @@ else if($viacommandline){
 	exit();
 
 }
-function cmd_run1AppCommand( $appid, $cmdid ){
-	// Test that the appid and cmdid are valid.
-	$data = isAppidAndCommandid_Valid($appid, $cmdid);
-	echo "FUNCTION : " . "cmd_run1AppCommand" . "\n";
-	echo "APP ID   : " . $appid . " (" . $data['appname'] . ")" . "\n";
-	echo "CMD ID   : " . $cmdid . " (" . $data['label']   . ")" . "\n";
-	echo "VALID?   : " . ($data['success'] ? "true" : "false")  . "\n";
 
-	if( $data['success'] ){
-		// Show notice about the appearance of a hung script.
-		ob_start();
-		echo "\n";
-		echo "***********************************************************************\n";
-		echo " PLEASE NOTE: If the command takes a long time this script will APPEAR\n";
-		echo " to hang but it is just waiting for the command to finish.\n";
-		echo "***********************************************************************\n";
-		echo "\n";
-		ob_end_flush();
+// API REQUEST HANDLER
 
-		// Run that command.
-		ob_start();
-		$_POST['appid'    ] = $appid;
-		$_POST['commandid'] = $cmdid;
-		API_REQUEST( "runCommand", 'cmd' );
-		$output1 = ob_get_contents();
-		$decoded_output1 = json_decode( $output1, true);
-		$data=$decoded_output1['output'];
-		ob_end_clean ();
+function API_REQUEST( $api, $type ){
+	$stats = array(
+		'error'      => false ,
+		'error_text' => ""    ,
+	);
 
-		// Echo out the result of the command.
-		ob_start();
-		echo $data;
-		echo "\n";
-		ob_end_flush();
+	// Rights.
+	$public      = 1 ; // No rights required.
 
-		return $data;
+	$o_values=array();
 
-		exit();
+	// APIs
+	$o_values["getAppsList"]          = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>1,] ;
+	$o_values["getAppData"]           = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>1,] ;
+	$o_values["runCommand"]           = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>1,] ;
+	$o_values["runCommand_base"]      = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
+	// $o_values["runCommand_viaphp"]    = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
+	$o_values["command_delete"]       = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
+	$o_values["command_edit"]         = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
+	$o_values["command_new"]          = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
+	$o_values["app_delete"]           = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
+	$o_values["app_edit"]             = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
+	$o_values["app_new"]              = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
+	$o_values["massReorder_apps"]     = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
+	$o_values["massReorder_commands"] = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
+
+	$o_values["queue_task"]             = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
+
+	$o_values["STATUSDAEMON"]             = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
+	$o_values["getLastQueuedResults"] = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
+
+	// DETERMINE IF THE API IS AVAILABLE TO THE USER.
+
+	// Is this a known API?
+	if( ! isset( $o_values[ $api] ) ){
+		$stats['error']=true;
+		$stats['error_text']="Unhandled API";
 	}
+
+	// Is the API allowed to be called this way?
+	else if( ! $o_values[ $api ][ $type ] ){
+		$stats['error']=true;
+		$stats['error_text']="Invalid access type";
+	}
+
+	// Does the user have sufficient permissions?
+	else if( ! $o_values[ $api ]['p'] ){
+		$stats['error']=true;
+		$stats['error_text']="API auth error";
+	}
+
+	// Can the function be run?
+	if(! $stats['error']){
+		// GOOD! Allow the API call.
+		call_user_func_array( $api, array() );
+	}
+
+	// Was there an error?
 	else{
+		echo json_encode( $stats );
+		exit();
 	}
 
 }
 
-function cmd_runQueuedTasks(){
+// TASK QUEUE
+
+function getLastQueuedResults()    {
+	$outputFilename="cmd_runQueuedTasks_output.txt";
+	if( file_exists ($outputFilename) ) {
+		$outputFileData=file_get_contents($outputFilename);
+	}
+	else{
+		$outputFileData="FILE DOES NOT EXIST.";
+	}
+
+	echo json_encode(array(
+		'data'         => $outputFileData ,
+		'success'      => true   ,
+	) );
+}
+function STATUSDAEMON()            {
+	$data = trim( shell_exec( ' pgrep -fxc "php -d register_argc_argv=1 cmdr2_daemon.php" ' ) );
+
+	echo json_encode(array(
+		'data'         => $data   ,
+		'success'      => true   ,
+	) );
+}
+function cmd_runQueuedTasks()      {
 	global $_appdir;
 
 	$inputFilename="cmd_runQueuedTasks_input.txt";
@@ -369,7 +414,7 @@ function cmd_runQueuedTasks(){
 		echo "\n";
 	}
 }
-function queue_task(){
+function queue_task()              {
 	$appid = $_POST['appid'    ] ;
 	$cmdid = $_POST['commandid'] ;
 
@@ -415,109 +460,6 @@ function queue_task(){
 		'$_POST'       => $_POST    ,
 		'cur_datetime' => date("Y-m-d H:i:s") ,
 	) );
-}
-
-function isAppidAndCommandid_Valid($appid, $commandid){
-	// Pull in some globals.
-	global $_appdir;
-	global $_db_file;
-
-	// Create the file. By trying to open the file it will be created!
-	$dbhandle = new sqlite3_DB_PDO($_db_file) or exit("cannot open the database");
-
-	$sql1     =
-	'
-	SELECT
-		apps.appname AS appname    ,
-		commands.label AS label
-	FROM commands
-	JOIN apps ON apps.appid = commands.appid
-	WHERE apps.appid = :appid AND commands.comid = :commandid
-	;';
-
-	$prp1       = $dbhandle->prepare($sql1) ;
-
-	$dbhandle->bind(':appid'     , $appid ) ;
-	$dbhandle->bind(':commandid' , $commandid ) ;
-
-	$retval1    = $dbhandle->execute()        ;
-	$results1= $dbhandle->statement->fetchAll(PDO::FETCH_ASSOC) ;
-
-	if(sizeof($results1)){
-		return [
-			"success" => true                     ,
-			"appname"  => $results1[0]['appname'] ,
-			"label"    => $results1[0]['label']   ,
-		];
-	}
-	else                 {
-		return [
-			"success" => false                    ,
-			"appname"  => $results1[0]['appname'] ,
-			"label"    => $results1[0]['label']   ,
-		];
-	}
-}
-function API_REQUEST( $api, $type ){
-	$stats = array(
-		'error'      => false ,
-		'error_text' => ""    ,
-	);
-
-	// Rights.
-	$public      = 1 ; // No rights required.
-
-	$o_values=array();
-
-	// APIs
-	$o_values["getAppsList"]          = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>1,] ;
-	$o_values["getAppData"]           = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>1,] ;
-	$o_values["runCommand"]           = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>1,] ;
-	$o_values["runCommand_base"]      = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
-	// $o_values["runCommand_viaphp"]    = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
-	$o_values["command_delete"]       = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
-	$o_values["command_edit"]         = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
-	$o_values["command_new"]          = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
-	$o_values["app_delete"]           = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
-	$o_values["app_edit"]             = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
-	$o_values["app_new"]              = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
-	$o_values["massReorder_apps"]     = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
-	$o_values["massReorder_commands"] = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
-
-	$o_values["queue_task"]             = [ "p"=>( ( $public ) ? 1 : 0 ), 'get'=>0, 'post'=>1, 'cmd'=>0,] ;
-
-	// DETERMINE IF THE API IS AVAILABLE TO THE USER.
-
-	// Is this a known API?
-	if( ! isset( $o_values[ $api] ) ){
-		$stats['error']=true;
-		$stats['error_text']="Unhandled API";
-	}
-
-	// Is the API allowed to be called this way?
-	else if( ! $o_values[ $api ][ $type ] ){
-		$stats['error']=true;
-		$stats['error_text']="Invalid access type";
-	}
-
-	// Does the user have sufficient permissions?
-	else if( ! $o_values[ $api ]['p'] ){
-		$stats['error']=true;
-		$stats['error_text']="API auth error";
-	}
-
-	// Can the function be run?
-	if(! $stats['error']){
-		// GOOD! Allow the API call.
-		call_user_func_array( $api, array() );
-	}
-
-	// Was there an error?
-	else{
-		echo json_encode( $stats );
-		exit();
-	}
-
 }
 
 // NOT COMPLETE!
@@ -687,10 +629,51 @@ function massReorder_commands(){
 	);
 }
 
-//
-
 // COMPLETE!
-function command_delete(){
+
+function isAppidAndCommandid_Valid($appid, $commandid) {
+	// Pull in some globals.
+	global $_appdir;
+	global $_db_file;
+
+	// Create the file. By trying to open the file it will be created!
+	$dbhandle = new sqlite3_DB_PDO($_db_file) or exit("cannot open the database");
+
+	$sql1     =
+	'
+	SELECT
+		apps.appname AS appname    ,
+		commands.label AS label
+	FROM commands
+	JOIN apps ON apps.appid = commands.appid
+	WHERE apps.appid = :appid AND commands.comid = :commandid
+	;';
+
+	$prp1       = $dbhandle->prepare($sql1) ;
+
+	$dbhandle->bind(':appid'     , $appid ) ;
+	$dbhandle->bind(':commandid' , $commandid ) ;
+
+	$retval1    = $dbhandle->execute()        ;
+	$results1= $dbhandle->statement->fetchAll(PDO::FETCH_ASSOC) ;
+
+	if(sizeof($results1)){
+		return [
+			"success" => true                     ,
+			"appname"  => $results1[0]['appname'] ,
+			"label"    => $results1[0]['label']   ,
+		];
+	}
+	else                 {
+		return [
+			"success" => false                    ,
+			"appname"  => $results1[0]['appname'] ,
+			"label"    => $results1[0]['label']   ,
+		];
+	}
+}
+
+function command_delete() {
 	// Pull in some globals.
 	global $_appdir;
 	global $_db_file;
@@ -722,7 +705,7 @@ function command_delete(){
 	'success'      => true      ,
 	) );
 }
-function command_edit  (){
+function command_edit()   {
 	// Pull in some globals.
 	global $_appdir;
 	global $_db_file;
@@ -767,7 +750,7 @@ function command_edit  (){
 		'success'      => true      ,
 	) );
 }
-function runCommand (){
+function runCommand()     {
 	// Pull in some globals.
 	global $_appdir;
 	global $_db_file;
@@ -849,7 +832,7 @@ function runCommand (){
 		// '$results1' => $results1 ,
 	));
 }
-function runCommand_base (){
+function runCommand_base(){
 	$command = "../APPS/runCommand.sh " . " " . $_POST['app'] . " " . $_POST['command'] ;
 
 	exec($command . " 2>&1", $output);
@@ -864,8 +847,51 @@ function runCommand_base (){
 		// '$_POST'              => $_POST   ,
 	));
 }
+function cmd_run1AppCommand( $appid, $cmdid ) {
+	// Test that the appid and cmdid are valid.
+	$data = isAppidAndCommandid_Valid($appid, $cmdid);
+	echo "FUNCTION : " . "cmd_run1AppCommand" . "\n";
+	echo "APP ID   : " . $appid . " (" . $data['appname'] . ")" . "\n";
+	echo "CMD ID   : " . $cmdid . " (" . $data['label']   . ")" . "\n";
+	echo "VALID?   : " . ($data['success'] ? "true" : "false")  . "\n";
 
-function getAppData (){
+	if( $data['success'] ){
+		// Show notice about the appearance of a hung script.
+		ob_start();
+		echo "\n";
+		echo "***********************************************************************\n";
+		echo " PLEASE NOTE: If the command takes a long time this script will APPEAR\n";
+		echo " to hang but it is just waiting for the command to finish.\n";
+		echo "***********************************************************************\n";
+		echo "\n";
+		ob_end_flush();
+
+		// Run that command.
+		ob_start();
+		$_POST['appid'    ] = $appid;
+		$_POST['commandid'] = $cmdid;
+		API_REQUEST( "runCommand", 'cmd' );
+		$output1 = ob_get_contents();
+		$decoded_output1 = json_decode( $output1, true);
+		$data=$decoded_output1['output'];
+		ob_end_clean ();
+
+		// Echo out the result of the command.
+		ob_start();
+		echo $data;
+		echo "\n";
+		ob_end_flush();
+
+		return $data;
+
+		exit();
+	}
+	else{
+	}
+
+}
+
+function getAppData()     {
 	// Pull in some globals.
 	global $_appdir;
 	global $_db_file;
@@ -900,7 +926,7 @@ function getAppData (){
 		'success'      => true      ,
 	) );
 }
-function command_new   (){
+function command_new()    {
 	// Pull in some globals.
 	global $_appdir;
 	global $_db_file;
@@ -952,7 +978,7 @@ function command_new   (){
 		// 'newComId'     => $newComId ,
 	) );
 }
-function getAppsList(){
+function getAppsList()    {
 	// Pull in some globals.
 	global $_appdir;
 	global $_db_file;
@@ -987,7 +1013,7 @@ function getAppsList(){
 		'success'      => true      ,
 	) );
 }
-function app_new    (){
+function app_new()        {
 	// Pull in some globals.
 	global $_appdir;
 	global $_db_file;

@@ -62,3 +62,14 @@ body {
     color: floralwhite;
     padding: 2px;
 }
+
+
+#statusBar{}
+#statusBar #vpnStatus{
+	background-color: crimson;
+	width:1em; 
+	height:1em;
+}
+#statusBar #vpnStatus.active{
+	background-color:green;
+}

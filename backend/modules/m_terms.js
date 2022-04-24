@@ -1,7 +1,7 @@
 const os   = require('os');
 const fs   = require('fs');
 const Pty  = require('node-pty');
-const ping = require("ping");
+
 // const path = require('path');
 
 let _APP = null;
@@ -66,7 +66,7 @@ let _MOD = {
 		
 		// Send data from the tty to the websocket. 
 		tty.onData( function(data) { 
-			ws.send(data); 
+			if(ws) { ws.send(data); }
 		} );
 		
 		// On tty exist, close the tty and close the websocket. 
@@ -130,56 +130,78 @@ let _MOD = {
 	remoteInfo : function(ws, res){
 		let clientObj = _MOD.clients.get(ws);
 		clientObj.type = "info";
-	
-		ws.addEventListener('message', function(event){
-			if(event.data == "clientSize"){
-				let data = [];
-				_MOD.clients.forEach(function(key, val){
-					data.push({
-						type : key.type,
-						id   : key.id, 
-					});
-				});
-				ws.send(JSON.stringify(data,null,1));
-				// console.log(JSON.stringify(data,null,1));
-			}
 
-			else if(event.data == "sayHello"){
-				ws.send( "Hello there!");
-			}
-			else if(event.data == "all"){
-				(async function () {
-					let retObj = {
-						ws_connections: [],
-						vpnActive: {},
-						updated: new Date().getTime(),
-					};
-	
-					// CONNECTIONS
-					_MOD.clients.forEach(function(key, val){
-						retObj.ws_connections.push({
-							type : key.type,
-							id   : key.id, 
-						});
-					});
-	
-					// VPN STATUS
-					const result = await ping.promise.probe('n6.s.keh.local', { timeout: 1000, });
-					
-					retObj.vpnActive = {
-						vpnActive: event.data,
-						alive: result.alive,
-						time: result.time,
+		let ws_connections = async function(){
+			let ret = [];
+			_MOD.clients.forEach(function(key, val){
+				ret.push({
+					type : key.type,
+					id   : key.id, 
+				});
+			});
+			return ret;
+		};
+		let vpnCheck = async function(event){
+			return new Promise(async function(resolve,reject){
+				let ret = {};
+				
+				// VPN STATUS
+				let obj = _APP.m_config.config_srv.connectionCheck;
+				if(obj && obj.active && obj.url){
+					let result = await _APP.m_utils.pingCheck(obj.url, 1000);
+					ret = {
+						// vpnActive   : event.data,
+						name        : obj.name,
+						active      : obj.active,
+						alive       : result.alive,
+						time        : result.time,
 						numeric_host: result.numeric_host,
 					};
+					resolve(ret);
+				}
+				// Config is set to not check this.
+				else{
+					ret = {
+						name        : obj.name,
+						active      : obj.active,
+						alive       : false,
+						time        : false,
+						numeric_host: "",
+					};
+					resolve(ret);
+				}
+			});
+		};
 	
-					ws.send( JSON.stringify(retObj,null,1) );
-				})();
-	
-			}
-			else{
-				ws.send( "UNKNOWN COMMAND: " + event.data );
-			}
+		ws.addEventListener('message', async function(event){
+			let retObj = {
+				"request": event.data,
+				"updated": new Date().getTime(),
+			};
+
+			switch(event.data){
+				case "all"            : { 
+					retObj.vpnCheck = await vpnCheck(event);
+					retObj.ws_connections = ws_connections();
+					if(ws){ ws.send( JSON.stringify(retObj,null,1) ); }
+					break; 
+				};
+				case "vpnCheck"      : { 
+					retObj.vpnCheck = await vpnCheck(event);
+					if(ws){ ws.send( JSON.stringify(retObj,null,1) ); }
+					break; 
+				};
+				case "ws_connections" : { 
+					retObj.ws_connections = ws_connections();
+					if(ws){ ws.send( JSON.stringify(retObj,null,1) ); }
+					break; 
+				};
+				default: { 
+					if(ws){ ws.send( JSON.stringify(retObj,null,1) ); }
+					break; 
+				}
+			};
+
 		});
 		ws.addEventListener('close'  , function(){
 			_MOD.clients.delete(ws);

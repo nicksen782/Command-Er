@@ -1,5 +1,6 @@
 const fs = require('fs');
 // const path = require('path');
+const ping = require("ping");
 
 let _APP = null;
 
@@ -26,6 +27,14 @@ let _MOD = {
 		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
 			var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
 			return v.toString(16);
+		});
+	},
+
+	pingCheck: function(host, timeoutMs) {
+		return new Promise(async function(resolve,reject){
+			let timeoutSec = Math.floor(timeoutMs / 1000);
+			let result = await ping.promise.probe(host, { timeout: timeoutSec, });
+			resolve(result);
 		});
 	},
 

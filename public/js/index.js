@@ -10,6 +10,7 @@ let config_terms = {};
 let pressControlC = function(){
 	terms[0].ws.send("\x03");
 };
+let infoIntervalId = null;
 
 window.onload = async function(){
 	window.onload = null;
@@ -159,7 +160,7 @@ window.onload = async function(){
 			// info_ws.onmessage = function(e) { 
 			// 	console.log("message:", e.data); 
 			// };
-			info_ws.onerror = function(e) { console.log(e); };
+			info_ws.onerror = function(e) { console.log("ERROR!!!!"); console.log(e); };
 		});
 	};
 
@@ -167,54 +168,53 @@ window.onload = async function(){
 
 	function getInfo(key){
 		return new Promise(async function(resolve,reject){
-			if(key=="clientSize"){
-				info_ws_isActive=true;
-				info_ws.onmessage = function(e) { 
-					info_ws_isActive=false;
-					console.log(key, "message:", e.data); 
-					resolve();
-				};
-				info_ws.send(key);
-			}
-			else if(key=="vpnActive"){
+			if(key=="all"){
 				info_ws_isActive=true;
 				info_ws.onmessage = function(e) { 
 					info_ws_isActive=false;
 					document.getElementById("info_output").innerHTML = "<pre>" + e.data + "</pre>";
-					// console.log(key, "message:", JSON.parse(e.data)); 
+					
+					let data = JSON.parse(e.data);
+					let vpnStatusElem = document.getElementById("vpnStatus");
+
+					if(data.vpnCheck){
+						if(data.vpnCheck.active){
+							if(data.vpnCheck.alive){
+								vpnStatusElem.classList.add("active");
+								vpnStatusElem.innerText = `${data.vpnCheck.name} ONLINE (HOST: ${data.vpnCheck.numeric_host}, TIME: ${data.vpnCheck.time})`;
+							}
+							else{
+								vpnStatusElem.classList.remove("active");
+								vpnStatusElem.innerText = `${data.vpnCheck.name} OFFLINE (HOST: ${data.vpnCheck.numeric_host})`;
+							}
+						}
+						else{
+							vpnStatusElem.classList.remove("active");
+							vpnStatusElem.innerText = "";
+							// vpnStatusElem.title = "";
+						}
+					}
+					else{
+						vpnStatusElem.classList.remove("active");
+						vpnStatusElem.innerText = "";
+					}
+
 					resolve();
 				};
-				info_ws.send(key);
-			}
-			else if(key=="all"){
-				info_ws_isActive=true;
-				info_ws.onmessage = function(e) { 
-					info_ws_isActive=false;
-					document.getElementById("info_output").innerHTML = "<pre>" + e.data + "</pre>";
-					// console.log(key, "message:", JSON.parse(e.data)); 
-					resolve();
-				};
-				info_ws.send(key);
-			}
-			else if(key=="sayHello"){
-				info_ws_isActive=true;
-				info_ws.onmessage = function(e) { 
-					info_ws_isActive=false;
-					console.log(key, "message:", e.data); 
-					resolve();
-				};
+
 				info_ws.send(key);
 			}
 			else {
+				console.log("huh?", key);
 				// info_ws.send(key);
 			}
 		})
 	};
 
 	getInfo("all");
-	setInterval(function(){
+	infoIntervalId = setInterval(function(){
 		getInfo("all");
-	}, 5000);
+	}, 3000);
 
 	// console.log(terms);
 };

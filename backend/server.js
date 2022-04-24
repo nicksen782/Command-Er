@@ -52,21 +52,34 @@ const _APP  = require('./modules/M_main.js')(app, express, wss);
 
 		console.log(`ROUTES:`);
 		let routes = _APP.getRoutePaths("manual", app).manual;
-		for(key in routes){
-			console.log(`  FILE: ${key}`);
-			for(rec of routes[key]){
+		let maxes = {
+			"filename" : 0,
+			"method"   : 0,
+			"path"     : 0,
+		};
+		for(filename in routes){ if(maxes.filename < filename.length){ maxes.filename = filename.length; } }
+		for(filename in routes){ 
+			for(rec of routes[filename]){
+				if(rec.method.length > maxes.method ){ maxes.method = rec.method.length; } 
+				if(rec.path.length   > maxes.path   ){ maxes.path   = rec.path.length; } 
+			}
+		}
+
+		for(filename in routes){
+			for(rec of routes[filename]){
 				console.log(
-					"    ", 
-					`METHOD: ${(rec.method + " ").padEnd(7, " ")}`+
-					`PATH: ${  (rec.path   + " ").padEnd(30, " ")}`+
-					`DESC: ${  (rec.desc   + " ")}`+
+					`  ` +
+					`FILE: ${  (filename  ).padEnd(maxes.filename, " ")}` + " || " + 
+					`METHOD: ${(rec.method).padEnd(maxes.method  , " ")}` + " || " + 
+					`PATH: ${  (rec.path  ).padEnd(maxes.path    , " ")}` + " || " + 
+					`DESC: ${  (rec.desc  )}`+
 					``);
 				}
 		};
 
 		console.log(`CONFIG:`);
 		console.log(_APP.m_config.config_srv);
-
+		console.log(maxes);
 		console.log("*".repeat(45));
 		console.log();
 	});

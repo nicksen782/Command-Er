@@ -5,6 +5,7 @@ let _APP = null;
 
 let _MOD = {
 	config_srv_filename:"configs/config_srv.json",
+	config_srv_extra_filename:"configs/config_srv_extra.json",
 	config_srv:{},
 
 	config_cmds_filename:"configs/config_cmds.json",
@@ -58,11 +59,23 @@ let _MOD = {
 	},
 
 	read_srvConf: async function(){
+		// Get the config file. 
 		_MOD.config_srv = await JSON.parse( fs.readFileSync(_MOD.config_srv_filename, 'utf8'));
+		
+		// Add extra data.
 		_MOD.config_srv["_serverFilePath"] = process.cwd() 
 		_MOD.config_srv["_ppid"]           = process.ppid ;
 		_MOD.config_srv["_pid" ]           = process.pid;
 		_MOD.config_srv["_serverStarted"]  = `${new Date().toString().split(" GMT")[0]} `; // Thu Sep 30 2021 17:04:35
+		
+		// Is there an extra file? If so then add that file's contents also.
+		if (fs.existsSync(_MOD.config_srv_extra_filename)) {
+			// Get the config extra file. 
+			let tmp = await JSON.parse( fs.readFileSync(_MOD.config_srv_extra_filename, 'utf8'));
+			
+			// Add the data.
+			for(let key in tmp){ _MOD.config_srv[key]  = tmp[key]; }
+		}
 	},
 	read_cmdConf: async function(){
 		// If the file does not exist then use the example and write create the missing file. 

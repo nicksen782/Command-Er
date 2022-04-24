@@ -1,0 +1,64 @@
+* {
+	box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: floralwhite;
+}
+
+#mainWrapper{
+	white-space: nowrap;
+	width:1350px;
+	padding:0px;
+	margin:0px;
+}
+
+.xterminal .title {
+    display: inline-block;
+    margin: 2px;
+    margin-right: 15px;
+    height: 1em;
+    background-color: yellow;
+}
+
+.xterminal {
+    display: inline-block;
+    margin: 2px;
+    margin-right: 15px;
+    box-shadow: 0px 0px 3px 3px #009fd7;
+    /* overflow: scroll; */
+    width: 100%;
+}
+
+#terminals {
+    display: inline-block;
+    vertical-align: top;
+	width: 1024px;
+	white-space: normal;
+}
+
+#commands {
+    display: inline-block;
+    margin-left: 10px;
+    vertical-align: top;
+    width: 300px;
+	white-space: normal;
+}
+
+.command {
+    margin: 2px;
+    margin-left: 0.5em;
+}
+
+.cmd_key_div {
+    box-shadow: 0px 0px 3px 3px #009fd7;
+    margin-bottom: 1em;
+    background-color: #f1f1f1;
+}
+
+.cmd_key_div .title {
+    background-color: black;
+    color: floralwhite;
+    padding: 2px;
+}

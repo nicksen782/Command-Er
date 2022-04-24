@@ -1,0 +1,22 @@
+{
+	"UTILITY": [
+		{
+			"pressCtrlC": false,
+			"pressEnter": false,
+			"title": "CTRL+C",
+			"cmd": "\u0003"
+		},
+		{
+			"pressCtrlC": false,
+			"pressEnter": false,
+			"title": "whoami",
+			"cmd": "whoami"
+		},
+		{
+			"pressCtrlC": false,
+			"pressEnter": false,
+			"title": "hostname",
+			"cmd": "hostname"
+		}
+	]
+}

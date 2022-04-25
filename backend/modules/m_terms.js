@@ -156,6 +156,7 @@ let _MOD = {
 						alive       : result.alive,
 						time        : result.time,
 						numeric_host: result.numeric_host,
+						url         : obj.url,
 					};
 					resolve(ret);
 				}
@@ -167,6 +168,7 @@ let _MOD = {
 						alive       : false,
 						time        : false,
 						numeric_host: "",
+						url         : obj.url,
 					};
 					resolve(ret);
 				}

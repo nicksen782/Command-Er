@@ -181,22 +181,25 @@ window.onload = async function(){
 						if(data.vpnCheck.active){
 							if(data.vpnCheck.alive){
 								vpnStatusElem.classList.add("active");
-								vpnStatusElem.innerText = `${data.vpnCheck.name} ONLINE (HOST: ${data.vpnCheck.numeric_host}, TIME: ${data.vpnCheck.time})`;
+								vpnStatusElem.innerText = `${data.vpnCheck.name} ONLINE (HOST: ${data.vpnCheck.url})`;
+								vpnStatusElem.title = `numeric_host: ${data.vpnCheck.numeric_host}, TIME: ${data.vpnCheck.time}`;
 							}
 							else{
 								vpnStatusElem.classList.remove("active");
-								vpnStatusElem.innerText = `${data.vpnCheck.name} OFFLINE (HOST: ${data.vpnCheck.numeric_host})`;
+								vpnStatusElem.innerText = `${data.vpnCheck.name} OFFLINE (HOST: ${data.vpnCheck.url})`;
+								vpnStatusElem.title = `numeric_host: ${data.vpnCheck.numeric_host}`;
 							}
 						}
 						else{
 							vpnStatusElem.classList.remove("active");
 							vpnStatusElem.innerText = "";
-							// vpnStatusElem.title = "";
+							vpnStatusElem.title = "";
 						}
 					}
 					else{
 						vpnStatusElem.classList.remove("active");
 						vpnStatusElem.innerText = "";
+						vpnStatusElem.title = "";
 					}
 
 					resolve();

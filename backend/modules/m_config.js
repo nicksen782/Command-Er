@@ -81,7 +81,7 @@ let _MOD = {
 		// If the file does not exist then use the example and write create the missing file. 
 		if (!fs.existsSync(_MOD.config_cmds_filename)) {
 			_MOD.config_cmds = await JSON.parse( fs.readFileSync(_MOD.config_cmds_filename + ".example", 'utf8'));
-			fs.writeFileSync("_MOD.config_cmds_filename", JSON.stringify(_MOD.config_cmds,null,1));
+			fs.writeFileSync(_MOD.config_cmds_filename, JSON.stringify(_MOD.config_cmds,null,1));
 		}
 		// Return the file. 
 		else{

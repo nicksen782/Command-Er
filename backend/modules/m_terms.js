@@ -146,7 +146,7 @@ let _MOD = {
 				let ret = {};
 				
 				// VPN STATUS
-				let obj = _APP.m_config.config_srv.connectionCheck;
+				let obj = _APP.m_config.config_srv.connectionCheck || {};
 				if(obj && obj.active && obj.url){
 					let result = await _APP.m_utils.pingCheck(obj.url, 1000);
 					ret = {
@@ -162,8 +162,8 @@ let _MOD = {
 				// Config is set to not check this.
 				else{
 					ret = {
-						name        : obj.name,
-						active      : obj.active,
+						name        : obj.name   || false,
+						active      : obj.active || false,
 						alive       : false,
 						time        : false,
 						numeric_host: "",

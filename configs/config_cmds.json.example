@@ -8,13 +8,13 @@
 		},
 		{
 			"pressCtrlC": false,
-			"pressEnter": false,
+			"pressEnter": true,
 			"title": "whoami",
 			"cmd": "whoami"
 		},
 		{
 			"pressCtrlC": false,
-			"pressEnter": false,
+			"pressEnter": true,
 			"title": "hostname",
 			"cmd": "hostname"
 		}

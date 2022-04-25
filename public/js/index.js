@@ -299,15 +299,8 @@ window.onload = async function(){
 	addCreateNewTerminalButton();
 
 	// Add terminals to the terminals div.
-	await addTerminal('' + nextTermId, config_terms ); nextTermId++; // 1
-	// await addTerminal('t' + nextTermId, config_terms ); nextTermId++; // 2
-	// await addTerminal('t' + nextTermId, config_terms ); nextTermId++; // 3
-	// await addTerminal('t' + nextTermId, config_terms ); nextTermId++; // 4
-	// await addTerminal('t' + nextTermId, config_terms ); nextTermId++; // 5
-	// await addTerminal('t' + nextTermId, config_terms ); nextTermId++; // 6
-	// await addTerminal('t' + nextTermId, config_terms ); nextTermId++; // 7
-	// await addTerminal('t' + nextTermId, config_terms ); nextTermId++; // 8
-	// await addTerminal('t' + nextTermId, config_terms ); nextTermId++; // 9
+	let termObj = await addTerminal('' + nextTermId, config_terms ); nextTermId++; 
+	termObj.funcs.switch(termObj);
 
 	function addInfo(){
 		return new Promise(async function(resolve,reject){

@@ -184,7 +184,7 @@ let _MOD = {
 			switch(event.data){
 				case "all"            : { 
 					retObj.vpnCheck = await vpnCheck(event);
-					retObj.ws_connections = ws_connections();
+					retObj.ws_connections = await ws_connections();
 					if(ws){ ws.send( JSON.stringify(retObj,null,1) ); }
 					break; 
 				};
@@ -194,7 +194,7 @@ let _MOD = {
 					break; 
 				};
 				case "ws_connections" : { 
-					retObj.ws_connections = ws_connections();
+					retObj.ws_connections = await ws_connections();
 					if(ws){ ws.send( JSON.stringify(retObj,null,1) ); }
 					break; 
 				};

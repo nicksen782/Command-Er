@@ -1,7 +1,7 @@
 {
 	"name"        : "xterm-color",
-	"cols"        : 140, 
-	"rows"        : 36,
+	"cols"        : 190, 
+	"rows"        : 40,
 	"fontSize"    : 12, 
 	"cursorBlink" : true
 }

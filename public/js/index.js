@@ -6,23 +6,60 @@ let info_ws = null;
 let info_ws_isActive = false;
 
 let getConfigs = {};
+let config_cmds = {};
 let config_terms = {};
 let pressControlC = function(){
 	terms[0].ws.send("\x03");
 };
 let infoIntervalId = null;
+let nextTermId = 1;
 
-window.onload = async function(){
-	window.onload = null;
+function changeView(tabId, destView) {
+	// Hide all tab content.
+	let tabcontent = document.getElementsByClassName("tabcontent");
+	for (let i = 0; i < tabcontent.length; i++) {
+		tabcontent[i].classList.remove("show");
+	}
 	
+	// Clear the active class on all tabs.
+	let tablinks = document.getElementsByClassName("tablinks");
+	for (let i = 0; i < tablinks.length; i++) {
+		tablinks[i].classList.remove("active");
+	}
+
+	// Add the show class to the destView.
+	document.getElementById(destView).classList.add("show");
+	
+	// Add the active class to the tab.
+	document.getElementById(tabId).classList.add("active");
+}
+
+let addTabBarListeners = function(){
+	// Add event listeners for the tab navigation.
+	let tablinks = document.querySelectorAll(".tablinks");
+	tablinks.forEach(function(tab){
+		tab.addEventListener("click", function(e){
+			let tabId = this.id;
+			let content = tab.getAttribute("dest");
+			console.log(tabId, content);
+			changeView(tabId, content);
+		}, false);
+	});
+}
+
+let addCommandBarListeners = function(){
+	let terminals_cmdsBar   = document.getElementById("terminals_cmdsBar");
+	let commands            = document.getElementById("commands");
+	let terminals_terminals = document.getElementById("terminals_terminals");
+	
+	terminals_cmdsBar.addEventListener("click"       , function(){ commands.classList.toggle("show"); }, true);
+	// terminals_cmdsBar.addEventListener("mouseenter"  , function(){ commands.classList.add("show"); }, true);
+	terminals_terminals.addEventListener("mouseenter", function(){ commands.classList.remove("show"); }, false);
+};
+
+let addCommands = function(){
 	// Get the commands div. 
 	let commandsElem = document.getElementById("commands");
-
-	// Get the configs.
-	let getConfigs = await fetch("getConfigs");
-	getConfigs = await getConfigs.json();
-	config_cmds = getConfigs.config_cmds;
-	config_terms = getConfigs.config_terms;
 
 	// Add each command as a button to the commands div. 
 	let frag = document.createDocumentFragment();
@@ -42,10 +79,10 @@ window.onload = async function(){
 			let elem = document.createElement("button");
 			elem.classList.add("command");
 			elem.setAttribute("title", cmd.cmd);
-	
+
 			// 
 			cmd_key_div.appendChild(elem);
-	
+
 			// If the title is set then use that, otherwise use the cmd. 
 			if(cmd.title){ elem.innerText = cmd.title; }
 			else         { 
@@ -56,12 +93,12 @@ window.onload = async function(){
 					elem.innerText = cmd.cmd; 
 				}
 			}
-	
+
 			// Add the click event listener.
 			elem.addEventListener("click", function(){
 				// If the pressCtrlC flag is set then do that first. 
 				if(cmd.pressCtrlC){ pressControlC(); }
-	
+
 				// Get the command. 
 				let runThis = cmd.cmd;
 
@@ -79,6 +116,9 @@ window.onload = async function(){
 					// Send the command via the websocket. 
 					terms[0].ws.send(runThis);
 				}
+
+				let commands = document.getElementById("commands");
+				commands.classList.remove("show");
 				
 			}, true);
 		});
@@ -86,65 +126,188 @@ window.onload = async function(){
 		// Add the frag to the commands div. 
 		commandsElem.appendChild(frag);
 	});
+};
 
-	function addTerminal(idStr, options={}){
-		return new Promise(async function(resolve,reject){
-			// Create the terminal container and add it to the terminals div.
-			let elem = document.createElement("div");
-			elem.id = idStr;
-			elem.classList.add("xterminal");
+function addTerminal(termId, options={}){
+	return new Promise(async function(resolve,reject){
+		// CREATE THE TAB  (container)
+		let tabElem = document.createElement("span");
+		tabElem.classList.add("terminalTab");
+		tabElem.setAttribute("tabId", termId + "_tab");
+		tabElem.setAttribute("termId", termId);
+		
+		// CREATE THE TAB  (title)
+		let titleElem = document.createElement("span");
+		titleElem.classList.add("title");
+		titleElem.innerText = "TERM #" + (termId).toString().padStart(2, "0");
+		
+		// CREATE THE TAB  (close)
+		let closeElem = document.createElement("span");
+		closeElem.classList.add("close");
+		closeElem.innerText = "X";
+
+		// Combine the elements of the tab.
+		tabElem.appendChild(titleElem);
+		tabElem.appendChild(closeElem);
+
+		// CREATE THE TERMINAL (view)
+		let termElem = document.createElement("div");
+		termElem.id = termId;
+		termElem.classList.add("xterminal");
+
+		// Create the xterm terminal. 
+		var term1 = new Terminal(options);
+		
+		// Create the WebSocket connection.
+		let locUrl = location.protocol.replace('http', 'ws') + '//' + location.hostname + (location.port ? (':' + location.port) : '') + '/TERM';
+		var ws1 = new WebSocket(locUrl);
+		ws1.onmessage = function() {};
+		ws1.onopen = async function() {
+			// Add the terminal tab to the terminals_tabs container. 
+			let terminals_tabs = document.getElementById("terminals_tabs");
+			terminals_tabs.appendChild(tabElem);
 
 			// Add the terminal container to the terminals div. 
-			let terminals = document.getElementById("terminals");
-			terminals.appendChild(elem);
+			let terminals = document.getElementById("terminals_terminals");
+			terminals.appendChild(termElem);
 
-			// Create the xterm terminal. 
-			var term1 = new Terminal(options);
-
+			// Add the add-ons.
 			const fitAddon = new FitAddon.FitAddon();
 			term1.loadAddon(fitAddon);
-			fitAddon.fit(); 
-
-			// Open the terminal via the created element. 
-			term1.open(elem);
-
-			// Create the websocket connection.
-			let locUrl = location.protocol.replace('http', 'ws') + '//' + location.hostname + (location.port ? (':' + location.port) : '') + '/TERM';
 			
-			// Websocket create.
-			var ws1 = new WebSocket(locUrl);
+			const attachAddon = new AttachAddon.AttachAddon(ws1);
+			term1.loadAddon(attachAddon);
+			
+			// Open the terminal.
+			term1.open(termElem);
 
-			// Websocket open.
-			ws1.onmessage = function() { 
+			// Add this complete terminal data to terms. 
+			let obj = { 
+				termId       : termId   , 
+				// options     : options , 
+				// locUrl      : locUrl  ,
+				
+				// Elems.
+				elems : {
+					tabElem  : tabElem , 
+					termElem : termElem , 
+					viewport : termElem.querySelector(".xterm-viewport"),
+					screen   : termElem.querySelector(".xterm-screen")  ,
+				},
+
+				term        : term1      , 
+				ws          : ws1        , 
+				attachAddon : attachAddon,
+				fitAddon    : fitAddon   ,
+
+				funcs: {
+					resize: function(_obj){
+						_obj.fitAddon.fit(); 
+						_obj.elems.viewport.style.width = "";
+						_obj.elems.screen.style.width = "";
+					},
+					close: function(_obj){
+						let index = -1;
+						terms.forEach(function(d,i){
+							if(d.termId == _obj.termId) { index = i; }  
+							return;
+						});
+						if(index != -1){
+							// Close the websocket. 
+							_obj.ws.close();
+
+							// Close the terminal.
+							_obj.term.dispose();
+
+							// Remove the terminal tab.
+							_obj.elems.tabElem.remove();
+
+							terms.splice(index, 1);
+							// console.log("Remaining:", terms.map(function(d){ return d.termId; }));
+						}
+						else{
+							console.log("Not found!");
+						}
+					},
+					switch: function(_obj){
+						let tabs = document.querySelectorAll(".terminalTab");
+						let terms = document.querySelectorAll(".xterminal");
+						tabs.forEach(function(d){ d.classList.remove("active"); });
+						terms.forEach(function(d){ d.classList.remove("active"); });
+						_obj.elems.tabElem.classList.add("active");
+						_obj.elems.termElem.classList.add("active");
+					},
+				}
 			};
-			ws1.onopen = function() { 
-				// Once opened, add the attachAddon for xterm with the websocket. 
-				const attachAddon = new AttachAddon.AttachAddon(ws1);
-				term1.loadAddon(attachAddon);
 
+			// SET EVENT LISTENERS FOR THE TAB.
+			titleElem.addEventListener("click", function(e){ console.log("titleElem", obj); obj.funcs.switch(obj); }, false);
+			closeElem.addEventListener("click", function(e){ console.log("closeElem", obj); obj.funcs.close(obj);  }, false);
 
-				// Add this complete terminal data to terms. 
-				terms.push( { 
-					elem        : elem       , 
-					term        : term1      , 
-					ws          : ws1        , 
-					options     : options    , 
-					attachAddon : attachAddon,
-					fitAddon    : fitAddon,
-					locUrl      : locUrl     ,
-				} );
+			terms.push( obj );
 
-				// Resolve.
-				resolve();
-			};
+			setTimeout(function(){ obj.funcs.resize(obj); }, 500);
 
-			// Websocket errors.
-			ws1.onerror = function(e) { console.log(e); };
-		});
-	};
+			console.log(nextTermId);
+			// Resolve.
+			resolve(obj);
+		};
+		ws1.onerror = function(e) { console.log(e); };
+	})
+};
+
+function addCreateNewTerminalButton(){
+	console.log("addCreateNewTerminalButton");
+	let terminals_add = document.getElementById("terminals_add");
+	
+	terminals_add.addEventListener("click"       , async function(){
+		// Deactivate all terminal tabs. 
+		let tabs = document.querySelectorAll(".terminalTab");
+		tabs.forEach(function(d){ d.classList.remove("active"); });
+		
+		// Hide all terminal views.
+		let terms = document.querySelectorAll(".xterminal");
+		terms.forEach(function(d){ d.classList.remove("active"); });
+		
+		// Create the new terminal.
+		let termObj = await addTerminal('' + nextTermId, config_terms ); 
+		nextTermId++;
+		
+		// Activate the NEW terminal tab.
+		termObj.elems.tabElem.classList.add("active");
+		
+		// Activate the NEW terminal view.
+		termObj.elems.termElem.classList.add("active");
+	}, true);
+};
+
+window.onload = async function(){
+	window.onload = null;
+	
+	// Set the default tab/view.
+	changeView("tab_terminals"  , "view_terminals" );
+
+	// Get the configs.
+	let getConfigs = await fetch("getConfigs");
+	getConfigs     = await getConfigs.json();
+	config_cmds    = getConfigs.config_cmds;
+	config_terms   = getConfigs.config_terms;
+
+	addTabBarListeners();
+	addCommandBarListeners();
+	addCommands();
+	addCreateNewTerminalButton();
 
 	// Add terminals to the terminals div.
-	await addTerminal('terminal1', config_terms );
+	await addTerminal('' + nextTermId, config_terms ); nextTermId++; // 1
+	// await addTerminal('t' + nextTermId, config_terms ); nextTermId++; // 2
+	// await addTerminal('t' + nextTermId, config_terms ); nextTermId++; // 3
+	// await addTerminal('t' + nextTermId, config_terms ); nextTermId++; // 4
+	// await addTerminal('t' + nextTermId, config_terms ); nextTermId++; // 5
+	// await addTerminal('t' + nextTermId, config_terms ); nextTermId++; // 6
+	// await addTerminal('t' + nextTermId, config_terms ); nextTermId++; // 7
+	// await addTerminal('t' + nextTermId, config_terms ); nextTermId++; // 8
+	// await addTerminal('t' + nextTermId, config_terms ); nextTermId++; // 9
 
 	function addInfo(){
 		return new Promise(async function(resolve,reject){
@@ -175,19 +338,25 @@ window.onload = async function(){
 					document.getElementById("info_output").innerHTML = "<pre>" + e.data + "</pre>";
 					
 					let data = JSON.parse(e.data);
-					let vpnStatusElem = document.getElementById("vpnStatus");
 
+					let vpnStatusElem = document.getElementById("vpn_status");
 					if(data.vpnCheck){
 						if(data.vpnCheck.active){
 							if(data.vpnCheck.alive){
 								vpnStatusElem.classList.add("active");
-								vpnStatusElem.innerText = `${data.vpnCheck.name} ONLINE (HOST: ${data.vpnCheck.url})`;
-								vpnStatusElem.title = `numeric_host: ${data.vpnCheck.numeric_host}, TIME: ${data.vpnCheck.time}`;
+								vpnStatusElem.innerText = `${data.vpnCheck.name}: ACTIVE`;
+								vpnStatusElem.title = `` +
+									`HOST: ${data.vpnCheck.url}\n` +
+									`IP: ${data.vpnCheck.numeric_host}, PING: ${data.vpnCheck.time}\n` +
+									``;
 							}
 							else{
 								vpnStatusElem.classList.remove("active");
-								vpnStatusElem.innerText = `${data.vpnCheck.name} OFFLINE (HOST: ${data.vpnCheck.url})`;
-								vpnStatusElem.title = `numeric_host: ${data.vpnCheck.numeric_host}`;
+								vpnStatusElem.innerText = `${data.vpnCheck.name}: INACTIVE`;
+								vpnStatusElem.title = `` +
+									`HOST: ${data.vpnCheck.url}\n` +
+									`IP: ${data.vpnCheck.numeric_host}, PING: ${data.vpnCheck.time}\n` +
+									``;
 							}
 						}
 						else{
@@ -200,6 +369,21 @@ window.onload = async function(){
 						vpnStatusElem.classList.remove("active");
 						vpnStatusElem.innerText = "";
 						vpnStatusElem.title = "";
+					}
+
+					let ws_terms = document.getElementById("ws_connections_terms");
+					let ws_infos = document.getElementById("ws_connections_infos");
+					let termsCnt = 0;
+					let infosCnt = 0;
+					if(data.ws_connections){
+						data.ws_connections.forEach(function(d){
+							if     (d.type == "term"){ termsCnt += 1; }
+							else if(d.type == "info"){ infosCnt += 1; }
+						});
+						ws_terms.innerText = "Terms: " + termsCnt;
+						ws_infos.innerText = "Infos: " + infosCnt;
+					}
+					else{
 					}
 
 					resolve();
@@ -219,5 +403,4 @@ window.onload = async function(){
 		getInfo("all");
 	}, 3000);
 
-	// console.log(terms);
 };

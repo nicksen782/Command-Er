@@ -8,11 +8,33 @@ let info_ws_isActive = false;
 let getConfigs = {};
 let config_cmds = {};
 let config_terms = {};
+
+let getActiveTerminal = function(){
+	// Is there actually a terminal?
+	if(!terms.length){ 
+		console.log("No terminals exist."); 
+		throw "No terminals exist.";
+	}
+
+	// Get the terminal object via the termId.
+	let termId = document.querySelector(".terminalTab.active").getAttribute("termId");
+	let termObj = terms.find(function(d){ 
+		return termId == d.termId; 
+	});
+
+	// No match? Throw an error.
+	if(!termObj){
+		throw "termObj not found.";
+	}
+
+	// Return the termObj.
+	return termObj;
+};
 let pressControlC = function(){
-	terms[0].ws.send("\x03");
+	getActiveTerminal().ws.send("\x03");
 };
 let infoIntervalId = null;
-let nextTermId = 1;
+let nexttermId = 1;
 
 function changeView(tabId, destView) {
 	// Hide all tab content.
@@ -103,10 +125,8 @@ let addCommands = function(){
 				let runThis = cmd.cmd;
 
 				if(Array.isArray(runThis)){
-					console.log("!!!!");
 					runThis.forEach(function(d){
-						console.log(d + "\r");
-						terms[0].ws.send(d + "\r");
+						getActiveTerminal().ws.send(d + "\r");
 					});
 				}
 				else{
@@ -114,7 +134,7 @@ let addCommands = function(){
 					if(cmd.pressEnter){ runThis += "\r" }
 		
 					// Send the command via the websocket. 
-					terms[0].ws.send(runThis);
+					getActiveTerminal().ws.send(runThis);
 				}
 
 				let commands = document.getElementById("commands");
@@ -133,8 +153,8 @@ function addTerminal(termId, options={}){
 		// CREATE THE TAB  (container)
 		let tabElem = document.createElement("span");
 		tabElem.classList.add("terminalTab");
-		tabElem.setAttribute("tabId", termId + "_tab");
-		tabElem.setAttribute("termId", termId);
+		tabElem.setAttribute("tabId", 't_' + termId + "_tab");
+		tabElem.setAttribute("termId", 't_' + termId);
 		
 		// CREATE THE TAB  (title)
 		let titleElem = document.createElement("span");
@@ -152,7 +172,7 @@ function addTerminal(termId, options={}){
 
 		// CREATE THE TERMINAL (view)
 		let termElem = document.createElement("div");
-		termElem.id = termId;
+		termElem.id = 't_' + termId;
 		termElem.classList.add("xterminal");
 
 		// Create the xterm terminal. 
@@ -183,7 +203,7 @@ function addTerminal(termId, options={}){
 
 			// Add this complete terminal data to terms. 
 			let obj = { 
-				termId       : termId   , 
+				termId       : 't_' + termId   , 
 				// options     : options , 
 				// locUrl      : locUrl  ,
 				
@@ -193,6 +213,7 @@ function addTerminal(termId, options={}){
 					termElem : termElem , 
 					viewport : termElem.querySelector(".xterm-viewport"),
 					screen   : termElem.querySelector(".xterm-screen")  ,
+					textarea : termElem.querySelector("textarea.xterm-helper-textarea")  ,
 				},
 
 				term        : term1      , 
@@ -202,9 +223,15 @@ function addTerminal(termId, options={}){
 
 				funcs: {
 					resize: function(_obj){
-						_obj.fitAddon.fit(); 
-						_obj.elems.viewport.style.width = "";
-						_obj.elems.screen.style.width = "";
+						try{
+							_obj.fitAddon.fit(); 
+							_obj.elems.viewport.style.width = "";
+							_obj.elems.screen.style.width = "";
+						}
+						catch(e){
+							console.log(_obj);
+							console.log(e);
+						}
 					},
 					close: function(_obj){
 						let index = -1;
@@ -236,19 +263,19 @@ function addTerminal(termId, options={}){
 						terms.forEach(function(d){ d.classList.remove("active"); });
 						_obj.elems.tabElem.classList.add("active");
 						_obj.elems.termElem.classList.add("active");
+						_obj.elems.textarea.focus();
 					},
 				}
 			};
 
 			// SET EVENT LISTENERS FOR THE TAB.
-			titleElem.addEventListener("click", function(e){ console.log("titleElem", obj); obj.funcs.switch(obj); }, false);
-			closeElem.addEventListener("click", function(e){ console.log("closeElem", obj); obj.funcs.close(obj);  }, false);
+			titleElem.addEventListener("click", function(e){ obj.funcs.switch(obj); }, false);
+			closeElem.addEventListener("click", function(e){ obj.funcs.close(obj);  }, false);
 
 			terms.push( obj );
 
-			setTimeout(function(){ obj.funcs.resize(obj); }, 500);
+			// setTimeout(function(){ obj.funcs.resize(obj); }, 500);
 
-			console.log(nextTermId);
 			// Resolve.
 			resolve(obj);
 		};
@@ -257,27 +284,14 @@ function addTerminal(termId, options={}){
 };
 
 function addCreateNewTerminalButton(){
-	console.log("addCreateNewTerminalButton");
 	let terminals_add = document.getElementById("terminals_add");
 	
 	terminals_add.addEventListener("click"       , async function(){
-		// Deactivate all terminal tabs. 
-		let tabs = document.querySelectorAll(".terminalTab");
-		tabs.forEach(function(d){ d.classList.remove("active"); });
-		
-		// Hide all terminal views.
-		let terms = document.querySelectorAll(".xterminal");
-		terms.forEach(function(d){ d.classList.remove("active"); });
-		
 		// Create the new terminal.
-		let termObj = await addTerminal('' + nextTermId, config_terms ); 
-		nextTermId++;
+		let termObj = await addTerminal('' + nexttermId++, config_terms ); 
 		
-		// Activate the NEW terminal tab.
-		termObj.elems.tabElem.classList.add("active");
-		
-		// Activate the NEW terminal view.
-		termObj.elems.termElem.classList.add("active");
+		// Activate the NEW terminal tab and view.
+		termObj.funcs.switch(termObj);
 	}, true);
 };
 
@@ -299,7 +313,7 @@ window.onload = async function(){
 	addCreateNewTerminalButton();
 
 	// Add terminals to the terminals div.
-	let termObj = await addTerminal('' + nextTermId, config_terms ); nextTermId++; 
+	let termObj = await addTerminal('' + nexttermId++, config_terms ); 
 	termObj.funcs.switch(termObj);
 
 	function addInfo(){

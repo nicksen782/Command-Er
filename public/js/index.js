@@ -401,6 +401,7 @@ window.onload = async function(){
 							vpnStatusElem.classList.remove("active");
 							vpnStatusElem.innerText = "";
 							vpnStatusElem.title = "";
+							vpnStatusElem.style.display = "none";
 						}
 					}
 					else{

@@ -1,6 +1,6 @@
 {
 	"name"        : "xterm-color",
-	"cols"        : 190, 
+	"cols"        : 189, 
 	"rows"        : 40,
 	"fontSize"    : 12, 
 	"cursorBlink" : true

@@ -5,6 +5,7 @@
 body {
 	font-family: Arial, Helvetica, sans-serif;
 	background-color: floralwhite;
+	background-color: #222222;
 }
 
 .noselect {
@@ -19,32 +20,37 @@ body {
 	-ms-user-select: none;
 	/* Internet Explorer/Edge */
 	user-select: none;
-	/* Non-prefixed version, currently
-									supported by Chrome, Edge, Opera and Firefox */
+	/* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
 }
 
 #mainWrapper {
-	width: 1360px;
+	width: 1350px;
 	padding: 0px;
 	margin: 0px;
 }
 
-#view_terminals{
-	border: 5px solid #005c80;
+#view_terminals {
+	background-color: #005c80;
+	border: 2px solid black;
+	padding: 2px;
+	border-radius: 5px;
 }
 
 
 /* INFO BAR */
 #infobar1 {
-	/* padding: 2px; */
-/* border-top: 2px solid black; */background-color: #222222;height: 26px;}
+	height: 26px;
+	position: relative;
+	border-top: 2px solid #005c80;
+}
 
 #infobar1 .infoBarItem {
-	padding: 2px;
-	border: 2px solid purple;
+	border: 1px solid black;
 	width: 150px;
-	height: 26px;
+	height: 100%;
 	display: inline-block;
+	border-radius: 5px;
+	padding: 2px;
 }
 
 #vpn_status {
@@ -53,7 +59,6 @@ body {
 }
 
 #vpn_status.active {
-	/* display: inline; */
 	background-color: green;
 }
 
@@ -67,29 +72,34 @@ body {
 
 /* NAV BAR */
 #navbar1 {
-	padding: 2px;
+	margin-bottom: 2px;
+	border-radius: 5px 5px 0px 0px;
 }
 
 /* TABS */
 /* Style the tab */
 .tab {
 	overflow: hidden;
-	border: 1px solid #ccc;
-	background-color: #f1f1f1;
+	/* border: 1px solid #ccc; */
+	/* background-color: #f1f1f1; */
+	/* background-color: #222222; */
+	/* background-color: #005c80; */
 }
 
 /* Style the buttons inside the tab */
 .tab button {
-	background-color: inherit;
+	background-color: #aaa;
 	float: left;
 	border: none;
 	outline: none;
 	cursor: pointer;
 	padding: 5px 5px;
-	transition: 0.75s;
+	transition: 0.5s;
 	font-size: 16px;
 	border: 1px solid black;
 	margin: 2px;
+	width: 100px;
+	border-radius: 3px;
 }
 
 /* Change background color of buttons on hover */
@@ -99,7 +109,7 @@ body {
 
 /* Create an active/current tablink class */
 .tab button.active {
-	background-color: #ccc;
+	background-color: #f1f1f1;
 }
 
 /* Style the tab content */
@@ -112,9 +122,7 @@ body {
 }
 
 /* VIEWS */
-#views {
-	/* background-color: wheat; */
-}
+#views {}
 
 /* TERMINALS */
 .xterminal {
@@ -125,57 +133,59 @@ body {
 	display: block;
 }
 
-#terminals {/* border: 5px solid blue; */border-bottom: 2px solid black;}
+#terminals {}
 
 #terminals_tabBar {
-	position: relative;
-	height: 3em;
-	line-height: 3em;
+	min-height: 2em;
 	background-color: rgb(0 92 128);
 	color: white;
-	padding-top: 0.5em;
-	padding-bottom: 0.5em;
 }
 
 #terminals_tabs {
-	position: relative;
-	/* left: 0px; */
-	/* top: 0px; */
-	width: 1050px;
-	padding-left: 5px;
-	height: 2em;
+	width: 1290px;
+	padding-bottom: 5px;
+	vertical-align: top;
+	display: inline-block;
+}
+
+#terminals_tabs_sidebar {
+	display: inline-block;
+	vertical-align: top;
+	width: 32px;
+	background-color: green;
 }
 
 .terminalTab {
 	background-color: gray;
 	display: inline-block;
-	margin: 0px;
-	margin-right: 5px;
+	margin: 2px;
 	height: 1.25em;
 	line-height: 0.75em;
 	border-radius: 5px;
-	border: 1px dashed black;
+	border: 1px solid black;
 	vertical-align: top;
 	overflow: hidden;
-	height: 100%;
+	height: 1.752em;
 	font-size: 16px;
-	width: 105px;
+	width: 110px;
 	position: relative;
-	/* font-style: italic; */
+	font-style: italic;
+	opacity: 0.65;
+}
+
+.terminalTab:hover {
+	border-style: dashed;
 }
 
 .terminalTab .title {
 	font-family: monospace;
 	display: inline-block;
 	vertical-align: top;
-	line-height: 2em;
+	line-height: 200%;
 	cursor: pointer;
 	padding-left: 5px;
 	padding-right: 5px;
-}
-
-.terminalTab .title:hover {
-	opacity: 0.5;
+	font-size: 90%;
 }
 
 .terminalTab .close {
@@ -199,28 +209,24 @@ body {
 }
 
 .terminalTab.active {
-	border-color: palegoldenrod;
+	border-color: goldenrod;
 	border-style: solid;
+	font-style: normal;
+	opacity: 1;
 }
 
 .terminalTab.active .title {
-	/* display: inline-block; */
 	font-weight: bold;
-	/* font-style: normal; */
 	text-decoration: underline;
 }
 
 #terminals_add {
 	background-color: goldenrod;
 	border: 1px solid black;
-	width: 32px;
-	height: 32px;
-	/* position: relative; */
-	/* right: 10px; */
-	display: inline-block;
+	height: 30px;
 	text-align: center;
-	line-height: 32px;
-	font-size: 32px;
+	line-height: 30px;
+	font-size: 30px;
 }
 
 #terminals_cmdsBar {
@@ -229,17 +235,22 @@ body {
 	right: 0px;
 	top: 0px;
 	width: 300px;
-	border-left: 1px solid black;
+	border: 1px solid black;
 	padding-left: 5px;
 	text-align: center;
-	text-decoration:underline;
+	text-decoration: underline;
+	background-color: gainsboro;
+	height: 100%;
+	line-height: 150%;
+	border-radius: 5px;
+	overflow: hidden;
 }
 
 #terminals_terminals {
 	width: 100%;
 	height: 560px;
 	background-color: #222222;
-border-bottom: 2px solid black;}
+}
 
 /* COMMANDS */
 #commands {
@@ -247,19 +258,22 @@ border-bottom: 2px solid black;}
 	white-space: normal;
 	position: absolute;
 	right: 10px;
-	top: 10px;
+	bottom: 24px;
 	z-index: 100;
 	height: 0px;
 	width: 500px;
 	padding: 0px;
-	transition: height 250ms;
+	transition: height 500ms;
 }
 
 #commands.show {
-	height: 504px;
-	transition: height 250ms;
+	height: 550px;
+	transition: height 500ms;
+	background-color: black;
 	box-shadow: 0px 0px 5px 5px #6e6a6a;
-}
+padding: 5px;border-radius: 5px;}
+
+div#commands {}
 
 .command {
 	margin: 2px;
@@ -269,10 +283,57 @@ border-bottom: 2px solid black;}
 .cmd_key_div {
 	margin-bottom: 0.25em;
 	background-color: #f1f1f1;
+	margin-right: 5px;
 }
 
 .cmd_key_div .title {
 	background-color: rgb(0 92 128);
 	color: white;
 	padding: 2px;
+}
+
+div#view_info {
+	background-color: wheat;
+}
+
+#commands_tabs {
+	min-height: 1em;
+	border-bottom: 2px solid #005c80;
+	margin: 2px 5px 4px 5px;
+	padding-bottom: 3px;
+}
+
+#commands_tabs .cmdTab {
+	display: inline-block;
+	padding: 4px;
+	border: 1px solid black;
+	border-radius: 3px;
+	margin-right: 2px;
+	background-color: #aaaaaa;
+	cursor: pointer;
+	opacity: 0.65;
+	transition: 0.5s;
+	width: 110px;
+}
+
+#commands_tabs .cmdTab:hover {
+	border-style: dashed;
+}
+
+#commands_tabs .cmdTab.active {
+	background-color: #f1f1f1;
+	opacity: 1;
+}
+
+#commands_views {
+	min-height: 1em;
+	margin: 2px 0px 0px 5px;
+}
+
+#commands_views .cmdView {
+	display: none;
+}
+
+#commands_views .cmdView.active {
+	display: block;
 }

@@ -63,7 +63,6 @@ let addTabBarListeners = function(){
 		tab.addEventListener("click", function(e){
 			let tabId = this.id;
 			let content = tab.getAttribute("dest");
-			console.log(tabId, content);
 			changeView(tabId, content);
 		}, false);
 	});
@@ -74,77 +73,109 @@ let addCommandBarListeners = function(){
 	let commands            = document.getElementById("commands");
 	let terminals_terminals = document.getElementById("terminals_terminals");
 	
-	terminals_cmdsBar.addEventListener("click"       , function(){ commands.classList.toggle("show"); }, true);
-	// terminals_cmdsBar.addEventListener("mouseenter"  , function(){ commands.classList.add("show"); }, true);
-	terminals_terminals.addEventListener("mouseenter", function(){ commands.classList.remove("show"); }, false);
+	terminals_cmdsBar  .addEventListener("click"     , function(){ commands.classList.toggle("show"); }, false);
+	terminals_cmdsBar  .addEventListener("mouseenter", function(){ commands.classList.add   ("show"); }, false);
+	commands           .addEventListener("mouseleave", function(){ commands.classList.remove("show"); }, false);
+	// terminals_terminals.addEventListener("mouseenter", function(){ commands.classList.remove("show"); }, false);
 };
 
+// TODO: Need a tab system for each section.
 let addCommands = function(){
 	// Get the commands div. 
-	let commandsElem = document.getElementById("commands");
+	// let commandsElem = document.getElementById("commands");
+	let commands_tabsElem = document.getElementById("commands_tabs");
+	let commands_viewsElem = document.getElementById("commands_views");
 
-	// Add each command as a button to the commands div. 
-	let frag = document.createDocumentFragment();
-	let cmdKeys = Object.keys(config_cmds);
-	cmdKeys.forEach(function(key){
-		let cmds = config_cmds[key];
-		let cmd_key_div = document.createElement("div");
-		let cmd_key_div_title = document.createElement("div");
-		cmd_key_div.classList.add("cmd_key_div");
-		cmd_key_div_title.classList.add("title");
-		cmd_key_div_title.innerText = key;
-		cmd_key_div.appendChild(cmd_key_div_title);
-		frag.appendChild(cmd_key_div);
+	// 
+	let sectionKeys = Object.keys(config_cmds);
+	sectionKeys.forEach(function(sectionKey, index){
+		// For each section make a tab and a view.
+		let section = config_cmds[sectionKey];
+		let cmdKeys = Object.keys(section);
+
+		let tab  = document.createElement("div");
+		tab.innerText = sectionKey;
+		tab.classList.add("cmdTab");
+		if(index==0){ tab.classList.add("active"); }
+		commands_tabsElem.appendChild(tab);
 		
-		cmds.forEach(function(cmd){
-			// Create the command button. 
-			let elem = document.createElement("button");
-			elem.classList.add("command");
-			elem.setAttribute("title", cmd.cmd);
+		let view = document.createElement("div");
+		view.classList.add("cmdView");
+		if(index==0){ view.classList.add("active"); }
+		commands_viewsElem.appendChild(view);
 
-			// 
-			cmd_key_div.appendChild(elem);
+		tab.addEventListener("click", function(){
+			let tabs = document.querySelectorAll(".cmdTab");
+			let terms = document.querySelectorAll(".cmdView");
+			tabs.forEach(function(d){ d.classList.remove("active"); });
+			terms.forEach(function(d){ d.classList.remove("active"); });
+			
+			tab.classList.add("active");
+			view.classList.add("active");
 
-			// If the title is set then use that, otherwise use the cmd. 
-			if(cmd.title){ elem.innerText = cmd.title; }
-			else         { 
-				if(Array.isArray(cmd.cmd)){
-					elem.innerText = "???"; 
+		}, false);
+
+		let viewFrag = document.createDocumentFragment();
+		cmdKeys.forEach(function(cmdKey){
+			let cmds = section[cmdKey];
+			let cmd_key_div = document.createElement("div");
+			let cmd_key_div_title = document.createElement("div");
+			cmd_key_div.classList.add("cmd_key_div");
+			cmd_key_div_title.classList.add("title");
+			cmd_key_div_title.innerText = cmdKey;
+			cmd_key_div.appendChild(cmd_key_div_title);
+			
+			cmds.forEach(function(cmd){
+				// Create the command button. 
+				let elem = document.createElement("button");
+				elem.classList.add("command");
+				elem.setAttribute("title", cmd.cmd);
+	
+				// 
+				cmd_key_div.appendChild(elem);
+	
+				// If the title is set then use that, otherwise use the cmd. 
+				if(cmd.title){ elem.innerText = cmd.title; }
+				else         { 
+					if(Array.isArray(cmd.cmd)){
+						elem.innerText = "???"; 
+					}
+					else{
+						elem.innerText = cmd.cmd; 
+					}
 				}
-				else{
-					elem.innerText = cmd.cmd; 
-				}
-			}
+	
+				// Add the click event listener.
+				elem.addEventListener("click", function(){
+					// If the pressCtrlC flag is set then do that first. 
+					if(cmd.pressCtrlC){ pressControlC(); }
+	
+					// Get the command. 
+					let runThis = cmd.cmd;
+	
+					if(Array.isArray(runThis)){
+						runThis.forEach(function(d){
+							getActiveTerminal().ws.send(d + "\r");
+						});
+					}
+					else{
+						// Add a carriage return if the pressEnter flag is set. 
+						if(cmd.pressEnter){ runThis += "\r" }
+			
+						// Send the command via the websocket. 
+						getActiveTerminal().ws.send(runThis);
+					}
+	
+					let commands = document.getElementById("commands");
+					// commands.classList.remove("show");
+					
+				}, true);
 
-			// Add the click event listener.
-			elem.addEventListener("click", function(){
-				// If the pressCtrlC flag is set then do that first. 
-				if(cmd.pressCtrlC){ pressControlC(); }
-
-				// Get the command. 
-				let runThis = cmd.cmd;
-
-				if(Array.isArray(runThis)){
-					runThis.forEach(function(d){
-						getActiveTerminal().ws.send(d + "\r");
-					});
-				}
-				else{
-					// Add a carriage return if the pressEnter flag is set. 
-					if(cmd.pressEnter){ runThis += "\r" }
-		
-					// Send the command via the websocket. 
-					getActiveTerminal().ws.send(runThis);
-				}
-
-				let commands = document.getElementById("commands");
-				commands.classList.remove("show");
-				
-			}, true);
+				viewFrag.appendChild(cmd_key_div);
+			});
+			view.appendChild(viewFrag);
 		});
 
-		// Add the frag to the commands div. 
-		commandsElem.appendChild(frag);
 	});
 };
 
@@ -159,7 +190,7 @@ function addTerminal(termId, options={}){
 		// CREATE THE TAB  (title)
 		let titleElem = document.createElement("span");
 		titleElem.classList.add("title");
-		titleElem.innerText = "TERM #" + (termId).toString().padStart(2, "0");
+		titleElem.innerText = "TERM #" + (termId).toString().padStart(3, "0");
 		
 		// CREATE THE TAB  (close)
 		let closeElem = document.createElement("span");
@@ -408,6 +439,6 @@ window.onload = async function(){
 	getInfo("all");
 	infoIntervalId = setInterval(function(){
 		getInfo("all");
-	}, 3000);
+	}, 5000);
 
 };

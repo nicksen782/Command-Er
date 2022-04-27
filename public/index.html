@@ -17,50 +17,56 @@
 		<script src="js/index.js"></script>
 	</head>
 	<body>
+
 		<div id="mainWrapper">
-			<div id="navbar1" class="tab">
-				<button class="tablinks" dest="view_terminals" id="tab_terminals">Terminals</button>
-				<button class="tablinks" dest="view_info" id="tab_info">Info</button>
+
+			<div id="main_navBar" class="">
+				<button class="nav_tablink" dest="view_terminals" id="tab_terminals">Terminals</button>
+				<button class="nav_tablink" dest="view_info"      id="tab_info">Info</button>
 			</div>
 
 			<div id="views">
-				<div id="view_terminals" class="tabcontent">
-					<div id="terminals">
+				<div id="view_terminals" class="nav_tabContent">
+						<!-- TOP BAR ABOVE TERMINAL BOX -->
 						<div id="terminals_tabBar" class="noselect">
 							<div id="terminals_tabs_sidebar">
 								<div id="terminals_add">+</div>
 							</div>
-							<div id="terminals_tabs">
-							</div>
-						</div>
-						<div id="terminals_terminals">
+							<div id="terminals_tabs"></div>
 						</div>
 
+						<!-- TERMINAL BOX -->
+						<div id="view_terminals_wrapper">
+							<div id="terminals_terminals"></div>
+						</div>
+
+						<!-- BOTTOM BAR BELOW TERMINAL BOX -->
 						<div id="infobar1">
-							<span class="infoBarItem" id="ws_connections_terms"></span>
-							<span class="infoBarItem" id="ws_connections_infos"></span>
-							<span class="infoBarItem" id="vpn_status"></span>
+							<span class="infoBarItem noselect" id="resizeTerm">AutoFit Term</span>
+							<span class="infoBarItem noselect" id="ws_connections_terms"></span>
+							<span class="infoBarItem noselect" id="ws_connections_infos"></span>
+							<span class="infoBarItem noselect" id="vpn_status"></span>
 
-							<div id="terminals_cmdsBar" title="">
+							<!-- COMMANDS -->
+							<div id="terminals_cmdsBar" class="noselect" title="">
 								COMMANDS
 							</div>
 							<div id="commands" class="">
-								<div id="commands_tabs"></div>
+								<div id="cmds_navBar"></div>
 								<div id="commands_views"></div>
 							</div>
 
 						</div>
-
-					</div>
-		
 				</div>
 
-				<div id="view_info" class="tabcontent">
+				<div id="view_info" class="nav_tabContent">
 					<div id="info_output">
 					</div>
 				</div>
+
 			</div>
 
 		</div>
+
 	</body>
 </html>

@@ -9,6 +9,55 @@ let getConfigs = {};
 let config_cmds = {};
 let config_terms = {};
 
+let test_getDom = function(){
+	console.log(
+		"test_getDom:",
+		"\n  navTabs          :", getDom("navTabs")          ? "found" : "NOT FOUND",
+		"\n  activeNavTab     :", getDom("activeNavTab")     ? "found" : "NOT FOUND",
+		"\n  view_terminals   :", getDom("view_terminals")   ? "found" : "NOT FOUND",
+		"\n  view_info        :", getDom("view_info")        ? "found" : "NOT FOUND",
+		"\n  info_output      :", getDom("info_output")      ? "found" : "NOT FOUND",
+		"\n  activeTerminal   :", getDom("activeTerminal")   ? "found" : "NOT FOUND",
+		"\n  addTerm          :", getDom("addTerm")          ? "found" : "NOT FOUND",
+		"\n  termsCmdBar      :", getDom("termsCmdBar")      ? "found" : "NOT FOUND",
+		"\n  termsTabs        :", getDom("termsTabs")        ? "found" : "NOT FOUND",
+		"\n  termsTerms       :", getDom("termsTerms")       ? "found" : "NOT FOUND",
+		"\n  commands         :", getDom("commands")         ? "found" : "NOT FOUND",
+		"\n  commandTabs      :", getDom("commandTabs")      ? "found" : "NOT FOUND",
+		"\n  activeCommandTab :", getDom("activeCommandTab") ? "found" : "NOT FOUND",
+		"\n  commandViews     :", getDom("commandViews")     ? "found" : "NOT FOUND",
+		"\n  statusBar_vpn    :", getDom("statusBar_vpn")    ? "found" : "NOT FOUND",
+		"\n  statusBar_terms  :", getDom("statusBar_terms")  ? "found" : "NOT FOUND",
+		"\n  statusBar_infos  :", getDom("statusBar_infos")  ? "found" : "NOT FOUND",
+	);
+};
+let getDom = function(thing){
+	let returned = null;
+
+	switch(thing){
+		case "navTabs"          : { returned = document.querySelectorAll(".nav_tablink");       break; } // NAV (MAIN)
+		case "activeNavTab"     : { returned = document.querySelector(".nav_tablink.active");   break; } // NAV (MAIN)
+		case "view_terminals"   : { returned = document.getElementById("view_terminals");       break; } // VIEW
+		case "view_info"        : { returned = document.getElementById("view_info");            break; } // VIEW
+		case "info_output"      : { returned = document.getElementById("info_output");          break; } // INFO
+		case "activeTerminal"   : { returned = document.querySelector(".terminalTab.active");   break; } // TERMINALS
+		case "addTerm"          : { returned = document.getElementById("terminals_add");        break; } // TERMINALS
+		case "termsCmdBar"      : { returned = document.getElementById("terminals_cmdsBar");    break; } // TERMINALS
+		case "termsTabs"        : { returned = document.getElementById("terminals_tabs");       break; } // TERMINALS
+		case "termsTerms"       : { returned = document.getElementById("terminals_terminals");  break; } // TERMINALS
+		case "commands"         : { returned = document.getElementById("commands");             break; } // TERMINALS/COMMANDS
+		case "commandTabs"      : { returned = document.getElementById("cmds_navBar");        break; } // TERMINALS/COMMANDS
+		case "activeCommandTab" : { returned = document.querySelector(".cmds_tablink.active");        break; } // TERMINALS/COMMANDS
+		case "commandViews"     : { returned = document.getElementById("commands_views");       break; } // TERMINALS/COMMANDS
+		case "statusBar_vpn"    : { returned = document.getElementById("vpn_status");           break; } // TERMINALS/STATUS
+		case "statusBar_terms"  : { returned = document.getElementById("ws_connections_terms"); break; } // TERMINALS/STATUS
+		case "statusBar_infos"  : { returned = document.getElementById("ws_connections_infos"); break; } // TERMINALS/STATUS
+		default: { break; } // DEFAULT
+	};
+
+	return returned;
+};
+
 let getActiveTerminal = function(){
 	// Is there actually a terminal?
 	if(!terms.length){ 
@@ -38,13 +87,13 @@ let nexttermId = 1;
 
 function changeView(tabId, destView) {
 	// Hide all tab content.
-	let tabcontent = document.getElementsByClassName("tabcontent");
+	let tabcontent = document.querySelectorAll(".nav_tabContent");
 	for (let i = 0; i < tabcontent.length; i++) {
 		tabcontent[i].classList.remove("show");
 	}
 	
 	// Clear the active class on all tabs.
-	let tablinks = document.getElementsByClassName("tablinks");
+	let tablinks = document.querySelectorAll(".nav_tablink");
 	for (let i = 0; i < tablinks.length; i++) {
 		tablinks[i].classList.remove("active");
 	}
@@ -58,7 +107,7 @@ function changeView(tabId, destView) {
 
 let addTabBarListeners = function(){
 	// Add event listeners for the tab navigation.
-	let tablinks = document.querySelectorAll(".tablinks");
+	let tablinks = document.querySelectorAll(".nav_tablink");
 	tablinks.forEach(function(tab){
 		tab.addEventListener("click", function(e){
 			let tabId = this.id;
@@ -83,7 +132,7 @@ let addCommandBarListeners = function(){
 let addCommands = function(){
 	// Get the commands div. 
 	// let commandsElem = document.getElementById("commands");
-	let commands_tabsElem = document.getElementById("commands_tabs");
+	let commands_tabsElem = document.getElementById("cmds_navBar");
 	let commands_viewsElem = document.getElementById("commands_views");
 
 	// 
@@ -95,18 +144,18 @@ let addCommands = function(){
 
 		let tab  = document.createElement("div");
 		tab.innerText = sectionKey;
-		tab.classList.add("cmdTab");
+		tab.classList.add("cmds_tablink");
 		if(index==0){ tab.classList.add("active"); }
 		commands_tabsElem.appendChild(tab);
 		
 		let view = document.createElement("div");
-		view.classList.add("cmdView");
+		view.classList.add("cmds_tabContent");
 		if(index==0){ view.classList.add("active"); }
 		commands_viewsElem.appendChild(view);
 
 		tab.addEventListener("click", function(){
-			let tabs = document.querySelectorAll(".cmdTab");
-			let terms = document.querySelectorAll(".cmdView");
+			let tabs = document.querySelectorAll(".cmds_tablink");
+			let terms = document.querySelectorAll(".cmds_tabContent");
 			tabs.forEach(function(d){ d.classList.remove("active"); });
 			terms.forEach(function(d){ d.classList.remove("active"); });
 			
@@ -125,14 +174,17 @@ let addCommands = function(){
 			cmd_key_div_title.innerText = cmdKey;
 			cmd_key_div.appendChild(cmd_key_div_title);
 			
+			let commandsDiv = document.createElement("div");
+			commandsDiv.classList.add("commandsDiv");
+			cmd_key_div.appendChild(commandsDiv);
+
 			cmds.forEach(function(cmd){
 				// Create the command button. 
 				let elem = document.createElement("button");
 				elem.classList.add("command");
 				elem.setAttribute("title", cmd.cmd);
-	
-				// 
-				cmd_key_div.appendChild(elem);
+
+				commandsDiv.appendChild(elem);
 	
 				// If the title is set then use that, otherwise use the cmd. 
 				if(cmd.title){ elem.innerText = cmd.title; }
@@ -166,7 +218,7 @@ let addCommands = function(){
 						getActiveTerminal().ws.send(runThis);
 					}
 	
-					let commands = document.getElementById("commands");
+					// let commands = document.getElementById("commands");
 					// commands.classList.remove("show");
 					
 				}, true);
@@ -242,7 +294,7 @@ function addTerminal(termId, options={}){
 				elems : {
 					tabElem  : tabElem , 
 					termElem : termElem , 
-					viewport : termElem.querySelector(".xterm-viewport"),
+					viewport : termElem.querySelector(".xterm .xterm-viewport"),
 					screen   : termElem.querySelector(".xterm-screen")  ,
 					textarea : termElem.querySelector("textarea.xterm-helper-textarea")  ,
 				},
@@ -256,6 +308,7 @@ function addTerminal(termId, options={}){
 					resize: function(_obj){
 						try{
 							_obj.fitAddon.fit(); 
+							_obj.elems.viewport.style['overflow-y'] = "auto";
 							_obj.elems.viewport.style.width = "";
 							_obj.elems.screen.style.width = "";
 						}
@@ -295,6 +348,10 @@ function addTerminal(termId, options={}){
 						_obj.elems.tabElem.classList.add("active");
 						_obj.elems.termElem.classList.add("active");
 						_obj.elems.textarea.focus();
+
+						// Resize the terminal to fit the parent (setTimeout seems to be needed here.)
+						setTimeout(function(){ _obj.funcs.resize(_obj); }, 25);
+						// _obj.funcs.resize(obj);
 					},
 				}
 			};
@@ -303,9 +360,9 @@ function addTerminal(termId, options={}){
 			titleElem.addEventListener("click", function(e){ obj.funcs.switch(obj); }, false);
 			closeElem.addEventListener("click", function(e){ obj.funcs.close(obj);  }, false);
 
-			terms.push( obj );
+			// obj.funcs.resize(obj);
 
-			// setTimeout(function(){ obj.funcs.resize(obj); }, 500);
+			terms.push( obj );
 
 			// Resolve.
 			resolve(obj);
@@ -325,6 +382,95 @@ function addCreateNewTerminalButton(){
 		termObj.funcs.switch(termObj);
 	}, true);
 };
+
+function addInfo(){
+	return new Promise(async function(resolve,reject){
+		let locUrl = location.protocol.replace('http', 'ws') + '//' + location.hostname + (location.port ? (':' + location.port) : '') + '/INFO';
+		// Websocket create.
+		info_ws = new WebSocket(locUrl);
+		info_ws_isActive=true;
+		info_ws.onopen = function() { 
+			// setTimeout(function(){ info_ws.send("clientSize"); }, 1000);
+			setTimeout(function(){ info_ws_isActive=false; resolve(); }, 10);
+			
+		};
+		// info_ws.onmessage = function(e) { 
+		// 	console.log("message:", e.data); 
+		// };
+		info_ws.onerror = function(e) { console.log("ERROR!!!!"); console.log(e); };
+	});
+};
+
+function getInfo(key){
+	return new Promise(async function(resolve,reject){
+		if(key=="all"){
+			info_ws_isActive=true;
+			info_ws.onmessage = function(e) { 
+				info_ws_isActive=false;
+				document.getElementById("info_output").innerHTML = "<pre>" + e.data + "</pre>";
+				
+				let data = JSON.parse(e.data);
+
+				let vpnStatusElem = document.getElementById("vpn_status");
+				if(data.vpnCheck){
+					if(data.vpnCheck.active){
+						if(data.vpnCheck.alive){
+							vpnStatusElem.classList.add("active");
+							vpnStatusElem.innerText = `${data.vpnCheck.name}: ACTIVE`;
+							vpnStatusElem.title = `` +
+								`HOST: ${data.vpnCheck.url}\n` +
+								`IP: ${data.vpnCheck.numeric_host}, PING: ${data.vpnCheck.time}\n` +
+								``;
+						}
+						else{
+							vpnStatusElem.classList.remove("active");
+							vpnStatusElem.innerText = `${data.vpnCheck.name}: INACTIVE`;
+							vpnStatusElem.title = `` +
+								`HOST: ${data.vpnCheck.url}\n` +
+								`IP: ${data.vpnCheck.numeric_host}, PING: ${data.vpnCheck.time}\n` +
+								``;
+						}
+					}
+					else{
+						vpnStatusElem.classList.remove("active");
+						vpnStatusElem.innerText = "";
+						vpnStatusElem.title = "";
+						vpnStatusElem.style.display = "none";
+					}
+				}
+				else{
+					vpnStatusElem.classList.remove("active");
+					vpnStatusElem.innerText = "";
+					vpnStatusElem.title = "";
+				}
+
+				let ws_terms = document.getElementById("ws_connections_terms");
+				let ws_infos = document.getElementById("ws_connections_infos");
+				let termsCnt = 0;
+				let infosCnt = 0;
+				if(data.ws_connections){
+					data.ws_connections.forEach(function(d){
+						if     (d.type == "term"){ termsCnt += 1; }
+						else if(d.type == "info"){ infosCnt += 1; }
+					});
+					ws_terms.innerText = "Terms: " + termsCnt;
+					ws_infos.innerText = "Infos: " + infosCnt;
+				}
+				else{
+				}
+
+				resolve();
+			};
+
+			info_ws.send(key);
+		}
+		else {
+			console.log("huh?", key);
+			// info_ws.send(key);
+		}
+	})
+};
+
 
 window.onload = async function(){
 	window.onload = null;
@@ -347,96 +493,16 @@ window.onload = async function(){
 	let termObj = await addTerminal('' + nexttermId++, config_terms ); 
 	termObj.funcs.switch(termObj);
 
-	function addInfo(){
-		return new Promise(async function(resolve,reject){
-			let locUrl = location.protocol.replace('http', 'ws') + '//' + location.hostname + (location.port ? (':' + location.port) : '') + '/INFO';
-			// Websocket create.
-			info_ws = new WebSocket(locUrl);
-			info_ws_isActive=true;
-			info_ws.onopen = function() { 
-				// setTimeout(function(){ info_ws.send("clientSize"); }, 1000);
-				setTimeout(function(){ info_ws_isActive=false; resolve(); }, 10);
-				
-			};
-			// info_ws.onmessage = function(e) { 
-			// 	console.log("message:", e.data); 
-			// };
-			info_ws.onerror = function(e) { console.log("ERROR!!!!"); console.log(e); };
-		});
-	};
-
+	// Add the info ws channel.
 	await addInfo();
 
-	function getInfo(key){
-		return new Promise(async function(resolve,reject){
-			if(key=="all"){
-				info_ws_isActive=true;
-				info_ws.onmessage = function(e) { 
-					info_ws_isActive=false;
-					document.getElementById("info_output").innerHTML = "<pre>" + e.data + "</pre>";
-					
-					let data = JSON.parse(e.data);
+	let resizeTerm = document.getElementById("resizeTerm");
+	resizeTerm.addEventListener("click", function(){
+		let termObj = getActiveTerminal();
+		termObj.funcs.resize(termObj);
+	}, false);
 
-					let vpnStatusElem = document.getElementById("vpn_status");
-					if(data.vpnCheck){
-						if(data.vpnCheck.active){
-							if(data.vpnCheck.alive){
-								vpnStatusElem.classList.add("active");
-								vpnStatusElem.innerText = `${data.vpnCheck.name}: ACTIVE`;
-								vpnStatusElem.title = `` +
-									`HOST: ${data.vpnCheck.url}\n` +
-									`IP: ${data.vpnCheck.numeric_host}, PING: ${data.vpnCheck.time}\n` +
-									``;
-							}
-							else{
-								vpnStatusElem.classList.remove("active");
-								vpnStatusElem.innerText = `${data.vpnCheck.name}: INACTIVE`;
-								vpnStatusElem.title = `` +
-									`HOST: ${data.vpnCheck.url}\n` +
-									`IP: ${data.vpnCheck.numeric_host}, PING: ${data.vpnCheck.time}\n` +
-									``;
-							}
-						}
-						else{
-							vpnStatusElem.classList.remove("active");
-							vpnStatusElem.innerText = "";
-							vpnStatusElem.title = "";
-							vpnStatusElem.style.display = "none";
-						}
-					}
-					else{
-						vpnStatusElem.classList.remove("active");
-						vpnStatusElem.innerText = "";
-						vpnStatusElem.title = "";
-					}
-
-					let ws_terms = document.getElementById("ws_connections_terms");
-					let ws_infos = document.getElementById("ws_connections_infos");
-					let termsCnt = 0;
-					let infosCnt = 0;
-					if(data.ws_connections){
-						data.ws_connections.forEach(function(d){
-							if     (d.type == "term"){ termsCnt += 1; }
-							else if(d.type == "info"){ infosCnt += 1; }
-						});
-						ws_terms.innerText = "Terms: " + termsCnt;
-						ws_infos.innerText = "Infos: " + infosCnt;
-					}
-					else{
-					}
-
-					resolve();
-				};
-
-				info_ws.send(key);
-			}
-			else {
-				console.log("huh?", key);
-				// info_ws.send(key);
-			}
-		})
-	};
-
+	// Get initial info data and set a timer for repeated calls.
 	getInfo("all");
 	infoIntervalId = setInterval(function(){
 		getInfo("all");

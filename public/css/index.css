@@ -2,7 +2,8 @@
 @import "terminals_view.css";
 
 #mainWrapper {
-	width: 1350px;
+	/* width: 1350px; */
+	min-width: 950px;
 	padding: 0px;
 	margin: 0px;
 }
@@ -48,11 +49,21 @@
 	background-color: gainsboro;
 	cursor: pointer;
 }
-
 #resizeTerm:hover {
 	border-style: dashed;
 	font-weight: bold;
 }
+
+#clearTerm {
+	text-decoration: underline;
+	background-color: gainsboro;
+	cursor: pointer;
+}
+#clearTerm:hover {
+	border-style: dashed;
+	font-weight: bold;
+}
+
 
 /* NAV BARS */
 #cmds_navBar,

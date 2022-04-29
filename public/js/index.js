@@ -9,6 +9,8 @@ let getConfigs = {};
 let config_cmds = {};
 let config_terms = {};
 
+let uuid = null;
+
 let test_getDom = function(){
 	console.log(
 		"test_getDom:",
@@ -61,14 +63,14 @@ let getDom = function(thing){
 let getActiveTerminal = function(){
 	// Is there actually a terminal?
 	if(!terms.length){ 
-		console.log("No terminals exist."); 
+		console.log("No terminals exist.");
 		throw "No terminals exist.";
 	}
 
 	// Get the terminal object via the termId.
 	let termId = document.querySelector(".terminalTab.active").getAttribute("termId");
 	let termObj = terms.find(function(d){ 
-		return termId == d.termId; 
+		return termId == d.termId;
 	});
 
 	// No match? Throw an error.
@@ -91,7 +93,7 @@ function changeView(tabId, destView) {
 	for (let i = 0; i < tabcontent.length; i++) {
 		tabcontent[i].classList.remove("show");
 	}
-	
+
 	// Clear the active class on all tabs.
 	let tablinks = document.querySelectorAll(".nav_tablink");
 	for (let i = 0; i < tablinks.length; i++) {
@@ -100,7 +102,7 @@ function changeView(tabId, destView) {
 
 	// Add the show class to the destView.
 	document.getElementById(destView).classList.add("show");
-	
+
 	// Add the active class to the tab.
 	document.getElementById(tabId).classList.add("active");
 }
@@ -238,12 +240,12 @@ function addTerminal(termId, options={}){
 		tabElem.classList.add("terminalTab");
 		tabElem.setAttribute("tabId", 't_' + termId + "_tab");
 		tabElem.setAttribute("termId", 't_' + termId);
-		
+
 		// CREATE THE TAB  (title)
 		let titleElem = document.createElement("span");
 		titleElem.classList.add("title");
 		titleElem.innerText = "TERM #" + (termId).toString().padStart(3, "0");
-		
+
 		// CREATE THE TAB  (close)
 		let closeElem = document.createElement("span");
 		closeElem.classList.add("close");
@@ -258,15 +260,11 @@ function addTerminal(termId, options={}){
 		termElem.id = 't_' + termId;
 		termElem.classList.add("xterminal");
 
-		// SET EVENT LISTENERS FOR THE TAB.
-		titleElem.addEventListener("click", function(e){ obj.funcs.switch(obj); }, false);
-		closeElem.addEventListener("click", function(e){ obj.funcs.close(obj);  }, false);
-
 		// Create the xterm terminal. 
 		var term1 = new Terminal(options);
-		
+
 		// Create the WebSocket connection.
-		let locUrl = location.protocol.replace('http', 'ws') + '//' + location.hostname + (location.port ? (':' + location.port) : '') + '/TERM';
+		let locUrl = location.protocol.replace('http', 'ws') + '//' + location.hostname + (location.port ? (':' + location.port) : '') + `/TERM?${uuid}`;
 		var ws1 = new WebSocket(locUrl);
 
 		// Add the terminal tab to the terminals_tabs container. 
@@ -280,112 +278,204 @@ function addTerminal(termId, options={}){
 		// Add the add-ons.
 		const fitAddon = new FitAddon.FitAddon();
 		term1.loadAddon(fitAddon);
-		
+
 		const attachAddon = new AttachAddon.AttachAddon(ws1);
 		term1.loadAddon(attachAddon);
-		
-		// Open the terminal.
-		term1.open(termElem);
 
-		// Add this complete terminal data to terms. 
-		let obj = { 
-			termId       : 't_' + termId   , 
-			// options     : options , 
-			// locUrl      : locUrl  ,
-			
-			// Elems.
-			elems : {
-				tabElem  : tabElem , 
-				termElem : termElem , 
-				viewport : termElem.querySelector(".xterm .xterm-viewport"),
-				screen   : termElem.querySelector(".xterm-screen")  ,
-				textarea : termElem.querySelector("textarea.xterm-helper-textarea")  ,
-			},
+		window.requestAnimationFrame(function(){
+			// terminals.appendChild(termElem);
+			// Open the terminal.
+			term1.open(termElem);
 
-			term        : term1      , 
-			ws          : ws1        , 
-			attachAddon : attachAddon,
-			fitAddon    : fitAddon   ,
+			// Add this complete terminal data to terms. 
+			let obj = {
+				termId: 't_' + termId,
+				// options     : options , 
+				// locUrl      : locUrl  ,
 
-			funcs: {
-				clear: function(_obj){
-					// _obj.term.write('\x1b')
-					// First \n will cancel any existing escape or go to new line
-					// Then the \n\r will put the cursor at the start of the next line
-					// _obj.term.write('\n\n\r')
-					_obj.term.clear();
-					// _obj.ws.send("\r");
+				// Elems.
+				elems: {
+					tabElem               : tabElem,
+					termElem              : termElem,
+					viewport              : termElem.querySelector(".xterm .xterm-viewport"),
+					screen                : termElem.querySelector(".xterm-screen"),
+					textarea              : termElem.querySelector("textarea.xterm-helper-textarea"),
+					terminals_terminals   : document.getElementById("terminals_terminals"),
+					view_terminals_wrapper: document.getElementById("view_terminals_wrapper"),
+					mainWrapper           : document.getElementById("mainWrapper"),
 				},
-				resize: function(_obj){
-					try{
-						_obj.fitAddon.fit(); 
-						// _obj.elems.viewport.style['overflow-y'] = "auto";
-						// _obj.elems.viewport.style.width = "";
-						// _obj.elems.screen.style.width = "";
-					}
-					catch(e){
-						console.log(_obj);
-						console.log(e);
-					}
-				},
-				close: function(_obj){
-					let index = -1;
-					terms.forEach(function(d,i){
-						if(d.termId == _obj.termId) { index = i; }  
-						return;
-					});
-					if(index != -1){
-						// Close the websocket. 
-						_obj.ws.close();
 
-						// Close the terminal.
-						_obj.term.dispose();
+				term: term1,
+				ws: ws1,
+				attachAddon: attachAddon,
+				fitAddon: fitAddon,
 
-						// Remove the terminal tab.
-						_obj.elems.tabElem.remove();
+				funcs: {
+					clear: function (_obj) {
+						// _obj.term.write('\x1b')
+						// First \n will cancel any existing escape or go to new line
+						// Then the \n\r will put the cursor at the start of the next line
+						// _obj.term.write('\n\n\r')
+						_obj.term.clear();
+						// _obj.ws.send("\r");
+					},
+					resize: function (_obj) {
+						window.requestAnimationFrame(function () { 
+							try {
+								_obj.fitAddon.fit();
+								_obj.fitAddon.fit();
 
-						terms.splice(index, 1);
-						// console.log("Remaining:", terms.map(function(d){ return d.termId; }));
-					}
-					else{
-						console.log("Not found!");
-					}
-				},
-				switch: function(_obj){
-					let tabs = document.querySelectorAll(".terminalTab");
-					let terms = document.querySelectorAll(".xterminal");
-					tabs.forEach(function(d){ d.classList.remove("active"); });
-					terms.forEach(function(d){ d.classList.remove("active"); });
-					_obj.elems.tabElem.classList.add("active");
-					_obj.elems.termElem.classList.add("active");
-					_obj.elems.textarea.focus();
+								function getIt(elem) {
+									// first get the border and padding values
+									let computed      = getComputedStyle(elem);
+									let borderLeft    = parseFloat(computed.borderLeftWidth);
+									let borderWidth   = borderLeft + parseFloat(computed.borderRightWidth);
+									let borderTop     = parseFloat(computed.borderTopWidth);
+									let borderHeight  = borderTop + parseFloat(computed.borderBottomWidth);
+									let paddingLeft   = parseFloat(computed.paddingLeft);
+									let paddingWidth  = paddingLeft + parseFloat(computed.paddingRight)
+									let paddingTop    = parseFloat(computed.paddingTop);
+									let paddingHeight = paddingTop + parseFloat(computed.paddingBottom);
 
-					// Resize the terminal to fit the parent (setTimeout seems to be needed here.)
-					setTimeout(function(){ _obj.funcs.resize(_obj); }, 25);
-					// _obj.funcs.resize(obj);
-				},
-			}
-		};
-		terms.push( obj );
+									// get the current bounding rect, including the border-box
+									let rect  = elem.getBoundingClientRect();
+									
+									// we need to get the current scale since the computed values don't know about it...
+									let scale = 1 / (elem.offsetHeight / rect.height);
+									
+									// the real displayed height and width without border nor padding
+									let height = rect.height - ((borderHeight + paddingHeight) * scale);
+									let width  = rect.width - ((borderWidth + paddingWidth) * scale);
 
-		ws1.onmessage = function() {};
-		ws1.onopen = async function() {
-			// Resolve.
-			obj.funcs.resize(obj);
-			// console.log(`"${titleElem.innerText}", id: "${termElem.id}" added!`);
-			resolve(obj);
-		};
-		ws1.onerror = function(e) { console.log(e); };
+									return {
+										// computed      : computed      ,
+										// borderLeft    : borderLeft    ,
+										// borderWidth   : borderWidth   ,
+										// borderTop     : borderTop     ,
+										// borderHeight  : borderHeight  ,
+										// paddingLeft   : paddingLeft   ,
+										// paddingWidth  : paddingWidth  ,
+										// paddingTop    : paddingTop    ,
+										// paddingHeight : paddingHeight ,
+										'disp.h'          : rect.height          ,
+										'disp.w'          : rect.width          ,
+										// scale         : scale         ,
+										'real.h'         : height        ,
+										'real.w'         : width         ,
+									};
+								}
+
+								// let keys = Object.keys(_obj.elems);
+								let dimsAll = {};
+								let keyList = [
+									"terminals_terminals",
+									"view_terminals_wrapper",
+									"tabElem",
+									"viewport",
+									"textarea",
+									"screen",
+									"termElem",
+									"mainWrapper"
+								];
+								keyList.forEach(function (key) {
+									if (keyList.indexOf(key) != -1) {
+										// console.log(key.padEnd(25, " "), getIt(_obj.elems[key]));
+										let dims = getIt(_obj.elems[key]);
+										console.log(
+											key.padEnd(25, " "), 
+											dims['real.w'].toString().padStart(6, " "), 
+											dims['real.h'].toString().padStart(6, " ")
+											// dims['disp.w'].toString().padStart(6, " "), 
+											// dims['disp.h'].toString().padStart(6, " ")
+										);
+
+										// dimsAll[key] = {
+										// 	width: parseFloat(getComputedStyle(_obj.elems[key], null).getPropertyValue('width').replace('px', '')),
+										// 	height: parseFloat(getComputedStyle(_obj.elems[key], null).getPropertyValue('height').replace('px', '')),
+										// };
+										// console.log(key.padEnd(25, " "), dimsAll[key].width.toString().padStart(6, " "), dimsAll[key].height.toString().padStart(6, " "));
+									}
+								});
+								console.log("");
+								// console.log("resizing:", JSON.stringify(dimsAll,null,1) );
+								_obj.fitAddon.fit();
+								_obj.fitAddon.fit();
+
+								// _obj.elems.viewport.style['overflow-y'] = "auto";
+							}
+							catch(e){
+								console.log(_obj);
+								console.log(e);
+							}
+						});
+					},
+					close: function(_obj){
+						let index = -1;
+						terms.forEach(function(d,i){
+							if(d.termId == _obj.termId) { index = i; }  
+							return;
+						});
+						if(index != -1){
+							// Close the websocket. 
+							_obj.ws.close();
+
+							// Close the terminal.
+							_obj.term.dispose();
+
+							// Remove the terminal tab.
+							_obj.elems.tabElem.remove();
+
+							terms.splice(index, 1);
+							// console.log("Remaining:", terms.map(function(d){ return d.termId; }));
+						}
+						else{
+							console.log("Not found!");
+						}
+					},
+					switch: function(_obj){
+						let tabs = document.querySelectorAll(".terminalTab");
+						let terms = document.querySelectorAll(".xterminal");
+						tabs.forEach(function(d){ d.classList.remove("active"); });
+						terms.forEach(function(d){ d.classList.remove("active"); });
+						_obj.elems.tabElem.classList.add("active");
+						_obj.elems.termElem.classList.add("active");
+						_obj.elems.textarea.focus();
+
+						// Resize the terminal to fit the parent (setTimeout seems to be needed here.)
+						// setTimeout(function () { _obj.funcs.resize(_obj); }, 100);
+						window.requestAnimationFrame(function () { _obj.funcs.resize(_obj); });
+						// _obj.funcs.resize(obj);
+					},
+				}
+			};
+
+			// SET EVENT LISTENERS FOR THE TAB.
+			titleElem.addEventListener("click", function (e) { obj.funcs.switch(obj); }, false);
+			closeElem.addEventListener("click", function (e) { obj.funcs.close(obj); }, false);
+
+			terms.push(obj);
+
+			ws1.onmessage = function () { };
+			ws1.onopen = async function () {
+				terminals.appendChild(termElem);
+				// obj.funcs.resize(obj);
+				// console.log(`"${titleElem.innerText}", id: "${termElem.id}" added!`);
+
+				// Resolve.
+				resolve(obj);
+			};
+			ws1.onerror = function(e) { console.log(e); };
+		});
 	})
 };
 
 function addCreateNewTerminalButton(){
 	let terminals_add = document.getElementById("terminals_add");
-	
+
 	terminals_add.addEventListener("click"       , async function(){
 		// Create the new terminal.
 		let termObj = await addTerminal('' + nexttermId++, config_terms ); 
-		
+
 		// Activate the NEW terminal tab and view.
 		termObj.funcs.switch(termObj);
 	}, true);
@@ -394,18 +484,19 @@ function addCreateNewTerminalButton(){
 function addInfo(){
 	return new Promise(async function(resolve,reject){
 		let locUrl = location.protocol.replace('http', 'ws') + '//' + location.hostname + (location.port ? (':' + location.port) : '') + '/INFO';
+		
 		// Websocket create.
 		info_ws = new WebSocket(locUrl);
 		info_ws_isActive=true;
 		info_ws.onopen = function() { 
-			// setTimeout(function(){ info_ws.send("clientSize"); }, 1000);
-			setTimeout(function(){ info_ws_isActive=false; resolve(); }, 10);
-			
+			setTimeout(async function () { 
+				await getInfo("get_uuid"); 
+				info_ws_isActive = false; 
+				resolve(); 
+			}, 10);
+
 		};
-		// info_ws.onmessage = function(e) { 
-		// 	console.log("message:", e.data); 
-		// };
-		info_ws.onerror = function(e) { console.log("ERROR!!!!"); console.log(e); };
+		info_ws.onerror = function (e) { console.log("ERROR!!!!", e); };
 	});
 };
 
@@ -416,7 +507,7 @@ function getInfo(key){
 			info_ws.onmessage = function(e) { 
 				info_ws_isActive=false;
 				document.getElementById("info_output").innerHTML = "<pre>" + e.data + "</pre>";
-				
+
 				let data = JSON.parse(e.data);
 
 				let vpnStatusElem = document.getElementById("vpn_status");
@@ -452,28 +543,65 @@ function getInfo(key){
 					vpnStatusElem.title = "";
 				}
 
-				let ws_terms = document.getElementById("ws_connections_terms");
-				let ws_infos = document.getElementById("ws_connections_infos");
-				let termsCnt = 0;
-				let infosCnt = 0;
-				if(data.ws_connections){
-					data.ws_connections.forEach(function(d){
-						if     (d.type == "term"){ termsCnt += 1; }
-						else if(d.type == "info"){ infosCnt += 1; }
-					});
-					ws_terms.innerText = "Terms: " + termsCnt;
-					ws_infos.innerText = "Infos: " + infosCnt;
-				}
-				else{
-				}
-
 				resolve();
 			};
 
-			info_ws.send(key);
+			if( info_ws.readyState != info_ws.OPEN){
+				reject( "info_ws is not open. readyState: " +  info_ws.readyState ); 
+				return; 
+			}
+
+			try{
+				info_ws.send(key);
+			}
+			catch(e){
+				console.log("Opps! Error:", e);
+			}
+		}
+		else if(key == "get_uuid"){
+			info_ws_isActive = true;
+			info_ws.onmessage = null;
+			info_ws.onmessage = function (e) {
+				info_ws_isActive = false;
+				let data = JSON.parse(e.data);
+				uuid = data;
+				resolve();
+			};
+
+			if( info_ws.readyState != info_ws.OPEN){
+				reject( "info_ws is not open. readyState: " +  info_ws.readyState ); 
+				return; 
+			}
+
+			try{
+				info_ws.send(key);
+			}
+			catch(e){
+				console.log("Opps! Error:", e);
+			}
+		}
+		else if(key == "clientCheckIn"){
+			info_ws_isActive = true;
+			info_ws.onmessage = null;
+			info_ws.onmessage = function (e) {
+				info_ws_isActive = false;
+				resolve();
+			};
+
+			if( info_ws.readyState != info_ws.OPEN){
+				reject( "info_ws is not open. readyState: " +  info_ws.readyState ); 
+				return; 
+			}
+
+			try{
+				info_ws.send(key);
+			}
+			catch(e){
+				console.log("Opps! Error:", e);
+			}
 		}
 		else {
-			console.log("huh?", key);
+			console.log("Unexpected ws info key.", key);
 			// info_ws.send(key);
 		}
 	})
@@ -482,7 +610,7 @@ function getInfo(key){
 
 window.onload = async function(){
 	window.onload = null;
-	
+
 	// Set the default tab/view.
 	changeView("tab_terminals"  , "view_terminals" );
 
@@ -497,12 +625,13 @@ window.onload = async function(){
 	addCommands();
 	addCreateNewTerminalButton();
 
+	// Add the info ws channel.
+	await addInfo();
+	await getInfo("clientCheckIn"); 
+
 	// Add terminals to the terminals div.
 	let termObj = await addTerminal('' + nexttermId++, config_terms ); 
 	termObj.funcs.switch(termObj);
-
-	// Add the info ws channel.
-	await addInfo();
 
 	let resizeTerm = document.getElementById("resizeTerm");
 	resizeTerm.addEventListener("click", function(){
@@ -516,10 +645,40 @@ window.onload = async function(){
 		termObj.funcs.clear(termObj);
 	}, false);
 
+	// makeResizableDiv('#view_terminals_wrapper');
+	// resizeDiv.start('#view_terminals', '.resizer.bottom-right');
+	// resizeDiv.start('#terminals_terminals', '.resizer.bottom-right');
+
 	// Get initial info data and set a timer for repeated calls.
-	getInfo("all");
-	infoIntervalId = setInterval(function(){
-		getInfo("all");
+	try{ 
+		getInfo("all"); 
+		// document.getElementById("mainWrapper").style['background-color'] = "green";
+		document.body.style['background-color'] = "green";
+	}
+	catch(e){
+		// document.getElementById("mainWrapper").style['background-color'] = "red";
+		document.body.style['background-color'] = "red";
+		return;
+	}
+	infoIntervalId = setInterval(async function () {
+		try{ 
+			await getInfo("all"); 
+			await getInfo("clientCheckIn"); 
+
+			// Set status indicator?
+			// document.getElementById("mainWrapper").style['background-color'] = "green";
+			document.body.style['background-color'] = "green";
+		} 
+		catch(e){
+			console.log("getInfo error: ", e);
+			
+			// Set status indicator?
+			// document.getElementById("mainWrapper").style['background-color'] = "red";
+			document.body.style['background-color'] = "red";
+
+			// Quit trying to connect on the websocket.
+			clearInterval(infoIntervalId);
+		}
 	}, 5000);
 
 };

@@ -3,7 +3,8 @@
 
 #mainWrapper {
 	/* width: 1350px; */
-	min-width: 950px;
+	/* min-width: 950px; */
+	/* min-width: 1125px; */
 	padding: 0px;
 	margin: 0px;
 }
@@ -34,14 +35,6 @@
 
 #vpn_status.active {
 	background-color: green;
-}
-
-#ws_connections_terms {
-	background-color: goldenrod;
-}
-
-#ws_connections_infos {
-	background-color: goldenrod;
 }
 
 #resizeTerm {

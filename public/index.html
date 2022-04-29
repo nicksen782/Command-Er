@@ -1,73 +1,82 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta charset="utf-8" />
-		<!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; font-src 'self' data: fonts.gstatic.com;"> -->
 
-		<title>Remote terminal</title>
-		
-		<!-- xterm.js -->
-		<link rel="stylesheet" href="libs/xterm/css/xterm.css" />
-		<script src="libs/xterm/lib/xterm.js"></script>
-		<script src="libs/xterm-addon-attach/lib/xterm-addon-attach.js"></script>
-		<script src="libs/xterm-addon-fit/lib/xterm-addon-fit.js"></script>
+<head>
+	<meta charset="utf-8" />
+	<!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; font-src 'self' data: fonts.gstatic.com;"> -->
 
-		<!-- Custom -->
-		<link rel="stylesheet" href="css/index.css">
-		<script src="js/index.js"></script>
-	</head>
-	<body>
+	<title>Remote terminal</title>
 
-		<div id="mainWrapper">
+	<!-- xterm.js -->
+	<link rel="stylesheet" href="libs/xterm/css/xterm.css" />
+	<script src="libs/xterm/lib/xterm.js"></script>
+	<script src="libs/xterm-addon-attach/lib/xterm-addon-attach.js"></script>
+	<script src="libs/xterm-addon-fit/lib/xterm-addon-fit.js"></script>
 
-			<div id="main_navBar" class="">
-				<button class="nav_tablink" dest="view_terminals" id="tab_terminals">Terminals</button>
-				<button class="nav_tablink" dest="view_info"      id="tab_info">Info</button>
-			</div>
+	<!-- Custom -->
+	<link rel="stylesheet" href="css/index.css">
+	<script src="js/index.js"></script>
 
-			<div id="views">
-				<div id="view_terminals" class="nav_tabContent">
-						<!-- TOP BAR ABOVE TERMINAL BOX -->
-						<div id="terminals_tabBar" class="noselect">
-							<div id="terminals_tabs_sidebar">
-								<div id="terminals_add">+</div>
-							</div>
-							<div id="terminals_tabs"></div>
-						</div>
+	<!-- Div Resize -->
+	<!-- <link rel="stylesheet" href="vendor/divResize/divResize.css"> -->
+	<!-- <script src="vendor/divResize/divResize.js"></script> -->
+</head>
 
-						<!-- TERMINAL BOX -->
-						<div id="view_terminals_wrapper">
-							<div id="terminals_terminals"></div>
-						</div>
+<body>
 
-						<!-- BOTTOM BAR BELOW TERMINAL BOX -->
-						<div id="infobar1">
-							<span class="infoBarItem noselect" id="resizeTerm">AutoFit Term</span>
-							<span class="infoBarItem noselect" id="clearTerm">Clear Term</span>
-							<span class="infoBarItem noselect" id="ws_connections_terms"></span>
-							<span class="infoBarItem noselect" id="ws_connections_infos"></span>
-							<span class="infoBarItem noselect" id="vpn_status"></span>
+	<div id="mainWrapper">
 
-							<!-- COMMANDS -->
-							<div id="terminals_cmdsBar" class="noselect" title="">
-								COMMANDS
-							</div>
-							<div id="commands" class="">
-								<div id="cmds_navBar"></div>
-								<div id="commands_views"></div>
-							</div>
+		<div id="main_navBar" class="">
+			<button class="nav_tablink" dest="view_terminals" id="tab_terminals">Terminals</button>
+			<button class="nav_tablink" dest="view_info" id="tab_info">Info</button>
+		</div>
 
-						</div>
+		<div id="views">
+			<div id="view_terminals" class="nav_tabContent">
+				<!-- TOP BAR ABOVE TERMINAL BOX -->
+				<div id="terminals_tabBar" class="noselect">
+					<div id="terminals_tabs_sidebar">
+						<div id="terminals_add">+</div>
+					</div>
+					<div id="terminals_tabs"></div>
 				</div>
 
-				<div id="view_info" class="nav_tabContent">
-					<div id="info_output">
+				<!-- TERMINAL BOX -->
+				<div id="view_terminals_wrapper">
+					<div id="terminals_terminals" class="resizable_parent">
+						<div class='resizers'>
+							<div class='resizer bottom-right'></div>
+						</div>
 					</div>
 				</div>
 
+				<!-- BOTTOM BAR BELOW TERMINAL BOX -->
+				<div id="infobar1">
+					<span class="infoBarItem noselect" id="resizeTerm">AutoFit Term</span>
+					<span class="infoBarItem noselect" id="clearTerm">Clear Term</span>
+					<span class="infoBarItem noselect" id="vpn_status"></span>
+
+					<!-- COMMANDS -->
+					<div id="terminals_cmdsBar" class="noselect" title="">
+						COMMANDS
+					</div>
+					<div id="commands" class="">
+						<div id="cmds_navBar"></div>
+						<div id="commands_views"></div>
+					</div>
+
+				</div>
+			</div>
+
+			<div id="view_info" class="nav_tabContent">
+				<div id="info_output">
+				</div>
 			</div>
 
 		</div>
 
-	</body>
+	</div>
+
+</body>
+
 </html>

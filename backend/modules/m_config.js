@@ -1,5 +1,6 @@
 const fs = require('fs');
 // const path = require('path');
+const os   = require('os');
 
 let _APP = null;
 
@@ -98,6 +99,10 @@ let _MOD = {
 		_MOD.config_terms = await JSON.parse( fs.readFileSync(_MOD.config_terms_filename, 'utf8'));
 		_MOD.config_terms["cwd"] = process.env.PWD;
 		_MOD.config_terms["env"] = process.env;
+		
+		if( os.platform() == "win32" ){
+			_MOD.config_terms["useConpty"] = true;
+		}
 	},
 
 };

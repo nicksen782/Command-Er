@@ -5,14 +5,23 @@ const os   = require('os');
 let _APP = null;
 
 let _MOD = {
+	// SERVER
 	config_srv_filename:"configs/config_srv.json",
-	config_srv_extra_filename:"configs/config_srv_extra.json",
+	config_srv_filename_EX:"configs/examples/config_srv.json.example",
 	config_srv:{},
-
+	
+	// SERVER EXTRA
+	config_srv_extra_filename:"configs/config_srv_extra.json",
+	config_srv_extra_filename_EX:"configs/examples/config_srv_extra.json.example",
+	
+	// COMMANDS
 	config_cmds_filename:"configs/config_cmds.json",
+	config_cmds_filename_EX:"configs/examples/config_cmds.json.example",
 	config_cmds:{},
-
+	
+	// TERMINAL
 	config_terms_filename:"configs/config_terms.json",
+	config_terms_filename_EX:"configs/examples/config_terms.json.example",
 	config_terms:{},
 
 	// Init this module.
@@ -21,6 +30,9 @@ let _MOD = {
 			// Save reference to ledger.
 			_APP = parent;
 	
+			// Use the example files as defaults if files are missing.
+			await _MOD.createDefaultsFromExamples();
+
 			// Get the config files. 
 			await _MOD.read_srvConf();
 			await _MOD.read_cmdConf();
@@ -57,6 +69,27 @@ let _MOD = {
 				"config_cmds"  : _APP.m_config.config_cmds,
 			});
 		});
+	},
+
+	createDefaultsFromExamples: async function(){
+		// If a file is missing then create it from it's example file. 
+
+		if (!fs.existsSync(_MOD.config_srv_filename)) {
+			let data = await JSON.parse( fs.readFileSync(_MOD.config_srv_filename_EX, 'utf8'));
+			fs.writeFileSync(_MOD.config_srv_filename, JSON.stringify(data,null,1));
+		}
+		if (!fs.existsSync(_MOD.config_srv_extra_filename)) {
+			let data = await JSON.parse( fs.readFileSync(_MOD.config_srv_extra_filename_EX, 'utf8'));
+			fs.writeFileSync(_MOD.config_srv_extra_filename, JSON.stringify(data,null,1));
+		}
+		if (!fs.existsSync(_MOD.config_cmds_filename)) {
+			let data = await JSON.parse( fs.readFileSync(_MOD.config_cmds_filename_EX, 'utf8'));
+			fs.writeFileSync(_MOD.config_cmds_filename, JSON.stringify(data,null,1));
+		}
+		if (!fs.existsSync(_MOD.config_terms_filename)) {
+			let data = await JSON.parse( fs.readFileSync(_MOD.config_terms_filename_EX, 'utf8'));
+			fs.writeFileSync(_MOD.config_terms_filename, JSON.stringify(data,null,1));
+		}
 	},
 
 	read_srvConf: async function(){

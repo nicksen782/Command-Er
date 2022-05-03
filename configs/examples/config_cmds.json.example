@@ -1,0 +1,24 @@
+{
+	"SECTION1":{
+		"UTILITY": [
+			{
+				"pressCtrlC": false,
+				"pressEnter": false,
+				"title": "CTRL+C",
+				"cmd": "\u0003"
+			},
+			{
+				"pressCtrlC": false,
+				"pressEnter": true,
+				"title": "whoami",
+				"cmd": "whoami"
+			},
+			{
+				"pressCtrlC": false,
+				"pressEnter": true,
+				"title": "hostname",
+				"cmd": "hostname"
+			}
+		]
+	}
+}

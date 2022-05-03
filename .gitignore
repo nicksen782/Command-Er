@@ -3,3 +3,4 @@ node_modules
 config_cmds.json
 configs/config_srv_extra.json
 public/OLD
+configs/BACKUP

@@ -3,6 +3,7 @@
 	"port"                 : 12345,
 	"shells":{
 		"win32": "C:\\Windows\\system32\\cmd.exe",
+		"win32b": "powershell.exe",
 		"linux": "/bin/bash"
 	}
 }

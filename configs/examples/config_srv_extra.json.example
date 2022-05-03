@@ -1,0 +1,7 @@
+{
+	"connectionCheck":{
+		"name":"VPN",
+		"active":false,
+		"url":"127.0.0.1"
+	}
+}

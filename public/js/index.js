@@ -1,15 +1,20 @@
 // TODO: Commands are force to the first terminal. This should not be hard-coded.
 // .xterminal should also have a .title.
 
-let terms = [];
-let info_ws = null;
-let info_ws_isActive = false;
-
-let getConfigs = {};
-let config_cmds = {};
-let config_terms = {};
-
-let uuid = null;
+let terms             = [];
+let info_ws           = null;
+let info_ws_isActive  = false;
+let getConfigs        = {};
+let config_cmds       = {};
+let config_terms      = {};
+let uuid              = null;
+let infoIntervalId    = null;
+let infoIntervalFails = 0;
+let nexttermId        = 1;
+let checkinObj = {
+	"success":0,
+	"fail":0,
+};
 
 let test_getDom = function(){
 	console.log(
@@ -19,6 +24,7 @@ let test_getDom = function(){
 		"\n  view_terminals   :", getDom("view_terminals")   ? "found" : "NOT FOUND",
 		"\n  view_info        :", getDom("view_info")        ? "found" : "NOT FOUND",
 		"\n  info_output      :", getDom("info_output")      ? "found" : "NOT FOUND",
+		"\n  info_output2     :", getDom("info_output2")     ? "found" : "NOT FOUND",
 		"\n  activeTerminal   :", getDom("activeTerminal")   ? "found" : "NOT FOUND",
 		"\n  addTerm          :", getDom("addTerm")          ? "found" : "NOT FOUND",
 		"\n  termsCmdBar      :", getDom("termsCmdBar")      ? "found" : "NOT FOUND",
@@ -42,6 +48,7 @@ let getDom = function(thing){
 		case "view_terminals"   : { returned = document.getElementById("view_terminals");       break; } // VIEW
 		case "view_info"        : { returned = document.getElementById("view_info");            break; } // VIEW
 		case "info_output"      : { returned = document.getElementById("info_output");          break; } // INFO
+		case "info_output2"     : { returned = document.getElementById("info_output2");         break; } // INFO
 		case "activeTerminal"   : { returned = document.querySelector(".terminalTab.active");   break; } // TERMINALS
 		case "addTerm"          : { returned = document.getElementById("terminals_add");        break; } // TERMINALS
 		case "termsCmdBar"      : { returned = document.getElementById("terminals_cmdsBar");    break; } // TERMINALS
@@ -84,8 +91,6 @@ let getActiveTerminal = function(){
 let pressControlC = function(){
 	getActiveTerminal().ws.send("\x03");
 };
-let infoIntervalId = null;
-let nexttermId = 1;
 
 function changeView(tabId, destView) {
 	// Hide all tab content.
@@ -125,7 +130,7 @@ let addCommandBarListeners = function(){
 	let terminals_terminals = document.getElementById("terminals_terminals");
 	
 	terminals_cmdsBar  .addEventListener("click"     , function(){ commands.classList.toggle("show"); }, false);
-	terminals_cmdsBar  .addEventListener("mouseenter", function(){ commands.classList.add   ("show"); }, false);
+	// terminals_cmdsBar  .addEventListener("mouseenter", function(){ commands.classList.add   ("show"); }, false);
 	commands           .addEventListener("mouseleave", function(){ commands.classList.remove("show"); }, false);
 	// terminals_terminals.addEventListener("mouseenter", function(){ commands.classList.remove("show"); }, false);
 };
@@ -654,12 +659,15 @@ window.onload = async function(){
 		getInfo("all"); 
 		// document.getElementById("mainWrapper").style['background-color'] = "green";
 		document.body.style['background-color'] = "green";
+		checkinObj.success += 1;
+		infoIntervalFails = 0;
 	}
 	catch(e){
 		// document.getElementById("mainWrapper").style['background-color'] = "red";
 		document.body.style['background-color'] = "red";
 		return;
 	}
+
 	infoIntervalId = setInterval(async function () {
 		try{ 
 			await getInfo("all"); 
@@ -668,17 +676,30 @@ window.onload = async function(){
 			// Set status indicator?
 			// document.getElementById("mainWrapper").style['background-color'] = "green";
 			document.body.style['background-color'] = "green";
+			checkinObj.success += 1;
+			infoIntervalFails = 0;
+			console.log("Good clientCheckIn", Date.now());
 		} 
 		catch(e){
-			console.log("getInfo error: ", e);
-			
-			// Set status indicator?
-			// document.getElementById("mainWrapper").style['background-color'] = "red";
-			document.body.style['background-color'] = "red";
+			if(infoIntervalFails > 4){
+				// Set status indicator?
+				// document.getElementById("mainWrapper").style['background-color'] = "red";
+				document.body.style['background-color'] = "red";
+	
+				console.log("DISCONNECTING!!, infoIntervalFails:", infoIntervalFails, "error: ", e);
 
-			// Quit trying to connect on the websocket.
-			clearInterval(infoIntervalId);
+				// Quit trying to connect on the websocket.
+				clearInterval(infoIntervalId);
+			}
+			else{
+				infoIntervalFails += 1; 
+				checkinObj.fail += 1;
+				console.log("infoIntervalFails:", infoIntervalFails, "error: ", e);
+			}
+			
 		}
+
+		document.getElementById("info_output2").innerHTML = "<pre>" + JSON.stringify(checkinObj,null,1) + "</pre>";
 	}, 5000);
 
 };

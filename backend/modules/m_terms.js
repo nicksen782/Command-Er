@@ -11,6 +11,7 @@ let _MOD = {
 	//
 	shell: null,
 	ttyConfObj : null,
+	checkActiveConnections_timeout : 90 * 1000,
 
 	// Init this module.
 	module_init: async function(parent){
@@ -30,8 +31,8 @@ let _MOD = {
 			_MOD.addWsListeners(_APP.app, _APP.express);
 
 			// Check for disconnected clients. 
-			setInterval(_MOD.checkActiveConnections, 10000);
-			// await _MOD.checkActiveConnections();
+			await _MOD.checkActiveConnections();
+			setInterval(_MOD.checkActiveConnections, _MOD.checkActiveConnections_timeout);
 
 			resolve();
 		});
@@ -100,12 +101,17 @@ let _MOD = {
 		return new Promise(async function(resolve,reject){
 			// Remove the terms.
 			toRemove.term.forEach(function(term){
-				_MOD.endTty(term.tty);
+				let clientObj = _MOD.clients.get(term.ws);
+				clientObj.reason = "TIMEOUT";
+				clientObj.closeThisTerm = true;
+				_MOD.endTty(clientObj, null);
 				term.ws.close();
 			});
 			
 			// Remove the info.
 			toRemove.info.forEach(function(info){
+				let clientObj = _MOD.clients.get(info.ws);
+				clientObj.reason = "TIMEOUT";
 				info.ws.close();
 			});
 
@@ -115,6 +121,7 @@ let _MOD = {
 
 	checkActiveConnections: async function(){
 		return new Promise(async function(resolve,reject){
+			console.log("  --  checkActiveConnections");
 			// Holds what may be closed.
 			let toRemove = {
 				"term": [],
@@ -160,6 +167,10 @@ let _MOD = {
 				"global":{
 					"term": 0,
 					"info": 0,
+				},
+				"pids":{
+					"term": [],
+					"info": [],
 				}
 			};
 			
@@ -174,9 +185,11 @@ let _MOD = {
 				// Updating count. 
 				if(key1 == key2){
 					counts.user[key.type] += 1;
+					if(key.type == "term"){ counts.pids[key.type].push(key.tty._pid); }
 				}
 				else{
 					counts.others[key.type] += 1;
+					if(key.type == "term"){ counts.pids[key.type].push(key.tty._pid); }
 				}
 			});
 
@@ -189,6 +202,7 @@ let _MOD = {
 				userTerms   : counts.user.term, 
 				userInfos   : counts.user.info, 
 				userId      : clientObj.id, 
+				termPids    : counts.pids.term.sort().join(", "), 
 			});
 		});
 	},
@@ -208,33 +222,46 @@ let _MOD = {
 			});
 
 			// Return the data.
-			// resolve("Thanks for checking in: " + clientObj.id );
+			console.log(" -- clientCheckIn:  " + clientObj.id);
+			resolve(" -- clientCheckIn: " + clientObj.id);
 			resolve(clientObj.id);
 		});
 	},
 
-	endTty : function(_tty){
-		if (_tty) { 
+	endTty : function(clientObj, event){
+		// console.log("  " + "Terminal closed.", _tty ? "active" : "inactive");
+		// console.log(`Terminal exit: EVENT: ${JSON.stringify(event)}`);
+		if (clientObj.tty && clientObj.closeThisTerm == true && !clientObj.termIsClosed) { 
 			try{ 
 				if( os.platform() == "win32" ){
-					// console.log("close tty: windows", _tty.destroy);
-					tty.onData = null;
-					// _tty._close();
-					// _tty.dispose(); 
-					// _tty.destroy();
-					_tty.kill(); 
-					_tty = null;
+					// console.log("close tty: windows", clientObj.tty._isReady, clientObj.tty._pid, Object.keys(clientObj.tty));
+					console.log("  close tty: windows", clientObj.tty._isReady, clientObj.tty._pid);
+					// clientObj.tty.onData = null;
+					clientObj.tty.onData( function(){ console.log("YOU SHOULD NOT SEE THIS"); } );
+					// clientObj.tty._close();
+					// clientObj.tty.dispose(); 
+					// clientObj.tty.destroy();
+					clientObj.tty.kill(); 
+					// clientObj.tty = null;
+					clientObj.termIsClosed = true;
 				}
 				else{
-					// console.log("close tty: non-windows");
-					// _tty._close();
-					// _tty.dispose(); 
-					// _tty.destroy();
+					console.log("  close tty: non-windows");
+					// clientObj.tty.onData = null;
+					clientObj.tty.onData( function(){ console.log("YOU SHOULD NOT SEE THIS"); } );
+					// clientObj.tty._close();
+					// clientObj.tty.dispose(); 
+					// clientObj.tty.destroy();
 					_tty.kill(9); 
-					_tty = null;
+					// clientObj.tty = null;
+					clientObj.termIsClosed = true;
 				}
 			} 
 			catch(e){ }
+		}
+		else{
+			// console.log(`Terminal having id: ${clientObj.id} attempted disconnect but was not ready`);
+			// console.log(`  ${clientObj.closeThisTerm} ${clientObj.termIsClosed}`);
 		}
 	},
 
@@ -249,8 +276,13 @@ let _MOD = {
 		
 		// On tty exist, close the tty and close the websocket. 
 		tty.onExit( function(event) { 
-			console.log(`Terminal exit: EVENT: ${JSON.stringify(event)}`);
-			_MOD.endTty(tty);
+			let clientObj = _MOD.clients.get(ws);
+			// console.log(`CLOSE : ${res.url}, ID:, ${clientObj.id},`, clientObj.reason ? clientObj.reason : "-");
+
+			if(clientObj){
+				clientObj.closeThisTerm = true;
+				_MOD.endTty(clientObj, event);
+			}
 			
 			if(ws){ ws.close(); }
 		} );
@@ -258,6 +290,8 @@ let _MOD = {
 		//.Add the client. 
 		let clientObj = _MOD.clients.get(ws);
 		clientObj.tty = tty;
+		clientObj.closeThisTerm = false;
+		clientObj.termIsClosed = false;
 		clientObj.type = "term";
 		
 		// Handle messages from the websocket. 
@@ -275,12 +309,12 @@ let _MOD = {
 		let f_close   = function(event){
 			// Get the data for this websocket.
 			let clientObj = _MOD.clients.get(ws);
-		
-			console.log(`CLOSE : ${res.url}, ID:, ${clientObj.id}`);
+			console.log(`CLOSE : ${res.url}, ID:, ${clientObj.id},`, clientObj.reason ? clientObj.reason : "-");
 		
 			// Close the tty if it exists. 
 			if (clientObj.tty) {
-				_MOD.endTty(clientObj.tty);
+				clientObj.closeThisTerm = true;
+				_MOD.endTty(clientObj, null);
 			}
 		
 			// Remove the ws from the clients. 
@@ -369,8 +403,7 @@ let _MOD = {
 		ws.addEventListener('close'  , function(){
 			// Get the data for this websocket.
 			let clientObj = _MOD.clients.get(ws);
-		
-			console.log(`CLOSE : ${res.url}, ID:, ${clientObj.id}`);
+			console.log(`CLOSE : ${res.url}, ID:, ${clientObj.id},`, clientObj.reason ? clientObj.reason : "-");
 
 			_MOD.clients.delete(ws);
 		} );

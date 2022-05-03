@@ -1,6 +1,11 @@
 node_modules
 .git
-config_cmds.json
-configs/config_srv_extra.json
+
 public/OLD
 configs/BACKUP
+
+# These should be created by the user and NOT be added to the git repo.
+config_cmds.json
+configs/config_srv_extra.json
+configs/config_srv.json
+configs/config_terms.json

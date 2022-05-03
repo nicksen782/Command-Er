@@ -102,25 +102,17 @@ let _MOD = {
 		_MOD.config_srv["_pid" ]           = process.pid;
 		_MOD.config_srv["_serverStarted"]  = `${new Date().toString().split(" GMT")[0]} `; // Thu Sep 30 2021 17:04:35
 		
-		// Is there an extra file? If so then add that file's contents also.
-		if (fs.existsSync(_MOD.config_srv_extra_filename)) {
-			// Get the config extra file. 
-			let tmp = await JSON.parse( fs.readFileSync(_MOD.config_srv_extra_filename, 'utf8'));
-			
-			// Add the data.
-			for(let key in tmp){ _MOD.config_srv[key]  = tmp[key]; }
-		}
+		// The config_srv_extra file can add new values and override existing ones. 
+
+		// Get the config extra file. 
+		let tmp = await JSON.parse( fs.readFileSync(_MOD.config_srv_extra_filename, 'utf8'));
+		
+		// Add the data.
+		for(let key in tmp){ _MOD.config_srv[key]  = tmp[key]; }
 	},
 	read_cmdConf: async function(){
-		// If the file does not exist then use the example and write create the missing file. 
-		if (!fs.existsSync(_MOD.config_cmds_filename)) {
-			_MOD.config_cmds = await JSON.parse( fs.readFileSync(_MOD.config_cmds_filename + ".example", 'utf8'));
-			fs.writeFileSync(_MOD.config_cmds_filename, JSON.stringify(_MOD.config_cmds,null,1));
-		}
 		// Return the file. 
-		else{
-			_MOD.config_cmds = await JSON.parse( fs.readFileSync(_MOD.config_cmds_filename, 'utf8'));
-		}
+		_MOD.config_cmds = await JSON.parse( fs.readFileSync(_MOD.config_cmds_filename, 'utf8'));
 	},
 	
 	update_cmdConf: async function(){

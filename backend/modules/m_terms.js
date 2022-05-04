@@ -11,7 +11,8 @@ let _MOD = {
 	//
 	shell: null,
 	ttyConfObj : null,
-	checkActiveConnections_timeout : 90 * 1000,
+	checkActiveConnections_checkInterval        : 15 * 1000, // How often the active connections check should run.
+	checkActiveConnections_disconnected_timeout : 70 * 1000, // 1 minute plus 10 seconds. Inactive browser tabs can check at most every 60 seconds. 
 
 	// Init this module.
 	module_init: async function(parent){
@@ -32,7 +33,7 @@ let _MOD = {
 
 			// Check for disconnected clients. 
 			await _MOD.checkActiveConnections();
-			setInterval(_MOD.checkActiveConnections, _MOD.checkActiveConnections_timeout);
+			setInterval(_MOD.checkActiveConnections, _MOD.checkActiveConnections_checkInterval);
 
 			resolve();
 		});
@@ -102,7 +103,7 @@ let _MOD = {
 			// Remove the terms.
 			toRemove.term.forEach(function(term){
 				let clientObj = _MOD.clients.get(term.ws);
-				clientObj.reason = "TIMEOUT";
+				clientObj.reason = "TIMEOUT: " + (Date.now() - clientObj.lastCheckin )/1000 + " seconds since last checkIn.";
 				clientObj.closeThisTerm = true;
 				_MOD.endTty(clientObj, null);
 				term.ws.close();
@@ -111,7 +112,7 @@ let _MOD = {
 			// Remove the info.
 			toRemove.info.forEach(function(info){
 				let clientObj = _MOD.clients.get(info.ws);
-				clientObj.reason = "TIMEOUT";
+				clientObj.reason = "TIMEOUT: " + (Date.now() - clientObj.lastCheckin )/1000 + " seconds since last checkIn.";
 				info.ws.close();
 			});
 
@@ -121,7 +122,7 @@ let _MOD = {
 
 	checkActiveConnections: async function(){
 		return new Promise(async function(resolve,reject){
-			console.log("  --  checkActiveConnections");
+			// console.log("  --  checkActiveConnections");
 			// Holds what may be closed.
 			let toRemove = {
 				"term": [],
@@ -130,7 +131,8 @@ let _MOD = {
 
 			// Go through each client and look for an overdue checkin.
 			_MOD.clients.forEach(function(key, val){
-				if( Date.now() - key.lastCheckin > (15 * 1000) ){
+				// if( Date.now() - key.lastCheckin > (15 * 1000) ){
+				if( Date.now() - key.lastCheckin > (_MOD.checkActiveConnections_disconnected_timeout) ){
 					// console.log("Overdue!", key.type, key.id);
 					toRemove[key.type].push({
 						ws  : val,
@@ -222,7 +224,7 @@ let _MOD = {
 			});
 
 			// Return the data.
-			console.log(" -- clientCheckIn:  " + clientObj.id);
+			// console.log(" -- clientCheckIn:  " + clientObj.id);
 			resolve(" -- clientCheckIn: " + clientObj.id);
 			resolve(clientObj.id);
 		});
@@ -235,7 +237,7 @@ let _MOD = {
 			try{ 
 				if( os.platform() == "win32" ){
 					// console.log("close tty: windows", clientObj.tty._isReady, clientObj.tty._pid, Object.keys(clientObj.tty));
-					console.log("  close tty: windows", clientObj.tty._isReady, clientObj.tty._pid);
+					// console.log("  close tty: windows", clientObj.tty._isReady, clientObj.tty._pid);
 					// clientObj.tty.onData = null;
 					clientObj.tty.onData( function(){ console.log("YOU SHOULD NOT SEE THIS"); } );
 					// clientObj.tty._close();
@@ -246,7 +248,7 @@ let _MOD = {
 					clientObj.termIsClosed = true;
 				}
 				else{
-					console.log("  close tty: non-windows");
+					// console.log("  close tty: non-windows");
 					// clientObj.tty.onData = null;
 					clientObj.tty.onData( function(){ console.log("YOU SHOULD NOT SEE THIS"); } );
 					// clientObj.tty._close();

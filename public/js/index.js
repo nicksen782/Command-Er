@@ -629,7 +629,7 @@ app.commands = {
 		console.log("I'm the new one!", cmd);
 
 		// If the pressCtrlC flag is set then do that first. 
-		if(cmd.pressCtrlC){ pressControlC(); }
+		if(cmd.pressCtrlC){ app.term.pressControlC(); }
 			
 		// Get the command. 
 		let runThis = cmd.cmd;

@@ -1,35 +1,35 @@
 let app = {
 	init: function(){
 		return new Promise(async function(resolve,reject){
-			console.log("INIT");
+			// console.log("INIT");
 			
 			// APP
-			console.log(" app.getConfigs");
+			// console.log(" app.getConfigs");
 			await app.getConfigs();
 			
 			// MAIN NAV
-			console.log(" app.mainNav.addTabBarListeners");
+			// console.log(" app.mainNav.addTabBarListeners");
 			app.mainNav.addTabBarListeners();
 			
 			// COMMANDS
-			console.log(" app.commands.addCommandBarListeners");
+			// console.log(" app.commands.addCommandBarListeners");
 			app.commands.addCommandBarListeners();
 			
-			console.log(" app.commands.addAllCommands");
+			// console.log(" app.commands.addAllCommands");
 			app.commands.addAllCommands();
 			
 			// TERM
-			console.log(" app.term.addCreateNewTerminalButton");
+			// console.log(" app.term.addCreateNewTerminalButton");
 			app.term.addCreateNewTerminalButton();
 			
-			console.log(" app.term.addListeners");
+			// console.log(" app.term.addListeners");
 			await app.term.addListeners();
 			
 			// INFO
-			console.log(" app.info.addInfo");
+			// console.log(" app.info.addInfo");
 			await app.info.addInfo();
 
-			console.log(" app.info.checkInFunc");
+			// console.log(" app.info.checkInFunc");
 			await app.info.checkInFunc();
 
 			// console.log("");
@@ -68,7 +68,14 @@ app.info = {
 
 	addInfo       : function(){
 		return new Promise(async function(resolve,reject){
-			let locUrl = location.protocol.replace('http', 'ws') + '//' + location.hostname + (location.port ? (':' + location.port) : '') + '/INFO';
+			let locUrl = `` +
+				`ws://` +
+				`${location.hostname}` + 
+				`${location.port ? ':'+location.port : ''}` +
+				`${location.pathname != "/" ? ''+location.pathname : '/'}` +
+				`INFO`
+			;
+			console.log("addInfo    : locUrl:", locUrl);
 			
 			// Websocket create.
 			app.info.info_ws = new WebSocket(locUrl);
@@ -210,7 +217,7 @@ app.info = {
 			app.info.infoIntervalFails = 0;
 
 			// DEBUG
-			console.log("Good clientCheckIn", Date.now());
+			// console.log("Good clientCheckIn", Date.now());
 		} 
 		catch(e){
 			// Update counts. 
@@ -311,7 +318,14 @@ app.term = {
 			var term1 = new Terminal(options);
 	
 			// Create the WebSocket connection.
-			let locUrl = location.protocol.replace('http', 'ws') + '//' + location.hostname + (location.port ? (':' + location.port) : '') + `/TERM?${app.info.uuid}`;
+			let locUrl = `` +
+				`ws://` +
+				`${location.hostname}` + 
+				`${location.port ? ':'+location.port : ''}` +
+				`${location.pathname != "/" ? ''+location.pathname : '/'}` +
+				`TERM?${app.info.uuid}`
+			;
+			console.log("addTerminal: locUrl:", locUrl);
 			var ws1 = new WebSocket(locUrl);
 	
 			// Add the terminal tab to the terminals_tabs container. 
@@ -427,14 +441,14 @@ app.term = {
 									keyList.forEach(function (key) {
 										if (keyList.indexOf(key) != -1) {
 											// console.log(key.padEnd(25, " "), getIt(_obj.elems[key]));
-											let dims = getIt(_obj.elems[key]);
-											console.log(
-												key.padEnd(25, " "), 
-												dims['real.w'].toString().padStart(6, " "), 
-												dims['real.h'].toString().padStart(6, " ")
-												// dims['disp.w'].toString().padStart(6, " "), 
-												// dims['disp.h'].toString().padStart(6, " ")
-											);
+											// let dims = getIt(_obj.elems[key]);
+											// console.log(
+											// 	key.padEnd(25, " "), 
+											// 	dims['real.w'].toString().padStart(6, " "), 
+											// 	dims['real.h'].toString().padStart(6, " ")
+											// 	// dims['disp.w'].toString().padStart(6, " "), 
+											// 	// dims['disp.h'].toString().padStart(6, " ")
+											// );
 	
 											// dimsAll[key] = {
 											// 	width: parseFloat(getComputedStyle(_obj.elems[key], null).getPropertyValue('width').replace('px', '')),
@@ -443,7 +457,7 @@ app.term = {
 											// console.log(key.padEnd(25, " "), dimsAll[key].width.toString().padStart(6, " "), dimsAll[key].height.toString().padStart(6, " "));
 										}
 									});
-									console.log("");
+									// console.log("");
 									// console.log("resizing:", JSON.stringify(dimsAll,null,1) );
 									_obj.fitAddon.fit();
 									_obj.fitAddon.fit();

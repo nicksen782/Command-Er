@@ -64,6 +64,11 @@ let _MOD = {
 				if(skips.indexOf(key) == -1){ filteredTerms[key] = _APP.m_config.config_terms[key]; }
 			}
 
+			// Reaload the command list if specified.
+			if(req.query.reread_cmds == "true"){
+				_APP.m_config.config_cmds = await JSON.parse( fs.readFileSync(_MOD.config_cmds_filename, 'utf8'));
+			}
+
 			res.json({
 				"config_terms" : filteredTerms,
 				"config_cmds"  : _APP.m_config.config_cmds,

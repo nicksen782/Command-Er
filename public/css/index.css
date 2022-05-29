@@ -118,4 +118,10 @@
 
 #view_info {
 	background-color: wheat;
+	min-height:1em;
+}
+
+#view_manage {
+	background-color: aliceblue;
+	min-height:1em;
 }

@@ -32,21 +32,30 @@ let app = {
 			// console.log(" app.info.checkInFunc");
 			await app.info.checkInFunc();
 
+			// MANAGE
+			await app.manage.addEventListeners();
+
 			// console.log("");
 			resolve();
 		});
 	},
-	getConfigs : function(){
+	getConfigs : function(reread_cmds=false){
 		return new Promise(async function(resolve,reject){
 			// Get the configs.
-			let getConfigs = await fetch("getConfigs");
+			let configs;
+			if(!reread_cmds){
+				configs = await fetch("getConfigs");
+			}
+			else{
+				configs = await fetch("getConfigs?reread_cmds=true");
+			}
 
 			// Parse the JSON.
-			getConfigs     = await getConfigs.json();
+			configs     = await configs.json();
 
 			// Set the configs.
-			app.commands.cmdList = getConfigs.config_cmds;
-			app.term.config      = getConfigs.config_terms;
+			app.commands.cmdList = configs.config_cmds;
+			app.term.config      = configs.config_terms;
 
 			resolve();
 		});
@@ -75,7 +84,7 @@ app.info = {
 				`${location.pathname != "/" ? ''+location.pathname : '/'}` +
 				`INFO`
 			;
-			console.log("addInfo    : locUrl:", locUrl);
+			// console.log("addInfo    : locUrl:", locUrl);
 			
 			// Websocket create.
 			app.info.info_ws = new WebSocket(locUrl);
@@ -325,7 +334,7 @@ app.term = {
 				`${location.pathname != "/" ? ''+location.pathname : '/'}` +
 				`TERM?${app.info.uuid}`
 			;
-			console.log("addTerminal: locUrl:", locUrl);
+			// console.log("addTerminal: locUrl:", locUrl);
 			var ws1 = new WebSocket(locUrl);
 	
 			// Add the terminal tab to the terminals_tabs container. 
@@ -567,6 +576,10 @@ app.commands = {
 		let commands_tabsElem = document.getElementById("cmds_navBar");
 		let commands_viewsElem = document.getElementById("commands_views");
 
+		// Clear the list before populating.
+		commands_tabsElem.innerHTML = "";
+		commands_viewsElem.innerHTML = "";
+
 		// 
 		let sectionKeys = Object.keys(app.commands.cmdList);
 		sectionKeys.forEach(function(sectionKey, index){
@@ -640,7 +653,7 @@ app.commands = {
 		});
 	},
 	commandClickListener  : function(cmd){
-		console.log("I'm the new one!", cmd);
+		// console.log("I'm the new one!", cmd);
 
 		// If the pressCtrlC flag is set then do that first. 
 		if(cmd.pressCtrlC){ app.term.pressControlC(); }
@@ -677,6 +690,9 @@ app.mainNav = {
 			tablinks[i].classList.remove("active");
 		}
 
+		let tabElem = document.getElementById(tabId);
+		let destElem = document.getElementById(destView);
+
 		// Add the show class to the destView.
 		document.getElementById(destView).classList.add("show");
 
@@ -701,6 +717,25 @@ app.resizeTerminal = {
 		// makeResizableDiv('#view_terminals_wrapper');
 		// resizeDiv.start('#view_terminals', '.resizer.bottom-right');
 		// resizeDiv.start('#terminals_terminals', '.resizer.bottom-right');
+	},
+};
+
+app.manage = {
+	addEventListeners: function(){
+		let refreshCommands = document.getElementById("refreshCommands");
+		refreshCommands.addEventListener("click", async function(){ 
+			// console.log("refreshCommands"); 
+			await app.getConfigs(true);
+
+			// Update the commands.
+			await app.commands.addAllCommands();
+
+			// Switch back to the terminal view. 
+			app.mainNav.changeView("tab_terminals"  , "view_terminals" );
+
+			// Open the commands list.
+			document.getElementById("terminals_cmdsBar").dispatchEvent(new Event("click"));
+		}, false);
 	},
 };
 

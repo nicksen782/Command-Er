@@ -9,3 +9,5 @@ config_cmds.json
 configs/config_srv_extra.json
 configs/config_srv.json
 configs/config_terms.json
+backend/commands/*
+!backend/commands/.gitKeep

@@ -84,7 +84,7 @@ app.info = {
 				`${location.pathname != "/" ? ''+location.pathname : '/'}` +
 				`INFO`
 			;
-			console.log("addInfo    : locUrl:", locUrl);
+			// console.log("addInfo    : locUrl:", locUrl);
 			
 			// Websocket create.
 			app.info.info_ws = new WebSocket(locUrl);
@@ -334,7 +334,7 @@ app.term = {
 				`${location.pathname != "/" ? ''+location.pathname : '/'}` +
 				`TERM?${app.info.uuid}`
 			;
-			console.log("addTerminal: locUrl:", locUrl);
+			// console.log("addTerminal: locUrl:", locUrl);
 			var ws1 = new WebSocket(locUrl);
 	
 			// Add the terminal tab to the terminals_tabs container. 
@@ -653,7 +653,7 @@ app.commands = {
 		});
 	},
 	commandClickListener  : function(cmd){
-		console.log("I'm the new one!", cmd);
+		// console.log("I'm the new one!", cmd);
 
 		// If the pressCtrlC flag is set then do that first. 
 		if(cmd.pressCtrlC){ app.term.pressControlC(); }

@@ -57,6 +57,9 @@ let app = {
 			app.commands.cmdList = configs.config_cmds;
 			app.term.config      = configs.config_terms;
 
+			let textCommands = document.getElementById("textCommands");
+			textCommands.value = JSON.stringify(app.commands.cmdList,null,1);
+
 			resolve();
 		});
 	},
@@ -732,6 +735,43 @@ app.resizeTerminal = {
 };
 
 app.manage = {
+	textCommands_reset: function(){
+		let text = document.getElementById("textCommands");
+		text.value = JSON.stringify(app.commands.cmdList,null,1);
+	},
+	textCommands_update: function(){
+		return new Promise(async function(resolve,reject){
+			let text = document.getElementById("textCommands");
+			let json;
+			try{
+				json = JSON.parse(text.value);
+			}
+			catch(e){
+				alert("Error parsing JSON. Fix and try again.");
+				resolve();
+				return;
+			}
+
+			// The JSON is good, send it to the server so that it can be updated.
+			let obj = {
+				method: 'POST',
+				headers: {
+					'Accept'      : 'application/json',
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(json)
+			};
+			let resp = await fetch("update_config_cmds", obj);
+			resp = await resp.json();
+			alert("SERVER: " + resp);
+
+			// Read/Download Commands (Opens the terminal view and open the command drawer.)
+			let refreshCommands = document.getElementById("refreshCommands");
+			refreshCommands.click();
+
+			resolve();
+		});
+	},
 	addEventListeners: function(){
 		let refreshCommands = document.getElementById("refreshCommands");
 		refreshCommands.addEventListener("click", async function(){ 
@@ -741,12 +781,21 @@ app.manage = {
 			// Update the commands.
 			await app.commands.addAllCommands();
 
+			let textCommands = document.getElementById("textCommands");
+			textCommands.value = JSON.stringify(app.commands.cmdList,null,1);
+
 			// Switch back to the terminal view. 
 			app.mainNav.changeView("tab_terminals"  , "view_terminals" );
 
 			// Open the commands list.
 			document.getElementById("terminals_cmdsBar").dispatchEvent(new Event("click"));
 		}, false);
+
+		let updateCommands = document.getElementById("textCommands_update");
+		updateCommands.addEventListener("click", app.manage.textCommands_update, false);
+		
+		let resetCommands = document.getElementById("textCommands_reset");
+		resetCommands.addEventListener("click", app.manage.textCommands_reset, false);
 	},
 };
 
@@ -774,6 +823,7 @@ let test_getDom = function(){
 		"\n  statusBar_infos  :", getDom("statusBar_infos")  ? "found" : "NOT FOUND",
 	);
 };
+// UNUSED
 let getDom = function(thing){
 	let returned = null;
 

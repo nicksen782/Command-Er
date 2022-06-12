@@ -64,7 +64,7 @@ let _MOD = {
 				if(skips.indexOf(key) == -1){ filteredTerms[key] = _APP.m_config.config_terms[key]; }
 			}
 
-			// Reaload the command list if specified.
+			// Reload the command list if specified.
 			if(req.query.reread_cmds == "true"){
 				_APP.m_config.config_cmds = await JSON.parse( fs.readFileSync(_MOD.config_cmds_filename, 'utf8'));
 			}
@@ -73,6 +73,26 @@ let _MOD = {
 				"config_terms" : filteredTerms,
 				"config_cmds"  : _APP.m_config.config_cmds,
 			});
+		});
+		
+		//
+		_APP.addToRouteList({ path: "/update_config_cmds", method: "post", args: [], file: __filename, desc: "" });
+		app.post('/update_config_cmds'    ,express.json(), async (req, res) => {
+			// Is the JSON parsable?
+			let json;
+			try{
+				// Write the file. 
+				fs.writeFileSync(_MOD.config_cmds_filename, JSON.stringify(req.body,null,1));
+
+				// Update the in memory copy.
+				_APP.m_config.config_cmds = req.body;
+
+				res.json("UPDATED");
+			}
+			catch(e){
+				console.log("Bad parse",e);
+				res.json("Bad parse");
+			}
 		});
 	},
 

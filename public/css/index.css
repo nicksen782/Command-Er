@@ -131,3 +131,14 @@
 	background-color: aliceblue;
 	min-height:1em;
 }
+
+
+/* MANAGE */
+#textCommands{
+	width: 100%;
+	height: 760px;
+}
+#textCommands_update{
+}
+#textCommands_reset{
+}

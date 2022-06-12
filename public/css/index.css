@@ -1,6 +1,12 @@
 @import "main.css";
 @import "terminals_view.css";
 
+.disabled{
+	cursor: not-allowed;
+	/* pointer-events: none; */
+	opacity:0.5;
+	text-decoration: line-through;
+}
 #mainWrapper {
 	/* width: 1350px; */
 	/* min-width: 950px; */

@@ -78,7 +78,7 @@ app.info = {
 	addInfo       : function(){
 		return new Promise(async function(resolve,reject){
 			let locUrl = `` +
-				`ws://` +
+				`${window.location.protocol == "https:" ? "wss" : "ws"}://` +
 				`${location.hostname}` + 
 				`${location.port ? ':'+location.port : ''}` +
 				`${location.pathname != "/" ? ''+location.pathname : '/'}` +
@@ -328,7 +328,7 @@ app.term = {
 	
 			// Create the WebSocket connection.
 			let locUrl = `` +
-				`ws://` +
+				`${window.location.protocol == "https:" ? "wss" : "ws"}://` +
 				`${location.hostname}` + 
 				`${location.port ? ':'+location.port : ''}` +
 				`${location.pathname != "/" ? ''+location.pathname : '/'}` +
@@ -628,7 +628,12 @@ app.commands = {
 					let elem = document.createElement("button");
 					elem.classList.add("command");
 					elem.setAttribute("title", cmd.cmd);
-	
+
+					if(cmd.hidden){ 
+						// elem.disabled = true; 
+						elem.classList.add("disabled");
+					}
+
 					commandsDiv.appendChild(elem);
 		
 					// If the title is set then use that, otherwise use the cmd. 
@@ -653,6 +658,12 @@ app.commands = {
 		});
 	},
 	commandClickListener  : function(cmd){
+		if(cmd.hidden){
+			console.log("This command is disabled.", cmd);
+			alert("This command is disabled.");
+			return;
+		}
+
 		// console.log("I'm the new one!", cmd);
 
 		// If the pressCtrlC flag is set then do that first. 

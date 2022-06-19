@@ -2,6 +2,7 @@ node_modules
 .git
 
 public/OLD
+/OLD
 configs/BACKUP
 
 # These should be created by the user and NOT be added to the git repo.

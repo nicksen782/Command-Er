@@ -56,7 +56,7 @@ let _MOD = {
 			// res.json(_MOD.update_cmdConf(req.body.json));
 		});
 
-		_APP.addToRouteList({ path: "/getConfigs", method: "get", args: [], file: __filename, desc: "" });
+		_APP.addToRouteList({ path: "/getConfigs", method: "get", args: [], file: __filename, desc: "Returns config_cmds.json" });
 		app.get('/getConfigs'    ,express.json(), async (req, res) => {
 			let skips = ['env', 'cwd'];
 			let filteredTerms = {};
@@ -76,7 +76,7 @@ let _MOD = {
 		});
 		
 		//
-		_APP.addToRouteList({ path: "/update_config_cmds", method: "post", args: [], file: __filename, desc: "" });
+		_APP.addToRouteList({ path: "/update_config_cmds", method: "post", args: [], file: __filename, desc: "Updates config_cmds.json" });
 		app.post('/update_config_cmds'    ,express.json(), async (req, res) => {
 			// Is the JSON parsable?
 			let json;

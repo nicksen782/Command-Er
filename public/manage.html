@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; font-src 'self' data: fonts.gstatic.com;"> -->
+
+	<title>Remote terminal - Management</title>
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+
+	<!-- xterm.js -->
+	<!-- <link rel="stylesheet" href="libs/xterm/css/xterm.css" /> -->
+	<!-- <script src="libs/xterm/lib/xterm.js"></script> -->
+	<!-- <script src="libs/xterm-addon-attach/lib/xterm-addon-attach.js"></script> -->
+	<!-- <script src="libs/xterm-addon-fit/lib/xterm-addon-fit.js"></script> -->
+
+	<!-- Custom -->
+	<!-- <link rel="stylesheet" href="css/index.css"> -->
+	<link rel="stylesheet" href="css/manage.css">
+	<!-- <script src="js/index.js"></script> -->
+	<script src="js/cmd_mgr.js"></script>
+
+	<!-- Div Resize -->
+	<!-- <link rel="stylesheet" href="vendor/divResize/divResize.css"> -->
+	<!-- <script src="vendor/divResize/divResize.js"></script> -->
+</head>
+
+<body>
+
+	<div id="mainWrapper">
+
+		<div id="main_navBar" class="">
+			<button class="nav_tablink" dest="view_manage_v1" id="tab_manage_v1">Manage v1</button>
+			<button class="nav_tablink" dest="view_manage_v2" id="tab_manage_v2">Manage v2</button>
+		</div>
+
+		<div id="views">
+			<div id="view_manage_v1" class="nav_tabContent">
+				view_manage_v1
+				<textarea spellcheck="false" id="textCommands"></textarea>
+			</div>
+
+			<div id="view_manage_v2" class="nav_tabContent">
+				view_manage_v2
+				<div id="cmd_editor">
+					<div id="sub_tabs3"></div>
+					<br>
+					<button id="rebuildAndUpdateCmds">rebuildAndUpdateCmds</button>
+					<br>
+					<br>
+					<div id="sub_views3"></div>
+				</div>
+			</div>
+
+		</div>
+
+	</div>
+
+</body>
+
+</html>

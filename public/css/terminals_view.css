@@ -90,6 +90,16 @@
 	opacity: 0.5;
 }
 
+#terminals_tabs_sidebar.x_out,
+#terminals_add.x_out,
+.terminalTab.x_out {
+	background-image: url(../img/x_out.png);
+	background-size: 100% 100%;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-color: black;
+}
+
 .terminalTab.active {
 	border-color: goldenrod;
 	border-style: solid;
@@ -160,6 +170,7 @@
 	z-index: 100;
 	height: 0px;
 	width: 520px;
+	width: 90%;
 	padding: 0px;
 	transition: all 500ms;
 	box-shadow: 0px 0px 5px 5px #005c80;
@@ -191,14 +202,20 @@
 .command {
 	margin: 2px;
 	cursor: pointer;
-	border: 1px solid black;
+	border: 3px solid black;
 	opacity: 0.90;
-	min-width: 220px;
-	padding: 5px;
+	min-width: 100px;
+	padding: 7px;
+	white-space: pre;
+	font-family: monospace;
+}
+
+.multi_command {
+	border-color: cornflowerblue;
 }
 
 .command:hover {
-	border-style: dashed;
+	border-style: dotted;
 	background-color: #f1f1f1;
 	opacity: 1;
 }
@@ -208,6 +225,7 @@
 	margin-right: 5px;
 }
 
+.cmd_key_div2 .title,
 .cmd_key_div .title {
 	background-color: rgb(0 92 128);
 	color: white;
@@ -223,10 +241,43 @@
 	text-decoration: underline;
 	position: relative;
 	top: 5px;
+	vertical-align: top;
 }
 
 #commands_views {
 	margin: 2px 0px 0px 5px;
 	overflow-y: auto;
 	height: 500px;
+}
+
+
+
+
+/* INFO */
+.infoWrap {
+	vertical-align: top;
+	display: inline-block;
+	border: 1px solid black;
+	min-width: 200px;
+	background-color: #fff0f5;
+}
+
+.infoWrap_title {
+	background-color: gold;
+	font-weight: bold;
+	border-bottom: 1px solid black;
+}
+
+.infoWrap_OUTPUT {
+	white-space: pre;
+	font-family:monospace;
+}
+
+.pre_nomargin {
+	margin: 0px;
+	padding: 0px;
+	font-family:monospace;
+}
+table caption.currentUser{
+	background-color: palegoldenrod;
 }

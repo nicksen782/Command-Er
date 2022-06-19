@@ -10,6 +10,7 @@ const express  = require('express');
 const app      = express();
 
 // Compression in Express.
+const zlib = require('zlib');
 const compression = require('compression');
 const shouldCompress = (req, res) => {
 	if (req.headers['x-no-compression']) {
@@ -27,6 +28,17 @@ const _APP  = require('./modules/M_main.js')(app, express, wss);
 // Main module import(s).
 
 (async function startServer(){
+	const compressionObj = {
+		filter    : shouldCompress,
+		memLevel  : zlib.constants.Z_DEFAULT_MEMLEVEL,
+		level     : zlib.constants.Z_DEFAULT_COMPRESSION,
+		chunkSize : zlib.constants.Z_DEFAULT_CHUNK,
+		strategy  : zlib.constants.Z_DEFAULT_STRATEGY,
+		threshold : 0,
+		windowBits: zlib.constants.Z_DEFAULT_WINDOWBITS,
+	};
+	app.use( compression(compressionObj) );
+
 	await _APP.module_inits();
 
 	let conf = {
@@ -77,9 +89,9 @@ const _APP  = require('./modules/M_main.js')(app, express, wss);
 				}
 		};
 
-		console.log(`CONFIG:`);
-		console.log(_APP.m_config.config_srv);
-		console.log(maxes);
+		// console.log(`CONFIG:`);
+		// console.log(_APP.m_config.config_srv);
+		// console.log(maxes);
 		console.log("*".repeat(45));
 		console.log();
 	});

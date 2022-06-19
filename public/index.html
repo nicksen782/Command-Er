@@ -6,6 +6,7 @@
 	<!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; font-src 'self' data: fonts.gstatic.com;"> -->
 
 	<title>Remote terminal</title>
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
 
 	<!-- xterm.js -->
 	<link rel="stylesheet" href="libs/xterm/css/xterm.css" />
@@ -15,6 +16,7 @@
 
 	<!-- Custom -->
 	<link rel="stylesheet" href="css/index.css">
+	<script src="js/webworker_timers.js"></script>
 	<script src="js/index.js"></script>
 
 	<!-- Div Resize -->
@@ -29,7 +31,7 @@
 		<div id="main_navBar" class="">
 			<button class="nav_tablink" dest="view_terminals" id="tab_terminals">Terminals</button>
 			<button class="nav_tablink" dest="view_info"      id="tab_info">Info</button>
-			<button class="nav_tablink" dest="view_manage"    id="tab_manage">Manage</button>
+			<button class="nav_tablink" dest="view_manage_v1" id="tab_manage_v1">Manage v1</button>
 		</div>
 
 		<div id="views">
@@ -55,7 +57,7 @@
 				<div id="infobar1">
 					<span class="infoBarItem noselect" id="resizeTerm">AutoFit Term</span>
 					<span class="infoBarItem noselect" id="clearTerm">Clear Term</span>
-					<span class="infoBarItem noselect" id="vpn_status"></span>
+					<span class="infoBarItem noselect" id="vpn_status" style="display:none;"></span>
 
 					<!-- COMMANDS -->
 					<div id="terminals_cmdsBar" class="noselect" title="">
@@ -70,13 +72,39 @@
 			</div>
 
 			<div id="view_info" class="nav_tabContent">
-				<div id="info_output">
+				<div class="infoWrap" id="info_output_data_updated">
+					<div class='infoWrap_title'>Last Check-in:</div>
+					<div class='infoWrap_OUTPUT'></div>
 				</div>
-				<div id="info_output2">
+				<br>
+				<br>
+
+				<div class="infoWrap" id="info_output_data_ws_breakdown2">
+					<div class='infoWrap_title'>WebSocket Client Breakdown:</div>
+					<div class='infoWrap_OUTPUT'></div>
 				</div>
+				<br>
+				<br>
+
+				<div class="infoWrap" id="info_output_data_vpnCheck">
+					<div class='infoWrap_title'>VPN Status:</div>
+					<div class='infoWrap_OUTPUT'></div>
+				</div>
+
+				<div class="infoWrap" id="info_output_data_ws_connections">
+					<div class='infoWrap_title'>WebSocket Connection Counts:</div>
+					<div class='infoWrap_OUTPUT'></div>
+				</div>
+
+				<div class="infoWrap" id="info_output_data_checkInFunc">
+					<div class='infoWrap_title'>checkInFunc Status:</div>
+					<div class='infoWrap_OUTPUT'></div>
+				</div>
+
 			</div>
 
-			<div id="view_manage" class="nav_tabContent">
+			<div id="view_manage_v1" class="nav_tabContent">
+				<br>
 				<button id="refreshCommands">Read/Download Commands</button>
 				<br>
 				<br>

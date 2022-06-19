@@ -11,6 +11,9 @@ let app = {
 			// console.log(" app.mainNav.addTabBarListeners");
 			app.mainNav.addTabBarListeners();
 			
+			// Set the default tab/view.
+			app.mainNav.changeView("tab_terminals"  , "view_terminals" );
+
 			// COMMANDS
 			// console.log(" app.commands.addCommandBarListeners");
 			app.commands.addCommandBarListeners();
@@ -24,16 +27,22 @@ let app = {
 			
 			// console.log(" app.term.addListeners");
 			await app.term.addListeners();
-			
+
 			// INFO
 			// console.log(" app.info.addInfo");
 			await app.info.addInfo();
 
+			// Add the first terminal to the terminals div.
+			let termObj = await app.term.addTerminal('' + app.term.nexttermId++, app.term.config ); 
+			termObj.funcs.switch(termObj);
+
+			app.term.startTimedFunc();
+
 			// console.log(" app.info.checkInFunc");
-			await app.info.checkInFunc();
+			// await app.info.checkInFunc();
 
 			// MANAGE
-			await app.manage.addEventListeners();
+			await app.manage.init();
 
 			// console.log("");
 			resolve();
@@ -62,6 +71,70 @@ let app = {
 
 			resolve();
 		});
+	},
+	ISOStringToLocal_dateAndTime : function(isoString, zeroSeconds=false){
+		//
+		let dateString = new Date( isoString );
+		
+		// Get timeString (24/hour).
+		let hours      = dateString.getHours().toString().padStart(2, "0");
+		let minutes    = dateString.getMinutes().toString().padStart(2, "0");
+		let seconds;
+		if(zeroSeconds){
+			seconds = "00";
+		} 
+		else{
+			seconds = dateString.getSeconds().toString().padStart(2, "0");
+		}
+		
+		let timeString;
+		timeString = hours + ":" + minutes + ":" + seconds;
+		
+		// Get timeString (12/hour).
+		let ampm        = hours < 12 ? "AM" : "PM";
+		let hours2      = ampm == "AM" ? hours : hours - 12;
+
+		let timeString2;
+		timeString2 = hours2 + ":" + minutes + ":" + seconds + " " + ampm;
+
+		let time24_noSeconds = hours  + ":" + minutes + "" ;
+		let time12_noSeconds = hours2 + ":" + minutes + "" + " " + ampm;
+		
+		// Get dateString.
+		dateString = dateString
+			.toLocaleString()
+			.split(", ")[0]
+			.replace(/\//g, "-")
+			.split("-");
+		let month = dateString[0].padStart(2, "0");
+		let day   = dateString[1].padStart(2, "0");
+		let year  = dateString[2];
+		dateString = `${year}-${month}-${day}`;
+
+		return {
+			time24: timeString,
+			time12: timeString2,
+			
+			date  : dateString,
+			iso   : isoString,
+			
+			time24_noSeconds: time24_noSeconds,
+			time12_noSeconds: time12_noSeconds,
+			
+			// breakOut: {
+			// 	month  : month ,
+			// 	day    : day ,
+			// 	year   : year ,
+			// 	ampm   : ampm ,
+			// 	hours2 : hours2 ,
+			// 	hours  : hours ,
+			// 	minutes: minutes ,
+			// 	seconds: seconds ,
+			// },
+
+			// iso   : `${dateString}T${timeString}.000Z`,
+			// iso   : `${isoString}`,
+		};
 	},
 };
 
@@ -112,13 +185,99 @@ app.info = {
 				app.info.info_ws_isActive=true;
 				app.info.info_ws.onmessage = function(e) { 
 					app.info.info_ws_isActive=false;
-					document.getElementById("info_output").innerHTML = "<pre>" + e.data + "</pre>";
-	
 					let data = JSON.parse(e.data);
-	
+
+					let func_setValues = function(id, json){
+						let text = JSON.stringify(json,null,1);
+						let parent = document.getElementById(id);
+						let output = parent.querySelector(".infoWrap_OUTPUT");
+						output.innerHTML = text;
+					};
+
+					let lastUpdated = app.ISOStringToLocal_dateAndTime(new Date(data.updated).toISOString());
+					lastUpdated = lastUpdated.date + " " + lastUpdated.time12;
+					let { breakdown, ...ws_connections } = data.ws_connections;
+
+					func_setValues("info_output_data_updated"       , lastUpdated); 
+					func_setValues("info_output_data_vpnCheck"      , data.vpnCheck);
+					func_setValues("info_output_data_ws_connections", ws_connections);
+
+					// 
+					let ws_breakdownElem = document.querySelector("#info_output_data_ws_breakdown2 .infoWrap_OUTPUT");
+					ws_breakdownElem.innerHTML = "";
+					let frag1 = document.createDocumentFragment();
+					let returnedTermids = [];
+					for(let uuid in breakdown){
+						let rec = breakdown[uuid];
+						let currentUserUuid = ws_connections.userId;
+						let lastCheckinInfo = app.ISOStringToLocal_dateAndTime(new Date(rec.info[0].lastCheckin).toISOString());
+						lastCheckinInfo = lastCheckinInfo.date + " " + lastCheckinInfo.time12;
+
+						// Create the table head and caption.
+						let table = document.createElement("table");
+						let thead = document.createElement("thead");
+						let tbody = document.createElement("tbody");
+						let caption = document.createElement("caption");
+						caption.innerText = `${currentUserUuid == uuid ? "**" : "  "} /INFO: ${lastCheckinInfo}, ${uuid}`;
+						if(currentUserUuid == uuid){ caption.classList.add("currentUser"); }
+						table.classList.add("tableType1", "padBottom");
+						table.appendChild(caption);
+						table.appendChild(thead);
+						table.appendChild(tbody);
+
+						if(rec.term.length){
+							let tr; let th;
+							tr = thead.insertRow(-1);
+							th = document.createElement("th"); tr.appendChild(th); th.innerText = "termid";
+							th = document.createElement("th"); tr.appendChild(th); th.innerText = "_pid";
+							th = document.createElement("th"); tr.appendChild(th); th.innerText = "lastCheckin";
+							th = document.createElement("th"); tr.appendChild(th); th.innerText = "termIsClosed";
+							th = document.createElement("th"); tr.appendChild(th); th.innerText = "closeThisTerm";
+							th = document.createElement("th"); tr.appendChild(th); th.innerText = "closeAttempts";
+
+							// Create a row for each term.
+							for(let termRec of rec.term){
+								// Add to the list of the current user's termids.
+								if(currentUserUuid == uuid){ 
+									returnedTermids.push(termRec.termid);
+								}
+								let lastCheckinTerm = app.ISOStringToLocal_dateAndTime(new Date(termRec.lastCheckin).toISOString());
+								lastCheckinTerm = lastCheckinTerm.date + " " + lastCheckinTerm.time12;
+
+								tr = tbody.insertRow(-1);
+								td = document.createElement("td"); tr.appendChild(td); td.innerText = termRec.termid;
+								td = document.createElement("td"); tr.appendChild(td); td.innerText = termRec._pid;
+								td = document.createElement("td"); tr.appendChild(td); td.innerText = lastCheckinTerm;
+								td = document.createElement("td"); tr.appendChild(td); td.innerText = termRec.termIsClosed;
+								td = document.createElement("td"); tr.appendChild(td); td.innerText = termRec.closeThisTerm;
+								td = document.createElement("td"); tr.appendChild(td); td.innerText = termRec.closeAttempts;
+							}
+						}
+						else{
+							tr = tbody.insertRow(-1);
+							td = document.createElement("td"); 
+							td.style="text-align:center";
+							td.innerText = "NO TERMINALS ACTIVE";
+							td.setAttribute("colspan", 5);
+							tr.appendChild(td);
+						}
+						frag1.appendChild(table);
+					}
+					ws_breakdownElem.appendChild(frag1);
+					
+					// Indicate any terminal tabs that are displayed but not connected to the server.
+					let displayedTabs = Array.from(document.querySelectorAll("#terminals_tabs .terminalTab")).map(function(d){
+						return { elem: d, termid: d.getAttribute("termid") };
+					});
+					for(let t of displayedTabs){
+						if(returnedTermids.indexOf(t.termid) == -1){ t.elem.classList.add("x_out"); }
+						else{ t.elem.classList.remove("x_out"); }
+					}
+
 					let vpnStatusElem = document.getElementById("vpn_status");
 					if(data.vpnCheck){
 						if(data.vpnCheck.active){
+							vpnStatusElem.style.display = "inline-block";
 							if(data.vpnCheck.alive){
 								vpnStatusElem.classList.add("active");
 								vpnStatusElem.innerText = `${data.vpnCheck.name}: ACTIVE`;
@@ -190,6 +349,7 @@ app.info = {
 				app.info.info_ws_isActive = true;
 				app.info.info_ws.onmessage = null;
 				app.info.info_ws.onmessage = function (e) {
+					// console.log(e.currentTarget.url, e.data);
 					app.info.info_ws_isActive = false;
 					resolve();
 				};
@@ -222,7 +382,8 @@ app.info = {
 			await app.info.getInfo("clientCheckIn"); 
 
 			// Set status indicator.
-			document.body.style['background-color'] = "green";
+			document.body.classList.remove("warnL1", "warnL2", "warn3");
+			document.body.classList.add("warnL1");
 
 			// Update counts. 
 			app.info.checks.success += 1;
@@ -235,17 +396,45 @@ app.info = {
 			// Update counts. 
 			app.info.infoIntervalFails += 1; 
 			app.info.checks.fail += 1;
+			document.body.classList.remove("warnL1", "warnL2", "warn3");
+			document.body.classList.add("warnL2");
 
 			// Have the connection failed too many times? 
-			if(app.info.infoIntervalFails >= 4){
+			if(app.info.infoIntervalFails >= 2){
 				// Set status indicator?
-				document.body.style['background-color'] = "red";
+				document.body.classList.remove("warnL1", "warnL2", "warn3");
+				document.body.classList.add("warnL3");
 	
 				// DEBUG
 				console.log("DISCONNECTING!!, app.info.infoIntervalFails:", app.info.infoIntervalFails, "error: ", e);
 
 				// Quit trying to connect on the websocket.
-				clearInterval(app.info.infoIntervalId);
+				// clearInterval(app.info.infoIntervalId);
+				clearIntervalWorker (app.info.infoIntervalId);
+
+				// Indicate any terminal tabs that are displayed but not connected to the server.
+				// Array.from(document.querySelectorAll("#terminals_tabs .terminalTab")).forEach(function(d){
+				// 	d.classList.add("x_out");
+				// });
+					
+				// Indicate any terminal tabs that are displayed but not connected to the server.
+				// Close all active terminals.
+				app.term.terms.forEach(function(t){
+					// Show the tab as disabled.
+					t.elems.tabElem.classList.add("x_out");
+
+					// Close the terminal Websocket.
+					if(t.ws.readyState == 1) {
+						t.ws.close();
+					}
+				});
+
+				// Disable the terminal add button (because a new terminal can still be created if the server is still working.)
+				document.getElementById("terminals_add").classList.add("noselect", "x_out");
+				
+				// setTimeout(function(){
+					// alert("DISCONNECTING!!, app.info.infoIntervalFails: " + app.info.infoIntervalFails);
+				// }, 100);
 			}
 			else{
 				// DEBUG. We aren't disconnecting yet but we are warning of it.
@@ -253,10 +442,11 @@ app.info = {
 			}
 		}
 
-		document.getElementById("info_output2").innerHTML = "<pre>" + JSON.stringify(app.info.checks,null,1) + "</pre>";
+		document.getElementById("info_output_data_checkInFunc").querySelector(".infoWrap_OUTPUT").innerHTML = JSON.stringify(app.info.checks,null,1) ;
 	},
 	startTimedFunc: function() {
-		app.info.infoIntervalId = setInterval(app.info.checkInFunc, 5000);
+		// app.info.infoIntervalId = setInterval(app.info.checkInFunc, 5000);
+		app.info.infoIntervalId = setInterval_ww (app.info.checkInFunc, 5000);
 	},
 };
 
@@ -264,6 +454,7 @@ app.term = {
 	terms : [],
 	config: {},
 	nexttermId: 1,
+	infoIntervalId: 1,
 	getActiveTerminal : function(){
 		// Is there actually a terminal?
 		if(!app.term.terms.length){ 
@@ -292,6 +483,11 @@ app.term = {
 		let terminals_add = document.getElementById("terminals_add");
 
 		terminals_add.addEventListener("click"       , async function(){
+			if(terminals_add.classList.contains("x_out")){
+				console.log("Adding terminals has been disabled until you fresh the window.");
+				return;
+			}
+
 			// Create the new terminal.
 			let termObj = await app.term.addTerminal('' + app.term.nexttermId++, app.term.config ); 
 	
@@ -335,7 +531,8 @@ app.term = {
 				`${location.hostname}` + 
 				`${location.port ? ':'+location.port : ''}` +
 				`${location.pathname != "/" ? ''+location.pathname : '/'}` +
-				`TERM?${app.info.uuid}`
+				`TERM?uuid=${app.info.uuid}` +
+				`&termid=${'t_' + termId}`
 			;
 			// console.log("addTerminal: locUrl:", locUrl);
 			var ws1 = new WebSocket(locUrl);
@@ -542,6 +739,22 @@ app.term = {
 		})
 	},
 
+	startTimedFunc: function() {
+		app.term.infoIntervalId = setInterval_ww (app.term.checkInFunc, (60 * 1000)); 
+	}, 
+	checkInFunc   : function(){
+		// console.log(app.term.terms.length, app.term.terms);
+		app.term.terms.forEach(function(t, i, a){
+			// console.log(`term ${i+1} of ${a.length}`);
+			if(t.ws.readyState == 1) {
+				t.ws.send("");
+			}
+			// else{
+				// console.log("t.ws.readyState:", t.ws.readyState);
+			// }
+		});
+	},
+
 	addListeners      : function(){
 		return new Promise(async function(resolve,reject){
 			let resizeTerm = document.getElementById("resizeTerm");
@@ -630,7 +843,20 @@ app.commands = {
 					// Create the command button. 
 					let elem = document.createElement("button");
 					elem.classList.add("command");
-					elem.setAttribute("title", cmd.cmd);
+
+					if(Array.isArray(cmd.cmd)){
+						// cmd.title = "M: " + cmd.title ;
+						elem.classList.add("multi_command");
+						let tmpTitle = "";
+						cmd.cmd.forEach(function(c, ci){
+							tmpTitle += `CMD_${ci.toString().padStart(2, "0")}: ${c}\n`;
+						});
+						// elem.setAttribute("title", `MULTI:\n${JSON.stringify(cmd.cmd,null,1)}`);
+						elem.setAttribute("title", `MULTI:\n${tmpTitle}`);
+					}
+					else{
+						elem.setAttribute("title", `SINGLE:\n  ${cmd.cmd}`);
+					}
 
 					if(cmd.hidden){ 
 						// elem.disabled = true; 
@@ -661,13 +887,49 @@ app.commands = {
 		});
 	},
 	commandClickListener  : function(cmd){
+		// NOTES:
+		// For cmd.cmd as array: Use "wrapInBashFunction".
+		// For cmd.cmd as string: Use "single".
+		
+		// Don't run a disabled/hidden command.
 		if(cmd.hidden){
 			console.log("This command is disabled.", cmd);
 			alert("This command is disabled.");
 			return;
 		}
 
-		// console.log("I'm the new one!", cmd);
+		// Utility: Creates a wrapped bash function.
+		let createWrappedFunction = function(cmd){
+			let commands = "";
+
+			if(Array.isArray(cmd.cmd)){
+				commands = cmd.cmd.join("\n").trim() + "\r";
+			}
+			else{
+				commands = cmd.cmd;
+			}
+			let text = `` +
+				` /bin/bash << EOF #!/bin/bash\n` + 
+				`func_run () {\n` +
+				"" + commands + 
+				` \n}\n` +
+				`clear\n` +
+				`func_run\n` +
+				`EOF` +
+				``;
+			// console.log("text:\n" + text);
+			return text;
+		};
+		// Utility: Shared error handler.
+		let displayError = function(cmd){
+			let text = ``;
+			text += `ERROR:\n\n`;
+			text += ` Command object is invalid.\n`;
+			text += `  title  : ${cmd.title}\n`;
+			text += `  isArray: ${Array.isArray(cmd.cmd)}\n`;
+			text += `  sendAs : ${cmd.sendAs}\n`;
+			alert(text);
+		};
 
 		// If the pressCtrlC flag is set then do that first. 
 		if(cmd.pressCtrlC){ app.term.pressControlC(); }
@@ -675,17 +937,40 @@ app.commands = {
 		// Get the command. 
 		let runThis = cmd.cmd;
 
-		if(Array.isArray(runThis)){
-			runThis.forEach(function(d){
-				app.term.getActiveTerminal().ws.send(d + "\r");
-			});
+		// Get the active terminal.
+		let term = app.term.getActiveTerminal();
+
+		// Handle array cmds.
+		let arrayTypes = [ "wrapInBashFunction"];
+		if(Array.isArray(cmd.cmd) && arrayTypes.indexOf(cmd.sendAs) != -1){
+			if(cmd.sendAs == "wrapInBashFunction"){
+				let text = createWrappedFunction(cmd);
+				term.ws.send(text + "\r");
+			}
+			else{
+				displayError(cmd);
+			}
+		}
+
+		// Handle non-array cmds.
+		else if(!Array.isArray(cmd.cmd)){
+			if(cmd.sendAs == "single"){
+				// Add a carriage return if the pressEnter flag is set. 
+				if(cmd.pressEnter){ runThis += "\r" }
+
+				// Send the command via the websocket. 
+				term.ws.send(runThis);
+			}
+			else if(cmd.sendAs == "wrapInBashFunction"){
+				let text = createWrappedFunction(cmd);
+				term.ws.send(text + "\r");
+			}
+			else{
+				displayError(cmd);
+			}
 		}
 		else{
-			// Add a carriage return if the pressEnter flag is set. 
-			if(cmd.pressEnter){ runThis += "\r" }
-
-			// Send the command via the websocket. 
-			app.term.getActiveTerminal().ws.send(runThis);
+			displayError(cmd);
 		}
 	},
 };
@@ -735,67 +1020,74 @@ app.resizeTerminal = {
 };
 
 app.manage = {
-	textCommands_reset: function(){
-		let text = document.getElementById("textCommands");
-		text.value = JSON.stringify(app.commands.cmdList,null,1);
-	},
-	textCommands_update: function(){
-		return new Promise(async function(resolve,reject){
+	basicEditor: {
+		textCommands_reset: function(){
 			let text = document.getElementById("textCommands");
-			let json;
-			try{
-				json = JSON.parse(text.value);
-			}
-			catch(e){
-				alert("Error parsing JSON. Fix and try again.");
+			text.value = JSON.stringify(app.commands.cmdList,null,1);
+		},
+		textCommands_update: function(){
+			return new Promise(async function(resolve,reject){
+				let text = document.getElementById("textCommands");
+				let json;
+				try{
+					json = JSON.parse(text.value);
+				}
+				catch(e){
+					alert("Error parsing JSON. Fix and try again.");
+					resolve();
+					return;
+				}
+	
+				// The JSON is good, send it to the server so that it can be updated.
+				let obj = {
+					method: 'POST',
+					headers: {
+						'Accept'      : 'application/json',
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(json)
+				};
+				let resp = await fetch("update_config_cmds", obj);
+				resp = await resp.json();
+				alert("SERVER: " + resp);
+	
+				// Read/Download Commands (Opens the terminal view and open the command drawer.)
+				let refreshCommands = document.getElementById("refreshCommands");
+				refreshCommands.click();
+	
 				resolve();
-				return;
-			}
-
-			// The JSON is good, send it to the server so that it can be updated.
-			let obj = {
-				method: 'POST',
-				headers: {
-					'Accept'      : 'application/json',
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(json)
-			};
-			let resp = await fetch("update_config_cmds", obj);
-			resp = await resp.json();
-			alert("SERVER: " + resp);
-
-			// Read/Download Commands (Opens the terminal view and open the command drawer.)
+			});
+		},
+		addEventListeners: function(){
 			let refreshCommands = document.getElementById("refreshCommands");
-			refreshCommands.click();
-
-			resolve();
-		});
+			refreshCommands.addEventListener("click", async function(){ 
+				// console.log("refreshCommands"); 
+				await app.getConfigs(true);
+	
+				// Update the commands.
+				await app.commands.addAllCommands();
+	
+				let textCommands = document.getElementById("textCommands");
+				textCommands.value = JSON.stringify(app.commands.cmdList,null,1);
+	
+				// Switch back to the terminal view. 
+				app.mainNav.changeView("tab_terminals"  , "view_terminals" );
+	
+				// Open the commands list.
+				document.getElementById("terminals_cmdsBar").dispatchEvent(new Event("click"));
+			}, false);
+	
+			let updateCommands = document.getElementById("textCommands_update");
+			updateCommands.addEventListener("click", app.manage.basicEditor.textCommands_update, false);
+			
+			let resetCommands = document.getElementById("textCommands_reset");
+			resetCommands.addEventListener("click", app.manage.basicEditor.textCommands_reset, false);
+		},
 	},
-	addEventListeners: function(){
-		let refreshCommands = document.getElementById("refreshCommands");
-		refreshCommands.addEventListener("click", async function(){ 
-			// console.log("refreshCommands"); 
-			await app.getConfigs(true);
 
-			// Update the commands.
-			await app.commands.addAllCommands();
-
-			let textCommands = document.getElementById("textCommands");
-			textCommands.value = JSON.stringify(app.commands.cmdList,null,1);
-
-			// Switch back to the terminal view. 
-			app.mainNav.changeView("tab_terminals"  , "view_terminals" );
-
-			// Open the commands list.
-			document.getElementById("terminals_cmdsBar").dispatchEvent(new Event("click"));
-		}, false);
-
-		let updateCommands = document.getElementById("textCommands_update");
-		updateCommands.addEventListener("click", app.manage.textCommands_update, false);
-		
-		let resetCommands = document.getElementById("textCommands_reset");
-		resetCommands.addEventListener("click", app.manage.textCommands_reset, false);
+	init: async function(){
+		await app.manage.basicEditor.addEventListeners();
+		// await app.manage.nav.init();
 	},
 };
 
@@ -856,11 +1148,4 @@ window.onload = async function(){
 	window.onload = null;
 
 	await app.init();
-
-	// Set the default tab/view.
-	app.mainNav.changeView("tab_terminals"  , "view_terminals" );
-
-	// Add terminals to the terminals div.
-	let termObj = await app.term.addTerminal('' + app.term.nexttermId++, app.term.config ); 
-	termObj.funcs.switch(termObj);
 };

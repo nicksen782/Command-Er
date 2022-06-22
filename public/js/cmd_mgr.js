@@ -16,6 +16,7 @@ app = {
 			// Set the configs.
 			app.commands.cmdList = configs.config_cmds;
 			app.term.config      = configs.config_terms;
+			app.os               = configs.os;
 
 			let textCommands = document.getElementById("textCommands");
 			textCommands.value = JSON.stringify(app.commands.cmdList,null,1);
@@ -392,15 +393,15 @@ app.manage = {
 				};
 
 				// Is the command an array?
-				if(obj.cmd.split("\n").length > 1){
-					obj.cmd = obj.cmd.split("\n").map(x=>x.trim()) ;
-					obj.sendAs = "wrapInBashFunction";
-				}
+				// if(obj.cmd.split("\n").length > 1){
+				// 	obj.cmd = obj.cmd.split("\n").map(x=>x.trim()) ;
+				// 	obj.sendAs = "wrapInBashFunction";
+				// }
 
-				// The command is a string with only one line.
-				else{
-					obj.sendAs = "single";
-				}
+				// // The command is a string with only one line.
+				// else{
+				// 	obj.sendAs = "single";
+				// }
 
 				// console.log(temp.newSectionKey, " -------------------", temp.newGroupKey);
 

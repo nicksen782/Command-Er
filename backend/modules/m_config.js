@@ -48,13 +48,13 @@ let _MOD = {
 	// Adds routes for this module.
 	addRoutes: function(app, express){
 		// 
-		_APP.addToRouteList({ path: "/update_srvCmds.json", method: "get", args: ['json'], file: __filename, desc: "Updates srvCmds.json" });
-		app.post('/update_srvCmds.json'    ,express.json(), async (req, res) => {
-			// console.log(req.body);
-			// console.log(req.query);
-			res.send("NOT IMPLEMENTED YET");
-			// res.json(_MOD.update_cmdConf(req.body.json));
-		});
+		// _APP.addToRouteList({ path: "/update_srvCmds.json", method: "get", args: ['json'], file: __filename, desc: "Updates srvCmds.json" });
+		// app.post('/update_srvCmds.json'    ,express.json(), async (req, res) => {
+		// 	// console.log(req.body);
+		// 	// console.log(req.query);
+		// 	res.send("NOT IMPLEMENTED YET");
+		// 	// res.json(_MOD.update_cmdConf(req.body.json));
+		// });
 
 		_APP.addToRouteList({ path: "/getConfigs", method: "get", args: [], file: __filename, desc: "Returns config_cmds.json" });
 		app.get('/getConfigs'    ,express.json(), async (req, res) => {
@@ -72,26 +72,20 @@ let _MOD = {
 			res.json({
 				"config_terms" : filteredTerms,
 				"config_cmds"  : _APP.m_config.config_cmds,
+				"os"           : os.platform(),
 			});
 		});
 		
 		//
 		_APP.addToRouteList({ path: "/update_config_cmds", method: "post", args: [], file: __filename, desc: "Updates config_cmds.json" });
 		app.post('/update_config_cmds'    ,express.json(), async (req, res) => {
-			// Is the JSON parsable?
-			let json;
-			try{
-				// Write the file. 
-				fs.writeFileSync(_MOD.config_cmds_filename, JSON.stringify(req.body,null,1));
-
-				// Update the in memory copy.
-				_APP.m_config.config_cmds = req.body;
-
-				res.json("UPDATED");
+			try{ 
+				let result = await _MOD.update_config_cmds(req.body); 
+				console.log("result:", result);
+				res.json(result);
 			}
 			catch(e){
-				console.log("Bad parse",e);
-				res.json("Bad parse");
+				res.json(e);
 			}
 		});
 	},
@@ -140,9 +134,26 @@ let _MOD = {
 		_MOD.config_cmds = await JSON.parse( fs.readFileSync(_MOD.config_cmds_filename, 'utf8'));
 	},
 	
-	update_cmdConf: async function(){
+	update_config_cmds: async function(body){
 		// _MOD.config_cmds = await JSON.parse( fs.readFileSync(_MOD.config_cmds_filename, 'utf8'));
-		console.log("NOT IMPLEMENTED YET");
+		return new Promise(async function(resolve,reject){
+			// Is the JSON parsable?
+			let json;
+			try{
+				// Write the file. 
+				fs.writeFileSync(_MOD.config_cmds_filename, JSON.stringify(body,null,1));
+
+				// Update the in memory copy.
+				_APP.m_config.config_cmds = body;
+				resolve("UPDATED");
+				// res.json("UPDATED");
+			}
+			catch(e){
+				reject("Bad parse");
+				console.log("Bad parse",e);
+				// res.json("Bad parse");
+			}
+		});
 	},
 
 	read_termsConf: async function(){

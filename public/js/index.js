@@ -65,6 +65,7 @@ let app = {
 			// Set the configs.
 			app.commands.cmdList = configs.config_cmds;
 			app.term.config      = configs.config_terms;
+			app.os               = configs.os;
 
 			let textCommands = document.getElementById("textCommands");
 			textCommands.value = JSON.stringify(app.commands.cmdList,null,1);
@@ -194,8 +195,13 @@ app.info = {
 						output.innerHTML = text;
 					};
 
-					let lastUpdated = app.ISOStringToLocal_dateAndTime(new Date(data.updated).toISOString());
-					lastUpdated = lastUpdated.date + " " + lastUpdated.time12;
+					let lastUpdated;
+					try{
+						lastUpdated = app.ISOStringToLocal_dateAndTime(new Date(data.updated).toISOString());
+						lastUpdated = lastUpdated.date + " " + lastUpdated.time12;
+					}
+					catch(e){ lastUpdated = "???"; }
+
 					let { breakdown, ...ws_connections } = data.ws_connections;
 
 					func_setValues("info_output_data_updated"       , lastUpdated); 
@@ -410,7 +416,7 @@ app.info = {
 
 				// Quit trying to connect on the websocket.
 				// clearInterval(app.info.infoIntervalId);
-				clearIntervalWorker (app.info.infoIntervalId);
+				clearInterval_ww(app.info.infoIntervalId);
 
 				// Indicate any terminal tabs that are displayed but not connected to the server.
 				// Array.from(document.querySelectorAll("#terminals_tabs .terminalTab")).forEach(function(d){
@@ -837,6 +843,7 @@ app.commands = {
 				
 				let commandsDiv = document.createElement("div");
 				commandsDiv.classList.add("commandsDiv");
+				cmd_key_div.appendChild(document.createElement("br"));
 				cmd_key_div.appendChild(commandsDiv);
 	
 				cmds.forEach(function(cmd){
@@ -942,6 +949,7 @@ app.commands = {
 
 		// Handle array cmds.
 		let arrayTypes = [ "wrapInBashFunction"];
+		if(!cmd.sendAs){ cmd.sendAs = "single"; }
 		if(Array.isArray(cmd.cmd) && arrayTypes.indexOf(cmd.sendAs) != -1){
 			if(cmd.sendAs == "wrapInBashFunction"){
 				let text = createWrappedFunction(cmd);

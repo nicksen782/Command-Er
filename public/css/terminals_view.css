@@ -172,16 +172,18 @@
 	width: 520px;
 	width: 90%;
 	padding: 0px;
-	transition: all 500ms;
+	transition: all 1000ms;
 	box-shadow: 0px 0px 5px 5px #005c80;
 	z-index: -1;
 }
 
+#commands:hover,
 #commands.show {
 	height: 550px;
-	transition: all 500ms;
+	transition: all 250ms;
 	background-color: black;
-	background-color: rgb(0 92 128 / 30%);
+	/* background-color: rgb(0 92 128 / 75%); */
+	background-color: rgb(0 0 0 / 85%);
 	box-shadow: 0px 0px 5px 5px #005c80;
 	padding: 5px;
 	border-radius: 5px;
@@ -197,6 +199,8 @@
 	border-bottom-left-radius: 0px;
 	padding: 5px;
 	border: 5px solid black;
+	display:inline-block;
+/* 	min-width:350px; */
 }
 
 .command {
@@ -221,7 +225,7 @@
 }
 
 .cmd_key_div {
-	background-color: #051c27;
+	background-color: rgb(5 28 39 / 85%);
 	margin-right: 5px;
 }
 
@@ -234,7 +238,7 @@
 	padding-right: 15px;
 	border-top-left-radius: 10px;
 	border-top-right-radius: 10px;
-	border-bottom-right-radius: 0px;
+/* 	border-bottom-right-radius: 50px; */
 	border-bottom-left-radius: 0px;
 	border: 5px solid black;
 	border-bottom-width: 0px;
@@ -242,6 +246,10 @@
 	position: relative;
 	top: 5px;
 	vertical-align: top;
+}
+.cmd_key_div .title {
+	min-width:300px;
+	border-bottom:5px solid #005c80;
 }
 
 #commands_views {
@@ -270,14 +278,15 @@
 
 .infoWrap_OUTPUT {
 	white-space: pre;
-	font-family:monospace;
+	font-family: monospace;
 }
 
 .pre_nomargin {
 	margin: 0px;
 	padding: 0px;
-	font-family:monospace;
+	font-family: monospace;
 }
-table caption.currentUser{
+
+table caption.currentUser {
 	background-color: palegoldenrod;
 }

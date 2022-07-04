@@ -14,10 +14,11 @@ let _MOD = {
 	config_srv_extra_filename:"configs/config_srv_extra.json",
 	config_srv_extra_filename_EX:"configs/examples/config_srv_extra.json.example",
 	
-	// COMMANDS
+	// COMMANDS (json and text)
 	config_cmds_filename:"configs/config_cmds.json",
 	config_cmds_filename_EX:"configs/examples/config_cmds.json.example",
 	config_cmds:{},
+	config_cmdsText_filename:"configs/config_cmds.text.json",
 	config_cmdsText:"",
 	
 	// TERMINAL
@@ -28,7 +29,7 @@ let _MOD = {
 	// Init this module.
 	module_init: async function(parent){
 		return new Promise(async function(resolve,reject){
-			// Save reference to ledger.
+			// Save reference to the parent module.
 			_APP = parent;
 	
 			// Use the example files as defaults if files are missing.
@@ -39,9 +40,6 @@ let _MOD = {
 			await _MOD.read_cmdConf();
 			await _MOD.read_termsConf();
 
-			// Make JSON text conversion.
-			_MOD.config_cmdsText = _MOD.create_config_cmdsText(_MOD.config_cmds);
-			
 			// Add routes.
 			_MOD.addRoutes(_APP.app, _APP.express);
 
@@ -62,6 +60,7 @@ let _MOD = {
 
 		_APP.addToRouteList({ path: "/getConfigs", method: "get", args: [], file: __filename, desc: "Returns config_cmds.json" });
 		app.get('/getConfigs'    ,express.json(), async (req, res) => {
+			// Don't include certain keys.
 			let skips = ['env', 'cwd'];
 			let filteredTerms = {};
 			for(let key in _APP.m_config.config_terms){
@@ -73,6 +72,7 @@ let _MOD = {
 				_APP.m_config.config_cmds = await JSON.parse( fs.readFileSync(_MOD.config_cmds_filename, 'utf8'));
 			}
 
+			// Return the data.
 			res.json({
 				"config_terms"    : filteredTerms,
 				"config_cmds"     : _APP.m_config.config_cmds,
@@ -86,7 +86,6 @@ let _MOD = {
 		app.post('/update_config_cmds'    ,express.json(), async (req, res) => {
 			try{ 
 				let result = await _MOD.update_config_cmds(req.body); 
-				console.log("result:", result);
 				res.json(result);
 			}
 			catch(e){
@@ -96,78 +95,114 @@ let _MOD = {
 	},
 
 	create_config_cmdsText : function(srcJson){
-		let newJsonText = "{\n";
+		// Indentation.
+		let tab = 4;
+		let sectionIndent     = " ".repeat(tab * 1);
+		let groupIndent       = " ".repeat(tab * 2);
+		let cmdIndent         = " ".repeat(tab * 3);
+		let cmdObjIndent      = " ".repeat(tab * 4);
+		let cmdObjMultiIndent = " ".repeat(tab * 5);
+
+		// Convert config_cmds to formatted JSON text.
+		let text = "{\n";
+		
+		// Get the section keys. 
 		let sectionKeys = Object.keys(srcJson);
+
+		// For each section key...
 		for(let sKey_i=0; sKey_i<sectionKeys.length; sKey_i+=1){
+			// Get the section key.
 			let sectionKey = sectionKeys[sKey_i];
-			newJsonText += `  "${sectionKey}": {\n`;
+
+			// Start the section key object.
+			text += `${sectionIndent}"${sectionKey}": {\n`;
+
+			// Get the groupKeys within this section.
 			let groupKeys = Object.keys( srcJson[sectionKey] );
+
+			// For each group key...
 			for(let gKey_i=0; gKey_i<groupKeys.length; gKey_i+=1){
+				// Get the groupKey.
 				let groupKey = groupKeys[gKey_i];
+
+				// Start the group key object.
+				text += `${groupIndent}"${groupKey}": [\n`;
+
+				// Get a handle to the list of commands.
 				let commands = srcJson[sectionKey][groupKey];
-				newJsonText += `    "${groupKey}": [\n`;
+
+				// For each command...
 				for(let cmd_i=0; cmd_i<commands.length; cmd_i+=1){
-					newJsonText += `      {\n`;
+					// Get a handle to this command.
 					let cmd = commands[cmd_i];
-					let cmd_keys = [
-						"title",
-						"sendAs",
-						"hidden",
-						"pressCtrlC",
-						"pressEnter",
-						"cmdOrder",
-						"cmd",
-					];
-					newJsonText += `        `;
-					newJsonText += `"title": "${    cmd['title']     }", `;
-					newJsonText += `"sendAs":"${    cmd['sendAs']     }", `;
-					newJsonText += `"hidden":${     cmd['hidden']     }, `;
-					newJsonText += `"pressCtrlC":${ cmd['pressCtrlC'] }, `;
-					newJsonText += `"pressEnter":${ cmd['pressEnter'] }, `;
-					newJsonText += `"cmdOrder":"${  cmd['cmdOrder']  }", `;
-					newJsonText += `\n`;
-					newJsonText += `        `;
+
+					// Start the command object.
+					text += `${cmdIndent}{\n`;
+
+					// Fill in the command object.
+					text += `${cmdObjIndent}`;
+					text +=   `"title":`     + '"' + cmd['title']      + '"';
+					text += `, "sendAs":`    + '"' + cmd['sendAs']     + '"';
+					text += `, "hidden":`    + ''  + cmd['hidden']     + '' ;
+					text += `, "pressCtrlC":`+ ''  + cmd['pressCtrlC'] + '' ;
+					text += `, "pressEnter":`+ ''  + cmd['pressEnter'] + '' ;
+					text += `, "cmdOrder":`  + '"' + cmd['cmdOrder']   + '"';
+					text += `,\n`;
+
+					// Format cmd array as line by line.
 					if(Array.isArray(cmd.cmd)){
-						newJsonText += `"cmd":[\n`;
+						text += `${cmdObjIndent}` + `"cmd"  :[\n`;
 						cmd.cmd.forEach(function(d_d, d_i, d_a){
-							newJsonText += `           `;
-							let thisCmd = d_d;
-							newJsonText += `${JSON.stringify(thisCmd)}`;
-							newJsonText += `${d_i+1==d_a.length ? "\n         ]": ",\n"}`;
+							text += `${cmdObjMultiIndent}`;
+							text += `${JSON.stringify(d_d)}`;
+							text += `${d_i+1==d_a.length ? `\n${cmdObjIndent}]`: ",\n"}`;
 						});
 					}
+					// Format cmd single as one line.
 					else{
-						let thisCmd = cmd['cmd'];
-						newJsonText += `"cmd"  : ${JSON.stringify(thisCmd)}`;
+						text += `${cmdObjIndent}`;
+						text += `"cmd"  : ${JSON.stringify(cmd['cmd'])}`;
 					}
-					newJsonText += `\n`;
-
-					newJsonText += `      }${cmd_i+1==commands.length ? "\n": ",\n"}`;
+					text += `\n`;
+					text += `${cmdIndent}}${cmd_i+1==commands.length ? "\n": ",\n"}`;
 				}
-				newJsonText += `    ]${gKey_i+1==groupKeys.length ? "\n": ",\n"}`;
+				text += `${groupIndent}]${gKey_i+1==groupKeys.length ? "\n": ",\n"}`;
 			}
-			newJsonText += `  }${sKey_i+1==sectionKeys.length ? "\n": ",\n"}`;
+			text += `${sectionIndent}}${sKey_i+1==sectionKeys.length ? "\n": ",\n"}`;
 		}
-		newJsonText += "}\n";
+		text += "}\n";
 
-		return newJsonText;
+		return text;
 	},
 
 	createDefaultsFromExamples: async function(){
 		// If a file is missing then create it from it's example file. 
 
+		// config_srv.json
 		if (!fs.existsSync(_MOD.config_srv_filename)) {
 			let data = await JSON.parse( fs.readFileSync(_MOD.config_srv_filename_EX, 'utf8'));
 			fs.writeFileSync(_MOD.config_srv_filename, JSON.stringify(data,null,1));
 		}
+
+		// config_srv_extra.json.example
 		if (!fs.existsSync(_MOD.config_srv_extra_filename)) {
 			let data = await JSON.parse( fs.readFileSync(_MOD.config_srv_extra_filename_EX, 'utf8'));
 			fs.writeFileSync(_MOD.config_srv_extra_filename, JSON.stringify(data,null,1));
 		}
+
+		// config_cmds.json
 		if (!fs.existsSync(_MOD.config_cmds_filename)) {
 			let data = await JSON.parse( fs.readFileSync(_MOD.config_cmds_filename_EX, 'utf8'));
 			fs.writeFileSync(_MOD.config_cmds_filename, JSON.stringify(data,null,1));
 		}
+
+		// config_cmds.text.json
+		if (!fs.existsSync(_MOD.config_cmdsText_filename)) {
+			let data = await JSON.parse( fs.readFileSync(_MOD.config_cmds_filename, 'utf8'));
+			fs.writeFileSync(_MOD.config_cmdsText_filename, _MOD.create_config_cmdsText(data));
+		}
+
+		// config_terms.json
 		if (!fs.existsSync(_MOD.config_terms_filename)) {
 			let data = await JSON.parse( fs.readFileSync(_MOD.config_terms_filename_EX, 'utf8'));
 			fs.writeFileSync(_MOD.config_terms_filename, JSON.stringify(data,null,1));
@@ -193,8 +228,11 @@ let _MOD = {
 		for(let key in tmp){ _MOD.config_srv[key]  = tmp[key]; }
 	},
 	read_cmdConf: async function(){
-		// Return the file. 
-		_MOD.config_cmds = await JSON.parse( fs.readFileSync(_MOD.config_cmds_filename, 'utf8'));
+		// Read/Store the JSON. 
+		_MOD.config_cmds = JSON.parse( fs.readFileSync(_MOD.config_cmds_filename, 'utf8') );
+
+		// Read/Store the JSON text conversion.
+		_APP.m_config.config_cmdsText = fs.readFileSync(_MOD.config_cmdsText_filename, 'utf8');
 	},
 	
 	update_config_cmds: async function(body){
@@ -206,26 +244,30 @@ let _MOD = {
 				let srcJson = body;
 				let newJsonText = _MOD.create_config_cmdsText(srcJson);
 
-				// Write the file. 
-				fs.writeFileSync(_MOD.config_cmds_filename, newJsonText);
-				// fs.writeFileSync(_MOD.config_cmds_filename, JSON.stringify(srcJson,null,1));
-				fs.writeFileSync(_MOD.config_cmds_filename+"_text.json", newJsonText);
+				// Write the file (JSON and text.).
+				fs.writeFileSync(_MOD.config_cmds_filename, JSON.stringify(srcJson,null,1));
+				fs.writeFileSync(_MOD.config_cmdsText_filename, newJsonText);
 
 				// Update the in memory copies.
 				_APP.m_config.config_cmds = srcJson;
 				_APP.m_config.config_cmdsText = newJsonText;
-				resolve("UPDATED");
+				
+				resolve({
+					// "config_cmds"    : _APP.m_config.config_cmds,
+					// "config_cmdsText": _APP.m_config.config_cmdsText,
+					"data"           : "UPDATED"
+				});
 				// res.json("UPDATED");
 			}
 			catch(e){
-				reject("Bad parse: " + e);
-				console.log("Bad parse", e);
-				// res.json("Bad parse");
+				reject("ERROR: update_config_cmds: " + e);
+				console.log("ERROR: update_config_cmds", e);
 			}
 		});
 	},
 
 	read_termsConf: async function(){
+		// Read/create config_terms.
 		_MOD.config_terms = await JSON.parse( fs.readFileSync(_MOD.config_terms_filename, 'utf8'));
 		_MOD.config_terms["cwd"] = process.env.PWD;
 		_MOD.config_terms["env"] = process.env;

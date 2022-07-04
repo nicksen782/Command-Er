@@ -1040,8 +1040,10 @@ app.manage = {
 	basicEditor: {
 		textCommands_reset: function(){
 			let text = document.getElementById("textCommands");
-			// text.value = JSON.stringify(app.commands.cmdList,null,1);
-			text.value = app.commands.config_cmdsText;
+			textCommands.value = "RESETING";
+			setTimeout(function(){
+				text.value = app.commands.config_cmdsText;
+			}, 125);
 		},
 		textCommands_update: function(){
 			return new Promise(async function(resolve,reject){
@@ -1067,12 +1069,12 @@ app.manage = {
 				};
 				let resp = await fetch("update_config_cmds", obj);
 				resp = await resp.json();
-				alert("SERVER: " + resp);
 	
 				// Read/Download Commands (Opens the terminal view and open the command drawer.)
 				let refreshCommands = document.getElementById("refreshCommands");
-				let commands = document.getElementById("commands");
-				if(!commands.classList.contains("show")){ refreshCommands.click(); }
+				// let commands = document.getElementById("commands");
+				// if(!commands.classList.contains("show")){ refreshCommands.click(); }
+				refreshCommands.click(); 
 	
 				resolve();
 			});
@@ -1080,18 +1082,18 @@ app.manage = {
 		addEventListeners: function(){
 			let refreshCommands = document.getElementById("refreshCommands");
 			refreshCommands.addEventListener("click", async function(){ 
-				// console.log("refreshCommands"); 
+				let textCommands = document.getElementById("textCommands");
+				textCommands.value = "LOADING";
+
 				await app.getConfigs(true);
+				
+				textCommands.value = app.commands.config_cmdsText;
 	
 				// Update the commands.
 				await app.commands.addAllCommands();
 	
-				let textCommands = document.getElementById("textCommands");
-				// textCommands.value = JSON.stringify(app.commands.cmdList,null,1);
-				textCommands.value = app.commands.config_cmdsText;
-	
 				// Switch back to the terminal view. 
-				app.mainNav.changeView("tab_terminals"  , "view_terminals" );
+				// app.mainNav.changeView("tab_terminals"  , "view_terminals" );
 	
 				// Open the commands list.
 				let terminals_cmdsBar   = document.getElementById("terminals_cmdsBar");

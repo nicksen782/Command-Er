@@ -7,6 +7,7 @@ configs/BACKUP
 
 # These should be created by the user and NOT be added to the git repo.
 config_cmds.json
+configs/config_cmds.json_text.json
 configs/config_srv_extra.json
 configs/config_srv.json
 configs/config_terms.json

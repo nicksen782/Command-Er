@@ -18,6 +18,7 @@ let _MOD = {
 	config_cmds_filename:"configs/config_cmds.json",
 	config_cmds_filename_EX:"configs/examples/config_cmds.json.example",
 	config_cmds:{},
+	config_cmdsText:"",
 	
 	// TERMINAL
 	config_terms_filename:"configs/config_terms.json",
@@ -37,6 +38,9 @@ let _MOD = {
 			await _MOD.read_srvConf();
 			await _MOD.read_cmdConf();
 			await _MOD.read_termsConf();
+
+			// Make JSON text conversion.
+			_MOD.config_cmdsText = _MOD.create_config_cmdsText(_MOD.config_cmds);
 			
 			// Add routes.
 			_MOD.addRoutes(_APP.app, _APP.express);
@@ -70,9 +74,10 @@ let _MOD = {
 			}
 
 			res.json({
-				"config_terms" : filteredTerms,
-				"config_cmds"  : _APP.m_config.config_cmds,
-				"os"           : os.platform(),
+				"config_terms"    : filteredTerms,
+				"config_cmds"     : _APP.m_config.config_cmds,
+				"config_cmdsText" : _APP.m_config.config_cmdsText,
+				"os"              : os.platform(),
 			});
 		});
 		
@@ -88,6 +93,64 @@ let _MOD = {
 				res.json(e);
 			}
 		});
+	},
+
+	create_config_cmdsText : function(srcJson){
+		let newJsonText = "{\n";
+		let sectionKeys = Object.keys(srcJson);
+		for(let sKey_i=0; sKey_i<sectionKeys.length; sKey_i+=1){
+			let sectionKey = sectionKeys[sKey_i];
+			newJsonText += `  "${sectionKey}": {\n`;
+			let groupKeys = Object.keys( srcJson[sectionKey] );
+			for(let gKey_i=0; gKey_i<groupKeys.length; gKey_i+=1){
+				let groupKey = groupKeys[gKey_i];
+				let commands = srcJson[sectionKey][groupKey];
+				newJsonText += `    "${groupKey}": [\n`;
+				for(let cmd_i=0; cmd_i<commands.length; cmd_i+=1){
+					newJsonText += `      {\n`;
+					let cmd = commands[cmd_i];
+					let cmd_keys = [
+						"title",
+						"sendAs",
+						"hidden",
+						"pressCtrlC",
+						"pressEnter",
+						"cmdOrder",
+						"cmd",
+					];
+					newJsonText += `        `;
+					newJsonText += `"title": "${    cmd['title']     }", `;
+					newJsonText += `"sendAs":"${    cmd['sendAs']     }", `;
+					newJsonText += `"hidden":${     cmd['hidden']     }, `;
+					newJsonText += `"pressCtrlC":${ cmd['pressCtrlC'] }, `;
+					newJsonText += `"pressEnter":${ cmd['pressEnter'] }, `;
+					newJsonText += `"cmdOrder":"${  cmd['cmdOrder']  }", `;
+					newJsonText += `\n`;
+					newJsonText += `        `;
+					if(Array.isArray(cmd.cmd)){
+						newJsonText += `"cmd":[\n`;
+						cmd.cmd.forEach(function(d_d, d_i, d_a){
+							newJsonText += `           `;
+							let thisCmd = d_d;
+							newJsonText += `${JSON.stringify(thisCmd)}`;
+							newJsonText += `${d_i+1==d_a.length ? "\n         ]": ",\n"}`;
+						});
+					}
+					else{
+						let thisCmd = cmd['cmd'];
+						newJsonText += `"cmd"  : ${JSON.stringify(thisCmd)}`;
+					}
+					newJsonText += `\n`;
+
+					newJsonText += `      }${cmd_i+1==commands.length ? "\n": ",\n"}`;
+				}
+				newJsonText += `    ]${gKey_i+1==groupKeys.length ? "\n": ",\n"}`;
+			}
+			newJsonText += `  }${sKey_i+1==sectionKeys.length ? "\n": ",\n"}`;
+		}
+		newJsonText += "}\n";
+
+		return newJsonText;
 	},
 
 	createDefaultsFromExamples: async function(){
@@ -138,19 +201,25 @@ let _MOD = {
 		// _MOD.config_cmds = await JSON.parse( fs.readFileSync(_MOD.config_cmds_filename, 'utf8'));
 		return new Promise(async function(resolve,reject){
 			// Is the JSON parsable?
-			let json;
 			try{
-				// Write the file. 
-				fs.writeFileSync(_MOD.config_cmds_filename, JSON.stringify(body,null,1));
+				// Re-write the JSON to be more human-editable (fewer lines.)
+				let srcJson = body;
+				let newJsonText = _MOD.create_config_cmdsText(srcJson);
 
-				// Update the in memory copy.
-				_APP.m_config.config_cmds = body;
+				// Write the file. 
+				fs.writeFileSync(_MOD.config_cmds_filename, newJsonText);
+				// fs.writeFileSync(_MOD.config_cmds_filename, JSON.stringify(srcJson,null,1));
+				fs.writeFileSync(_MOD.config_cmds_filename+"_text.json", newJsonText);
+
+				// Update the in memory copies.
+				_APP.m_config.config_cmds = srcJson;
+				_APP.m_config.config_cmdsText = newJsonText;
 				resolve("UPDATED");
 				// res.json("UPDATED");
 			}
 			catch(e){
-				reject("Bad parse");
-				console.log("Bad parse",e);
+				reject("Bad parse: " + e);
+				console.log("Bad parse", e);
 				// res.json("Bad parse");
 			}
 		});

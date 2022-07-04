@@ -63,12 +63,14 @@ let app = {
 			configs     = await configs.json();
 
 			// Set the configs.
-			app.commands.cmdList = configs.config_cmds;
-			app.term.config      = configs.config_terms;
-			app.os               = configs.os;
+			app.commands.cmdList         = configs.config_cmds;
+			app.commands.config_cmdsText = configs.config_cmdsText;
+			app.term.config              = configs.config_terms;
+			app.os                       = configs.os;
 
 			let textCommands = document.getElementById("textCommands");
-			textCommands.value = JSON.stringify(app.commands.cmdList,null,1);
+			// textCommands.value = JSON.stringify(app.commands.cmdList,null,1);
+			textCommands.value = app.commands.config_cmdsText;
 
 			resolve();
 		});
@@ -1038,7 +1040,8 @@ app.manage = {
 	basicEditor: {
 		textCommands_reset: function(){
 			let text = document.getElementById("textCommands");
-			text.value = JSON.stringify(app.commands.cmdList,null,1);
+			// text.value = JSON.stringify(app.commands.cmdList,null,1);
+			text.value = app.commands.config_cmdsText;
 		},
 		textCommands_update: function(){
 			return new Promise(async function(resolve,reject){
@@ -1084,7 +1087,8 @@ app.manage = {
 				await app.commands.addAllCommands();
 	
 				let textCommands = document.getElementById("textCommands");
-				textCommands.value = JSON.stringify(app.commands.cmdList,null,1);
+				// textCommands.value = JSON.stringify(app.commands.cmdList,null,1);
+				textCommands.value = app.commands.config_cmdsText;
 	
 				// Switch back to the terminal view. 
 				app.mainNav.changeView("tab_terminals"  , "view_terminals" );

@@ -718,8 +718,12 @@ app.term = {
 							_obj.elems.textarea.focus();
 	
 							// Resize the terminal to fit the parent (setTimeout seems to be needed here.)
+							setTimeout(function () { window.requestAnimationFrame(function () { _obj.funcs.resize(_obj); }); }, 100);
+
 							// setTimeout(function () { _obj.funcs.resize(_obj); }, 100);
-							window.requestAnimationFrame(function () { _obj.funcs.resize(_obj); });
+
+							// window.requestAnimationFrame(function () { _obj.funcs.resize(_obj); });
+							
 							// _obj.funcs.resize(obj);
 						},
 					}
@@ -788,9 +792,12 @@ app.commands = {
 		let terminals_terminals = document.getElementById("terminals_terminals");
 		
 		// terminals_cmdsBar  .addEventListener("mouseenter", function(){ commands.classList.add   ("show"); }, false);
-		// terminals_terminals.addEventListener("mouseenter", function(){ commands.classList.remove("show"); }, false);
 		terminals_cmdsBar  .addEventListener("click"     , function(){ commands.classList.toggle("show"); }, false);
-		commands           .addEventListener("mouseleave", function(){ commands.classList.remove("show"); }, false);
+		// terminals_terminals.addEventListener("mouseenter", function(){ commands.classList.remove("show"); }, false);
+		
+
+		// commands           .addEventListener("mouseleave", function(){ commands.classList.remove("show"); }, false);
+		// document.body.addEventListener("click", function(){ if(commands.classList.contains("show")) {commands.classList.remove("show");} }, false);
 	},
 	addAllCommands        : function(){
 		// Get the commands div. 
@@ -1061,7 +1068,8 @@ app.manage = {
 	
 				// Read/Download Commands (Opens the terminal view and open the command drawer.)
 				let refreshCommands = document.getElementById("refreshCommands");
-				refreshCommands.click();
+				let commands = document.getElementById("commands");
+				if(!commands.classList.contains("show")){ refreshCommands.click(); }
 	
 				resolve();
 			});
@@ -1082,7 +1090,10 @@ app.manage = {
 				app.mainNav.changeView("tab_terminals"  , "view_terminals" );
 	
 				// Open the commands list.
-				document.getElementById("terminals_cmdsBar").dispatchEvent(new Event("click"));
+				let terminals_cmdsBar   = document.getElementById("terminals_cmdsBar");
+				let commands = document.getElementById("commands");
+				if(!commands.classList.contains("show")){ terminals_cmdsBar.dispatchEvent(new Event("click")) }
+
 			}, false);
 	
 			let updateCommands = document.getElementById("textCommands_update");

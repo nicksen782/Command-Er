@@ -453,7 +453,7 @@ let _MOD = {
 			if (clientObj && clientObj.tty && !clientObj.termIsClosed) { 
 				clientObj.closeThisTerm = true;
 				if(!clientObj.reason) { clientObj.reason = "websocket close"; }
-				console.log(`remoteTty: f_close: termid: ${clientObj.termid} is about to be removed.`);
+				// console.log(`remoteTty: f_close: termid: ${clientObj.termid} is about to be removed.`);
 				_MOD.endTty(clientObj, null);
 			}
 			else{

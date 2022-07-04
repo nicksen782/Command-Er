@@ -172,12 +172,12 @@
 	width: 520px;
 	width: 90%;
 	padding: 0px;
-	transition: all 1000ms;
+	transition: all 250ms;
 	box-shadow: 0px 0px 5px 5px #005c80;
 	z-index: -1;
 }
 
-#commands:hover,
+/* #commands:hover, */
 #commands.show {
 	height: 550px;
 	transition: all 250ms;

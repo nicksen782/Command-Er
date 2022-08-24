@@ -169,8 +169,8 @@
 	bottom: 40px;
 	z-index: 100;
 	height: 0px;
-	width: 520px;
-	width: 90%;
+/* 	width: 520px; */
+	width: 75%;
 	padding: 0px;
 	transition: all 250ms;
 	box-shadow: 0px 0px 5px 5px #005c80;
@@ -225,7 +225,7 @@
 }
 
 .cmd_key_div {
-	background-color: rgb(5 28 39 / 85%);
+	background-color: rgb(5 28 39 / 50%);
 	margin-right: 5px;
 }
 
@@ -248,14 +248,14 @@
 	vertical-align: top;
 }
 .cmd_key_div .title {
-	min-width:300px;
+	min-width: 100px;
 	border-bottom:5px solid #005c80;
 }
 
 #commands_views {
 	margin: 2px 0px 0px 5px;
 	overflow-y: auto;
-	height: 500px;
+	height: 470px;
 }
 
 

@@ -13,3 +13,10 @@ configs/config_cmds.text.json
 configs/config_srv_extra.json
 configs/config_srv.json
 configs/config_terms.json
+backend/db/Command-Er.db
+
+configs/config_cmdsBACKUP.json
+configs/NEW_config_cmds.json
+public/TEST/
+public/TEST2/
+public/TEST3/

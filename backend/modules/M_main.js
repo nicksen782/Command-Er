@@ -6,6 +6,9 @@ const path = require('path');
 const m_config = require('./m_config.js');
 const m_terms  = require('./m_terms.js');
 const m_utils  = require('./m_utils.js');
+const m_db     = require('./m_db.js');
+const m_dbInit = require('./m_dbInit.js');
+const m_cmdMgr = require('./m_cmdMgr.js');
 
 // Main app.
 let _APP = {
@@ -17,10 +20,18 @@ let _APP = {
 	// Manual route list. (Emulates something like route annotations.)
 	routeList: {}, 
 
+	//
+	db_type             : null,
+	db_filepath         : null,
+	db_filepath_default : 'backend/db/Command-Er.db', // Can be overriden by config.json.
+
 	// MODULES (_APP will have access to all the modules.)
 	m_config    : m_config ,
 	m_terms     : m_terms ,
 	m_utils     : m_utils ,
+	m_db        : m_db ,
+	m_dbInit    : m_dbInit ,
+	m_cmdMgr    : m_cmdMgr ,
 
 	// Init this module.
 	module_init: function(parent){
@@ -49,10 +60,68 @@ let _APP = {
 	module_inits: function(){
 		return new Promise(async function(resolve,reject){
 			await _APP         .module_init(_APP);
+			
+			// DATABASE
+			await _APP.m_db    .module_init(_APP);
+			await _APP.m_dbInit.module_init(_APP);
+			// await _APP.db_start("memory", '');
+			await _APP.db_start("file", 'backend/db/Command-Er.db');
+			
 			await _APP.m_config.module_init(_APP);
 			await _APP.m_terms .module_init(_APP);
 			await _APP.m_utils .module_init(_APP);
+			await _APP.m_cmdMgr.module_init(_APP);
+
 			resolve();
+		});
+	},
+
+	// Start the database connect and do db_init if needed.
+	db_start: async function(type, db_filepath){
+		return new Promise(async function(resolve,reject){
+			if(type == "file"){
+				_APP.db_type = type;
+				_APP.db_filepath = db_filepath;
+
+				console.log(`Database type: ${type}, "${_APP.db_filepath}"`);
+
+				// If the file does not exist...
+				if (!fs.existsSync(db_filepath)) {
+					console.log(`  Database file not found. Creating and initing.`);
+
+					// Create/Open it.
+					await _APP.m_db.open(_APP.db_filepath);
+					
+					// Do a db_init.
+					await _APP.m_dbInit.db_init();
+
+					resolve(); return;
+				}
+				else{
+					console.log(`  Database file found.`);
+
+					// Open it.
+					await _APP.m_db.open(_APP.db_filepath);
+
+					resolve(); return;
+				}
+			}
+
+			// If type is memory then open it as memory and do a db_init. 
+			else if(type == "memory"){
+				_APP.db_type = type;
+				_APP.db_filepath = ":memory:";
+
+				console.log(`Database type: ${type}, "${_APP.db_filepath}"`);
+				console.log(`  NOTE: The in-memory database will NOT persist if you restart the server.`);
+				
+				// Open and init the in-memory database.
+				await _APP.m_db.open(":memory:");
+				await _APP.m_dbInit.db_init();
+
+				resolve(); return;
+
+			}
 		});
 	},
 

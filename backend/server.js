@@ -94,6 +94,12 @@ const _APP  = require('./modules/M_main.js')(app, express, wss);
 		// console.log(maxes);
 		console.log("*".repeat(45));
 		console.log();
+
+		// console.log("converting...");
+		// await _APP.m_cmdMgr.convertJSONtoDB();
+		// console.log("save to file...");
+		// await _APP.m_cmdMgr.convertDBtoJSONFile();
+		// console.log("...DONE");
 	});
 
 })();

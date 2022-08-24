@@ -139,6 +139,13 @@ let app = {
 			// iso   : `${isoString}`,
 		};
 	},
+
+	// info:{},
+	// term:{},
+	// commands:{},
+	// mainNav:{},
+	// resizeTerminal:{},
+	// manage:{},
 };
 
 app.info = {
@@ -786,6 +793,7 @@ app.term = {
 	},
 };
 
+// TODO - database changes.
 app.commands = {
 	cmdList: {},
 	addCommandBarListeners: function(){

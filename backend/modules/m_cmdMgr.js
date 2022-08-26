@@ -59,11 +59,6 @@ let _MOD = {
 		_APP.addToRouteList({ path: "/MINI/GETUNIQUEUUIDS", method: "post", args: ["cmd"], file: __filename, desc: "" });
 		app.post('/MINI/GETUNIQUEUUIDS'    ,express.json(), async (req, res) => {
 			let uuids = [];
-			// TERM
-			// TERMID
-			// TTY
-			// TYPE
-
 			_APP.wss.clients.forEach(function each(ws) { 
 				if (ws.readyState === 1 && ws.TERM && ws.TYPE == "MINI") {
 					if(uuids.indexOf(ws.UUID) == -1){ uuids.push(ws.UUID); }
@@ -87,49 +82,132 @@ let _MOD = {
 				}
 			});
 
-			console.log("availableClients:", availableClients);
 			res.json(availableClients);
-			// let uuids = [];
-			// // TERM
-			// // TERMID
-			// // TTY
-			// // TYPE
-
-			// _APP.wss.clients.forEach(function each(ws) { 
-			// 	if (ws.readyState === 1 && ws.TERM && ws.TYPE == "MINI") {
-			// 		if(uuids.indexOf(ws.UUID) == -1){ uuids.push(ws.UUID); }
-			// 	}
-			// });
-			// res.json(uuids);
 		});
 
 		//
 		_APP.addToRouteList({ path: "/MINI/RUNCMD", method: "post", args: ["cmd"], file: __filename, desc: "" });
 		app.post('/MINI/RUNCMD'    ,express.json(), async (req, res) => {
 			let target;
+			let msg = ``;
+			let infoLine;
+			let r;
+
+			// Look through each Websocket connect to find the target.
 			_APP.wss.clients.forEach(function each(ws) { 
+				// If the target was already found then quit looking. 
 				if(target){ return; }
+
+				// Try to find the matching target.
 				if (
-					ws.readyState === 1 
-					&& ws.TERM 
-					&& ws.UUID == req.body.uuid
-					&& ws.TYPE == "MINI"
+					ws.readyState === 1         // Is open.
+					&& ws.TERM                  // Is a term.
+					&& ws.UUID == req.body.uuid // Matching UUID.
+					&& ws.TYPE == "MINI"        // Terminal type of "MINI".
 				) {
-					target = ws;
-					return;
+					// Save the target. Stop looking. 
+					target = ws; return;
 				}
 			});
+
+			// Was the matching target found? 
 			if(target){
-				target.TTY.write(` ${req.body.cmd}\r\n`);
-				res.json([`*SUCCESS* RUNCMD: uuid: ${req.body.uuid}, termid: ${target.TERMID}, cmd: ${req.body.cmd}`]);
+				infoLine = `RUNCMD: type: ${req.body.type}, uuid: ${req.body.uuid}, sId: ${req.body.sId}, gId: ${req.body.gId}, cId: ${req.body.cId}`;
+
+				// Use ids to get from the database?
+				if(req.body.type == "FROMCONFIG"){
+					// Use the sId, gId, and cId to get the actual command from the database.
+					r = await _MOD.getOne(req.body.sId, req.body.gId, req.body.cId);
+					if(r){
+						// Send the command. 
+						target.TTY.write(` ${r.f_ctrlc ? "\u0003" : ""}${r.cmd}${r.f_enter ? "\r\n" : ""}`);
+	
+						// Return a response.
+						msg = `*SUCCESS* ${infoLine}, cmd: ${r.cmd}`;
+						console.log(msg); 
+						res.json(msg);
+					}
+					else{
+						// Return a response.
+						msg = `*FAILURE* ${JSON.stringify(results)}, ${infoLine}`;
+						console.log(msg); 
+						res.json(msg);
+					}
+				}
+
+				// Raw command ("\r\n" (enter) must also be included if needed.)
+				else if(req.body.type == "RAW"){
+					// Send the command. 
+					target.TTY.write(` ${req.body.cmd}`);
+
+					// Return a response.
+					msg = `*SUCCESS* ${infoLine}, cmd: ${req.body.cmd}`;
+					console.log(msg); 
+					res.json(msg);
+				}
+				
+				// FAIL. Not a known type. 
+				else { 
+					msg = `INVALID TYPE: ${infoLine}`;
+					console.log(msg); 
+					res.json(msg);
+				}
 			}
+
+			// FAIL. Target was NOT found.
 			else{
-				res.json([`*FAILURE* RUNCMD: termid: ${req.body.termid}, cmd: ${req.body.cmd}`]);
+				msg = `*FAILURE* TARGET NOT FOUND: RUNCMD: ${req.body.type}, uuid: ${req.body.uuid}, cId: ${req.body.cId}, cmd: ${req.body.cmd}`;
+				console.log(msg); 
+				res.json(msg);
 			}
 		});
 	},
 
 	// SELECTS
+	getOne: function(sId, gId, cId){
+		return new Promise(async function(resolve,reject){
+			let q3 = {
+				"sql" : `
+					SELECT
+						commands.'cId', 
+						commands.'sId', 
+						commands.'gId', 
+						sections.name AS sectionName,
+						groups.name   AS groupName,
+						commands.'title', 
+						commands.'cmd', 
+						commands.'f_ctrlc', 
+						commands.'f_enter', 
+						commands.'f_hidden',
+						commands.'order'
+					FROM commands
+					LEFT JOIN sections ON sections.sId = commands.sId
+					LEFT JOIN groups   ON groups.gId   = commands.gId
+					WHERE 
+						commands.sId     = :sId
+						AND commands.gId = :gId
+						AND commands.cId = :cId
+					;`.replace(/\t/g, " ").replace(/  +/g, "  "), 
+				"params" : {
+					":sId": sId,
+					":gId": gId,
+					":cId": cId,
+				},
+				"type": "SELECT",
+			};
+
+			let results3 = await _APP.m_db.query(q3.sql, q3.params, q3.type); if(results3.err){ console.log(results3); reject(); return; }
+
+			// There should only be one record.
+			if(results3.rows.length){ 
+				results3 = results3.rows[0];
+				resolve(results3);
+			}
+			else{
+				reject("NO RESULTS");
+			}
+		})
+	},
 	getAll: function(){
 		return new Promise(async function(resolve,reject){
 			let q;

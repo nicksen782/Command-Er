@@ -106,7 +106,7 @@ let _MOD = {
 			{
 				"sql" : `
 				INSERT INTO 'commands' ('cId', 'sId', 'gId', 'title', 'cmd', 'f_ctrlc', 'f_enter', 'f_hidden', 'order')
-					VALUES                 (2, 1, 2, "pwd", "pwd", false, true, false, 2)
+					VALUES                 (2, 1, 2, "dir", "dir", false, true, false, 2)
 					;`.replace(/\t/g, " ").replace(/  +/g, "  "),
 				"params" : {},
 				"type": "INSERT",
@@ -144,11 +144,53 @@ let _MOD = {
 				resolve();
 			});
 		};
+		let imports = async function(){
+			// Loop through the file. 
+			
+			return new Promise(async function(resolve,reject){
+				// Does the file exist?
+				if(!fs.existsSync("importFile.json")){ resolve(); return; }
+
+				// Yes.
+				console.log("IMPORTING RECORDS");
+				
+				// Read in the file. 
+				let json= JSON.parse( fs.readFileSync("importFile.json", 'utf8') );
+				
+				let proms = [];
+				for(let i=0; i<json.length; i+=1){
+					let q = {
+						"sql" : `
+							INSERT INTO 'commands' ('cId', 'sId', 'gId', 'title', 'cmd', 'f_ctrlc', 'f_enter', 'f_hidden', 'order')
+							VALUES(                 :cId , :sId , :gId , :title , :cmd , :f_ctrlc , :f_enter , :f_hidden , :order)
+							;`.replace(/\t/g, " ").replace(/  +/g, "  "),
+						"params" : {
+							":cId"      : json[i].cid     ,  
+							":sId"      : 1, // json[i].sid     ,  
+							":gId"      : 1, // json[i].gid     ,  
+							":title"    : json[i].title   ,  
+							":cmd"      : json[i].cmd     ,  
+							":f_ctrlc"  : json[i].f_ctrlc ,  
+							":f_enter"  : json[i].f_enter ,  
+							":f_hidden" : json[i].f_hidden,  
+							":order"    : json[i].order   ,  
+						},
+						"type": "INSERT",
+					}
+
+					proms.push( new Promise(async function(res,rej){ await _APP.m_db.query(q.sql, q.params, q.type); res(); } ) );
+				}
+
+				await Promise.all(proms);
+				resolve();
+			});
+		};
 		
 		console.log("*".repeat(40));
 		await structure();
 		// console.log("*".repeat(40));
-		// await seed();
+		await seed();
+		// await imports();
 		console.log("*".repeat(40));
 	},
 	

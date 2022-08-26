@@ -20,3 +20,6 @@ configs/NEW_config_cmds.json
 public/TEST/
 public/TEST2/
 public/TEST3/
+
+importFile.json
+backend/db/Command-Er copy.db

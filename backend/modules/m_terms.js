@@ -80,14 +80,19 @@ let _MOD = {
 						console.log("ERROR: Missing termid.");
 						return;
 					}
+					if(!params.type){
+						console.log("ERROR: Missing type.");
+						return;
+					}
 					
 					id     =  params.uuid; 
 					uuid   =  params.uuid; 
 					termid =  params.termid; 
+					type   =  params.type; 
 
 					res.url = url;
 					lastCheckin = Date.now();
-					_MOD.clients.set( ws, { id, uuid, lastCheckin, termid } );
+					_MOD.clients.set( ws, { id, uuid, lastCheckin, termid, type } );
 				}
 			}
 			// console.log(`OPEN  : url:${res.url}, uuid:${id}, termid:${termid}`);
@@ -426,6 +431,13 @@ let _MOD = {
 		
 		//.Add the client. 
 		let clientObj = _MOD.clients.get(ws);
+		
+		ws.TERM = true;
+		ws.UUID = clientObj.uuid;
+		ws.TERMID = clientObj.termid;
+		ws.TTY = tty;
+		ws.TYPE = clientObj.type;
+
 		clientObj.tty = tty;
 		clientObj.closeThisTerm = false;
 		clientObj.termIsClosed = false;

@@ -23,7 +23,7 @@ let app = {
 			
 			// TERM
 			// console.log(" app.term.addCreateNewTerminalButton");
-			app.term.addCreateNewTerminalButton();
+			app.term.addCreateNewTerminalButtons();
 			
 			// console.log(" app.term.addListeners");
 			await app.term.addListeners();
@@ -345,6 +345,8 @@ app.info = {
 					app.info.info_ws_isActive = false;
 					let data = JSON.parse(e.data);
 					app.info.uuid = data;
+
+					document.getElementById("user_uuid_value").innerText = app.info.uuid;
 					resolve();
 				};
 	
@@ -494,34 +496,64 @@ app.term = {
 	pressControlC     : function(){
 		app.term.getActiveTerminal().ws.send("\x03");
 	},
-	addCreateNewTerminalButton: function(){
-		let terminals_add = document.getElementById("terminals_add");
-
-		terminals_add.addEventListener("click"       , async function(){
-			if(terminals_add.classList.contains("x_out")){
+	addCreateNewTerminalButtons: function(type="NORMAL"){
+		let terminals_add1 = document.getElementById("terminals_add");
+		terminals_add1.addEventListener("click"       , async function(){
+			if(terminals_add1.classList.contains("x_out")){
 				console.log("Adding terminals has been disabled until you fresh the window.");
 				return;
 			}
 
 			// Create the new terminal.
-			let termObj = await app.term.addTerminal('' + app.term.nexttermId++, app.term.config ); 
+			let termObj = await app.term.addTerminal('' + app.term.nexttermId++, app.term.config, "NORMAL" ); 
 	
 			// Activate the NEW terminal tab and view.
 			termObj.funcs.switch(termObj);
 		}, true);
+
+		let terminals_add2 = document.getElementById("user_uuid_add");
+		terminals_add2.addEventListener("click"       , async function(){
+			if(terminals_add2.classList.contains("x_out")){
+				console.log("Adding terminals has been disabled until you fresh the window.");
+				return;
+			}
+
+			// Only allow for one MINI type term. 
+			if(app.term.terms.find(d=>d.type=="MINI")){
+				alert("Only one MINI type term is allowed per client.");
+				console.log("Only one MINI type term is allowed per client.");
+				return; 
+			}
+
+			// Create the new terminal.
+			let termObj = await app.term.addTerminal('' + app.term.nexttermId++, app.term.config, "MINI" ); 
+	
+			//
+			termObj.elems.tabElem.classList.add("cmini_term_tab");
+
+			// Activate the NEW terminal tab and view.
+			termObj.funcs.switch(termObj);
+		}, true);
 	},
-	addTerminal       : function (termId, options={}){
+
+	addTerminal       : function (termId, options={}, type="NORMAL"){
 		return new Promise(async function(resolve,reject){
+			let prefix1;
+			let prefix2;
+			if(type=="NORMAL")   { prefix1 = "term_"; prefix2 = "TERM #"; }
+			else if(type=="MINI"){ prefix1 = "mini_"; prefix2 = "MINI #"; }
+			else{ console.log("INVALID TYPE"); return; }
+
 			// CREATE THE TAB  (container)
 			let tabElem = document.createElement("span");
 			tabElem.classList.add("terminalTab");
-			tabElem.setAttribute("tabId", 't_' + termId + "_tab");
-			tabElem.setAttribute("termId", 't_' + termId);
+			tabElem.setAttribute("tabId", prefix1 + termId + "_tab");
+			tabElem.setAttribute("termId", prefix1 + termId);
 	
 			// CREATE THE TAB  (title)
 			let titleElem = document.createElement("span");
 			titleElem.classList.add("title");
-			titleElem.innerText = "TERM #" + (termId).toString().padStart(3, "0");
+			titleElem.innerText = prefix2 + (termId).toString().padStart(3, "0");
 	
 			// CREATE THE TAB  (close)
 			let closeElem = document.createElement("span");
@@ -534,7 +566,7 @@ app.term = {
 	
 			// CREATE THE TERMINAL (view)
 			let termElem = document.createElement("div");
-			termElem.id = 't_' + termId;
+			termElem.id = prefix1 + termId;
 			termElem.classList.add("xterminal");
 	
 			// Create the xterm terminal. 
@@ -547,7 +579,8 @@ app.term = {
 				`${location.port ? ':'+location.port : ''}` +
 				`${location.pathname != "/" ? ''+location.pathname : '/'}` +
 				`TERM?uuid=${app.info.uuid}` +
-				`&termid=${'t_' + termId}`
+				`&termid=${prefix1 + termId}` +
+				`&type=${type}`
 			;
 			// console.log("addTerminal: locUrl:", locUrl);
 			var ws1 = new WebSocket(locUrl);
@@ -574,9 +607,11 @@ app.term = {
 	
 				// Add this complete terminal data to terms. 
 				let obj = {
-					termId: 't_' + termId,
+					termId: prefix1 + termId,
+					type      : type  ,
 					// options     : options , 
 					// locUrl      : locUrl  ,
+					
 	
 					// Elems.
 					elems: {

@@ -25,9 +25,144 @@ server.on('request', app);
 
 const _APP  = require('./modules/M_main.js')(app, express, wss);
 
+// Set the error handlers.
+let setErrorHandlers = function(){
+	// Created after reading this: https://blog.heroku.com/best-practices-nodejs-errors
+	let cleanUpHasRan = false;
+
+	let cleanUp = function(byWhat){
+		// Only run once. 
+		if(cleanUpHasRan){ return; }
+
+		let funcs = [
+			function appLoopCleanup(){
+				if(_APP && _APP.drawLoop){
+					// Remove the child process if it is set.
+					try{
+						if(_APP.drawLoop){ 
+							_APP.drawLoop.pause();
+							_APP.drawLoop.stop();
+							_APP.drawLoop = null; 
+							console.log(`  cleanUp: (via: ${byWhat}): appLoopCleanup... DONE`);
+						}
+					}
+					catch(e){
+						console.log(`  cleanUp: (via: ${byWhat}): appLoopCleanup...FAILED`, e);
+					}
+				}
+			},
+			function displayCleanup(){
+				if(_APP && _APP.m_websocket_python){
+					// Remove the child process if it is set.
+					try{
+						if(_APP.m_websocket_python.cp_child){ 
+							// _APP.m_websocket_python.cp_child.kill('SIGTERM'); 
+							_APP.m_websocket_python.cp_child.kill('SIGINT'); 
+							_APP.m_websocket_python.cp_child = null; 
+							console.log(`  cleanUp: (via: ${byWhat}): displayCleanup... DONE`);
+						}
+					}
+					catch(e){
+						console.log(`  cleanUp: (via: ${byWhat}): displayCleanup...FAILED`, e);
+					}
+				}
+			},
+			function pythonCleanup(){
+				if(_APP && _APP.m_websocket_python){
+					// Remove the child process if it is set.
+					try{
+						if(_APP.m_websocket_python.cp_child){ 
+							// _APP.m_websocket_python.cp_child.kill('SIGTERM'); 
+							_APP.m_websocket_python.cp_child.kill('SIGINT'); 
+							_APP.m_websocket_python.cp_child = null; 
+							console.log(`  cleanUp: (via: ${byWhat}): pythonCleanup... DONE`);
+						}
+					}
+					catch(e){
+						console.log(`  cleanUp: (via: ${byWhat}): pythonCleanup...FAILED`, e);
+					}
+				}
+			},
+			function serverCleanup(){
+				if(_APP && _APP.m_websocket_node){
+					// Remove the child process if it is set.
+					try{
+						if(_APP.m_websocket_node.ws){ 
+							console.log(`  cleanUp: (via: ${byWhat}): serverCleanup: websocket... DONE`);
+							_APP.m_websocket_node.ws.close();
+							_APP.m_websocket_node.ws = null;
+						}
+						if(_APP.server){
+							_APP.server.close();
+							console.log(`  cleanUp: (via: ${byWhat}): serverCleanup: server... DONE`);
+						}
+					}
+					catch(e){
+						console.log(`  cleanUp: (via: ${byWhat}): serverCleanup...FAILED`, e);
+					}
+				}
+			},
+		];
+		
+		// for(let i=0; i<funcs.length; i+=1){ funcs[i](); }
+
+		// Set the cleanUpHasRan flag.
+		cleanUpHasRan = true;
+	};
+
+	process.on('beforeExit', code => {
+		// Can make asynchronous calls
+		console.log("\nHANDLER: beforeExit");
+		cleanUp("beforeExit");
+		// setTimeout(() => {
+			console.log(`  Process will exit with code: ${code}`);
+			process.exit(code)
+		// }, 100)
+	})
+
+	process.on('exit', code => {
+		// Only synchronous calls
+		console.log("\nHANDLER: exit");
+		cleanUp("exit");
+		console.log(`  Process exited with code: ${code}`);
+	})
+
+	process.on('SIGTERM', signal => {
+		console.log("\nHANDLER: SIGTERM");
+		cleanUp("SIGTERM");
+		console.log(`  Process ${process.pid} received a SIGTERM signal`);
+		process.exit(0)
+	})
+
+	process.on('SIGINT', signal => {
+		console.log("\nHANDLER: SIGINT");
+		cleanUp("SIGINT");
+		console.log(`  Process ${process.pid} has been interrupted`)
+		process.exit(0)
+	})
+
+	process.on('uncaughtException', err => {
+		console.log("\nHANDLER: uncaughtException");
+		cleanUp("uncaughtException");
+		console.log(`  Uncaught Exception:`, err);
+		process.exit(1)
+	})
+	
+	process.on('unhandledRejection', (reason, promise) => {
+		console.log("\nHANDLER: unhandledRejection");
+		cleanUp("unhandledRejection");
+		console.log('  Unhandled rejection at ', promise, `reason: `, reason);
+		process.exit(1)
+	})	
+};
+
+// Set the error handlers.
+setErrorHandlers();
+
 // Main module import(s).
 
 (async function startServer(){
+
 	const compressionObj = {
 		filter    : shouldCompress,
 		memLevel  : zlib.constants.Z_DEFAULT_MEMLEVEL,

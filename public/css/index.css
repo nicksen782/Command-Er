@@ -1,12 +1,13 @@
 @import "main.css";
 @import "terminals_view.css";
 
-.disabled{
+.disabled {
 	cursor: not-allowed;
 	/* pointer-events: none; */
-	opacity:0.5;
+	opacity: 0.5;
 	text-decoration: line-through;
 }
+
 #mainWrapper {
 	/* width: 1350px; */
 	/* min-width: 950px; */
@@ -48,6 +49,7 @@
 	background-color: gainsboro;
 	cursor: pointer;
 }
+
 #resizeTerm:hover {
 	border-style: dashed;
 	font-weight: bold;
@@ -58,6 +60,7 @@
 	background-color: gainsboro;
 	cursor: pointer;
 }
+
 #clearTerm:hover {
 	border-style: dashed;
 	font-weight: bold;
@@ -73,50 +76,65 @@
 	padding-bottom: 3px;
 	/* background-color: rgb(0 0 0 / 85%); */
 	background-color: rgb(5 28 39 / 85%);
+	position: relative;
 }
 
 /* NAV TABS */
-.entryRow{
+.entryRow {
 	/* display:inline-block;
 	margin: 5px;
 	font-size: 20px; */
 	vertical-align: top;
 }
-.entryRow td{
-	text-align:center;
+
+.entryRow td {
+	text-align: center;
 }
-.entryRow .titleElem{
-    width: 400px;
-    height: 3em;
+
+.entryRow .titleElem {
+	width: 400px;
+	height: 3em;
 }
-.entryRow .hiddenElem{height: 3em;}
-.entryRow .sendAsElem{
-    width: 200px;
-    height: 3em;
+
+.entryRow .hiddenElem {
+	height: 3em;
 }
-.entryRow .cmdElem_textarea{
+
+.entryRow .sendAsElem {
+	width: 200px;
+	height: 3em;
+}
+
+.entryRow .cmdElem_textarea {
 	width: 1000px;
 	white-space: pre;
 }
-.entryRow .cmdElem_textarea.taller.muchTaller{
-	height:20em;
+
+.entryRow .cmdElem_textarea.taller.muchTaller {
+	height: 20em;
 }
-.entryRow .cmdElem_textarea.taller{
-	height:10em;
+
+.entryRow .cmdElem_textarea.taller {
+	height: 10em;
 }
-.entryRow .cmdElem_textarea.shorter{
-    height: 3em;
+
+.entryRow .cmdElem_textarea.shorter {
+	height: 3em;
 }
-.entryRow .pressCtrlCElem{
-    height: 3em;
+
+.entryRow .pressCtrlCElem {
+	height: 3em;
 }
-.entryRow .pressEnterElem{
-    height: 3em;
+
+.entryRow .pressEnterElem {
+	height: 3em;
 }
-.cmd_key_div2{
+
+.cmd_key_div2 {
 	background-color: #051c27;
-    margin-right: 5px;
+	margin-right: 5px;
 }
+
 .commandsDiv2 {
 	background-color: #051c27;
 	background-color: #005c80;
@@ -128,6 +146,7 @@
 	border: 5px solid black;
 	display: inline-block;
 }
+
 #cmd_editor #sub_tabs3 .sub_tabs3,
 #cmds_navBar .cmds_tablink,
 #main_navBar .nav_tablink {
@@ -183,33 +202,34 @@
 
 #view_info {
 	background-color: wheat;
-	min-height:1em;
+	min-height: 1em;
 	padding: 5px;
 	background-color: #005c80;
 }
 
 #view_manage {
 	background-color: aliceblue;
-	min-height:1em;
+	min-height: 1em;
 }
 
 
 /* MANAGE */
-#textCommands{
+#textCommands {
 	width: 100%;
 	height: 560px;
 	white-space:
-	pre;
+		pre;
 }
-#textCommands_update{
-}
-#textCommands_reset{
-}
+
+#textCommands_update {}
+
+#textCommands_reset {}
 
 
 .tableType1 {}
+
 .tableType1.padBottom {
-	border-bottom:5px solid black;
+	border-bottom: 5px solid black;
 	margin-bottom: 0px;
 }
 
@@ -245,3 +265,47 @@
 }
 
 .tableType1 th {}
+
+#user_uuid {
+	height: 34px;
+	min-width: 360px;
+	position:
+		absolute;
+	right: 0px;
+	top: 0px;
+	background-color: khaki;
+	padding: 4px;
+	/* text-align: center; */
+	background-color: #005c80;
+}
+
+#user_uuid_add {
+	border: 1px solid black;
+	text-align: center;
+	line-height: 26px;
+	font-size: 26px;
+	height: 26px;
+	width: 26px;
+	vertical-align: top;
+	cursor: pointer;
+	display: inline-block;
+	color: white;
+	background-color: #daa529;
+}
+
+#user_uuid_value {
+	/* background-color: #005c80; */
+	height: 26px;
+	display: inline-block;
+	font-family: monospace;
+	font-size: 16px;
+	line-height: 26px;
+	font-weight: bold;
+	color: white;
+}
+
+.cmini_term_tab{ border:1px solid aliceblue; }
+.cmini_term_tab:not(.active){background-color: darkslateblue;}
+.cmini_term_tab.active{background-color: darkslateblue;border-color: aliceblue;}
+
+

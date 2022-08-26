@@ -54,6 +54,79 @@ let _MOD = {
 			let resp = await _MOD.updateMultiGroups(req.body);
 			res.json(resp);
 		});
+
+		//
+		_APP.addToRouteList({ path: "/MINI/GETUNIQUEUUIDS", method: "post", args: ["cmd"], file: __filename, desc: "" });
+		app.post('/MINI/GETUNIQUEUUIDS'    ,express.json(), async (req, res) => {
+			let uuids = [];
+			// TERM
+			// TERMID
+			// TTY
+			// TYPE
+
+			_APP.wss.clients.forEach(function each(ws) { 
+				if (ws.readyState === 1 && ws.TERM && ws.TYPE == "MINI") {
+					if(uuids.indexOf(ws.UUID) == -1){ uuids.push(ws.UUID); }
+				}
+			});
+			res.json(uuids);
+		});
+
+		// /MINI/getStatus
+		_APP.addToRouteList({ path: "/getStatus", method: "post", args: [], file: __filename, desc: "" });
+		app.post('/getStatus'    ,express.json(), async (req, res) => {
+			let availableClients = [];
+
+			_APP.wss.clients.forEach(function each(ws) { 
+				if (
+					ws.readyState === 1 
+					&& ws.TERM 
+					&& ws.TYPE == "MINI"
+				) {
+					availableClients.push(ws.UUID);
+				}
+			});
+
+			console.log("availableClients:", availableClients);
+			res.json(availableClients);
+			// let uuids = [];
+			// // TERM
+			// // TERMID
+			// // TTY
+			// // TYPE
+
+			// _APP.wss.clients.forEach(function each(ws) { 
+			// 	if (ws.readyState === 1 && ws.TERM && ws.TYPE == "MINI") {
+			// 		if(uuids.indexOf(ws.UUID) == -1){ uuids.push(ws.UUID); }
+			// 	}
+			// });
+			// res.json(uuids);
+		});
+
+		//
+		_APP.addToRouteList({ path: "/MINI/RUNCMD", method: "post", args: ["cmd"], file: __filename, desc: "" });
+		app.post('/MINI/RUNCMD'    ,express.json(), async (req, res) => {
+			let target;
+			_APP.wss.clients.forEach(function each(ws) { 
+				if(target){ return; }
+				if (
+					ws.readyState === 1 
+					&& ws.TERM 
+					&& ws.UUID == req.body.uuid
+					&& ws.TYPE == "MINI"
+				) {
+					target = ws;
+					return;
+				}
+			});
+			if(target){
+				target.TTY.write(` ${req.body.cmd}\r\n`);
+				res.json([`*SUCCESS* RUNCMD: uuid: ${req.body.uuid}, termid: ${target.TERMID}, cmd: ${req.body.cmd}`]);
+			}
+			else{
+				res.json([`*FAILURE* RUNCMD: termid: ${req.body.termid}, cmd: ${req.body.cmd}`]);
+			}
+		});
 	},
 
 	// SELECTS

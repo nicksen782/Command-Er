@@ -293,11 +293,11 @@ let setErrorHandlers = function(){
             process.title = appTitle;
             
             let lines = [
-                "*".repeat(27)                                                                              ,
+                "-".repeat(52)                                                                              ,
                 ` NAME    : ${appTitle} `                                                                   ,
                 ` STARTDIR: ${process.cwd()} `                                                              ,
                 ` SERVER  : ${_APP.m_config.config.node.http.host}:${_APP.m_config.config.node.http.port} ` ,
-                "*".repeat(27)                                                                              ,
+                "-".repeat(52)                                                                              ,
             ];
             // https://gist.github.com/JBlond/2fea43a3049b38287e5e9cefc87b2124
             console.log("");
@@ -308,7 +308,6 @@ let setErrorHandlers = function(){
 
             // ROUTES
             printRoutes(); 
-            console.log("");
             
             _APP.timeIt("FULL_STARTUP", "e", __filename);
              

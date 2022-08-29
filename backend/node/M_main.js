@@ -8,6 +8,7 @@ const child_process = require('child_process');
 const m_modules = [
     './m_config.js', // Must be first!
     './m_websocket_node.js',
+    './m_terminals.js',
 ];
 const rpbp = require( './removeprocess.js' ).run;
 
@@ -89,13 +90,14 @@ let _APP = {
     rpbp         : rpbp ,
 
     // Init this module.
-    module_init: function(parent){
+    module_init: function(){
         return new Promise(async function(resolve,reject){
             let key = path.basename(__filename, '.js');
             _APP.consolelog(".".repeat(54), 0);
             _APP.consolelog(`START: module_init: ${key} :`, 0);
             _APP.timeIt(`${key}`, "s", __filename); 
             
+            // Add each module (does not run module_init yet.)
             _APP.consolelog("add modules", 2);
             for(let i=0; i<m_modules.length; i+=1){
                 let key = path.basename(m_modules[i], '.js');
@@ -112,13 +114,37 @@ let _APP = {
             _APP.consolelog(".".repeat(54), 0);
             _APP.consolelog("", 0);
 
-            //
+            // Get the config files. 
             await _APP.m_config.get_configs(_APP);
 
             resolve();
         });
     },
 
+    // Add the _APP object to each required object.
+    module_inits: function(){
+        return new Promise(async function(resolve,reject){
+            // MODULE INITS.
+            for(let i=0; i<m_modules.length; i+=1){
+                let key = path.basename(m_modules[i], '.js');
+                if(!_APP[key].moduleLoaded){
+                    _APP.consolelog(".".repeat(54), 0);
+                    let line1 = `START: module_init: ` + " ".repeat(4);
+                    line1+= `${key.toUpperCase()}`.padEnd(20, " ");
+                    line1+= ` : `;
+                    line1+= `(${ (i+1) + "/" + m_modules.length })`.padStart(7, " ");
+                    _APP.consolelog(line1, 0);
+                    _APP.timeIt(`${key}`, "s", __filename); await _APP[key].module_init(_APP, key); _APP.timeIt(`${key}`, "e", __filename);
+                    _APP.consolelog(`END  : INIT TIME: ${_APP.timeIt(`${key}`, "t", __filename).toFixed(3).padStart(9, " ")} ms`, 0);
+                    _APP.consolelog(".".repeat(54), 0);
+                    _APP.consolelog("");
+                }
+            }
+
+            resolve();
+        });
+    },
+    
     // ** SHARED
     
     // DEBUG: Used to measure how long something takes.
@@ -316,8 +342,6 @@ let _APP = {
             tmpdir    : os.tmpdir(),
         };
     },
-
-    
 };
 
 // Save app and express to _APP and then return _APP.

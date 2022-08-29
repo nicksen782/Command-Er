@@ -6,6 +6,9 @@ node_modules
 commands/*
 !commands/.gitKeep
 
+# Config
+public/shared/config.json
+
 # Database.
 backend/db/Command-Er.db
 

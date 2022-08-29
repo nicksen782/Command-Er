@@ -1,7 +1,0 @@
-{
-	"name"        : "xterm-color",
-	"cols"        : 180, 
-	"rows"        : 40,
-	"fontSize"    : 12, 
-	"cursorBlink" : true
-}

@@ -1,6 +1,6 @@
 // Packages for THIS module.
 const fs   = require('fs');
-const os       = require('os');
+const os   = require('os');
 const path = require('path'); 
 const child_process = require('child_process'); 
 
@@ -17,7 +17,7 @@ let _APP = {
     // Express variables.
     app      : null,
     express  : null,
-    wss      : null,
+    server   : null,
 
     // Manual route list. (Emulates something like route annotations.)
     routeList: {}, 

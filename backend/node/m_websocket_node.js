@@ -110,6 +110,15 @@ let _MOD = {
             // },
         },
         TEXT:{
+            PING:      async function(ws, data){
+                // console.log(`mode: ${data.mode}, data:`, data.data);
+                ws.send("PONG");
+            },
+
+            CLIENT_COUNT:      async function(ws, data){
+                // console.log(`mode: ${data.mode}, data:`, data.data);
+                ws.send( JSON.stringify( { "mode":"CLIENT_COUNT", "data":_MOD.ws_utilities.getClientCount() } ) );
+            },
         },
     },
     ws_utilities: {
@@ -263,6 +272,11 @@ let _MOD = {
         el_close  : function(ws, event){ 
             console.log("Node WebSockets Server: CLOSE  :", ws.id ); 
             ws.close(); 
+
+            // TODO: Remove all terminal ws connections that have the matching UUID.
+            // 
+
+            // Make sure this ws connection is removed after a short delay. 
             setTimeout(function(){
                 ws.terminate(); 
                 setTimeout(function(){
@@ -273,12 +287,14 @@ let _MOD = {
         el_error  : function(ws, event){ 
             console.log("Node WebSockets Server: ERROR  :", event); 
             ws.close(); 
-            setTimeout(function(){
-                ws.terminate(); 
-                setTimeout(function(){
-                    ws=null; 
-                }, 1000);
-            }, 1000);
+
+            // Make sure this ws connection is removed after a short delay. 
+            // setTimeout(function(){
+            //     ws.terminate(); 
+            //     setTimeout(function(){
+            //         ws=null; 
+            //     }, 1000);
+            // }, 1000);
         },
     },
     initWss: function(){
@@ -286,7 +302,7 @@ let _MOD = {
             // What type of connection is this? 
             
             // CONTROL
-            if( res.url == "CONTROL"){
+            if( res.url == "/CONTROL"){
                 // GENERATE A UNIQUE ID FOR THIS CONNECTION. 
                 clientWs.id = _MOD.ws_utilities.uuidv4();
 
@@ -302,7 +318,6 @@ let _MOD = {
 
                 // Save this data to the clientWs for future use.
                 clientWs.CONFIG.isTerm = false; 
-
 
                 console.log("Node WebSockets Server: CONNECT:", clientWs.id);
 

@@ -1,0 +1,77 @@
+#container {
+    background-color: #7787ff;
+    min-height: 0.5em;
+    padding: 0.5em;
+}
+
+#top {
+    background-color: #ff7777;
+    min-height: 1em;
+    padding: 1em;
+    position: relative;
+}
+
+#top_links {
+    background-color: #fff977;
+    position: absolute;
+    height: 100%;
+    padding: 1em;
+    top: 0px;
+    right: 0px;
+    width: 190px;
+    text-align: center;
+}
+
+.top_links {
+    background-color: #e1d928;
+    padding: 0.25em;
+    border: 1px solid black;
+    border-radius: 0.5em;
+}
+
+.top_links:hover {
+    background-color: #fdff00;
+}
+#top_status{
+    background-color: #fff977;
+    position: absolute;
+    height: 100%;
+    padding: 0.5em;
+    top: 0px;
+    right: 200px;
+    width: 150px;
+    line-height: 1.25em;
+}
+#top_connected_status{border: 1px solid black;width: 1.25em;height: 1.25em; display:inline-block;vertical-align: top;}
+#top_connected_status.pinging      { background-color: #2662f7; }
+#top_connected_status.connecting   { background-color: #eab700; }
+#top_connected_status.connected    { background-color: #16c60c; }
+#top_connected_status.disconnecting{ background-color: #d44833; }
+#top_connected_status.disconnected { background-color: #383838; }
+#top_connected_status_text{ width: 100px;height: 1.25em; display:inline-block;vertical-align: top;}
+
+#main {
+    background-color: #95ff77;
+    min-height: 1em;
+    padding: 1em;
+}
+
+#main_tabs {
+    background-color: #c3f5b5;
+    min-height: 1em;
+    padding: 1em;
+}
+#main_views {
+    background-color: #97c08c;
+    min-height: 1em;
+    padding: 1em;
+}
+
+#bottom {
+    background-color: #35eee6;
+    min-height: 1em;
+    padding: 1em;
+}
+
+#wsClient_count_output{
+}

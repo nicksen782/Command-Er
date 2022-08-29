@@ -16,15 +16,10 @@ const os       = require('os');
 const fs       = require('fs');
 const path     = require('path');
 
-// Express/WS requires. 
-const WSServer = require('ws').Server;
+// Express/server requires. 
 const server   = require('http').createServer();
 const express  = require('express');
 const app      = express();
-
-// WWS server start
-const wss = new WSServer({ server: server });
-server.on('request', app);
 
 // Compression in Express.
 const zlib = require('zlib');
@@ -58,76 +53,9 @@ let setErrorHandlers = function(){
         if(cleanUpHasRan){ return; }
 
         let funcs = [
-            function appLoopCleanup(){
-                if(_APP && _APP.drawLoop){
-                    // Remove the child process if it is set.
-                    try{
-                        if(_APP.drawLoop){ 
-                            _APP.drawLoop.pause();
-                            _APP.drawLoop.stop();
-                            _APP.drawLoop = null; 
-                            console.log(`  cleanUp: (via: ${byWhat}): appLoopCleanup... DONE`);
-                        }
-                    }
-                    catch(e){
-                        console.log(`  cleanUp: (via: ${byWhat}): appLoopCleanup...FAILED`, e);
-                    }
-                }
-            },
-            function displayCleanup(){
-                if(_APP && _APP.m_websocket_python){
-                    // Remove the child process if it is set.
-                    try{
-                        if(_APP.m_websocket_python.cp_child){ 
-                            // _APP.m_websocket_python.cp_child.kill('SIGTERM'); 
-                            _APP.m_websocket_python.cp_child.kill('SIGINT'); 
-                            _APP.m_websocket_python.cp_child = null; 
-                            console.log(`  cleanUp: (via: ${byWhat}): displayCleanup... DONE`);
-                        }
-                    }
-                    catch(e){
-                        console.log(`  cleanUp: (via: ${byWhat}): displayCleanup...FAILED`, e);
-                    }
-                }
-            },
-            function pythonCleanup(){
-                if(_APP && _APP.m_websocket_python){
-                    // Remove the child process if it is set.
-                    try{
-                        if(_APP.m_websocket_python.cp_child){ 
-                            // _APP.m_websocket_python.cp_child.kill('SIGTERM'); 
-                            _APP.m_websocket_python.cp_child.kill('SIGINT'); 
-                            _APP.m_websocket_python.cp_child = null; 
-                            console.log(`  cleanUp: (via: ${byWhat}): pythonCleanup... DONE`);
-                        }
-                    }
-                    catch(e){
-                        console.log(`  cleanUp: (via: ${byWhat}): pythonCleanup...FAILED`, e);
-                    }
-                }
-            },
-            function serverCleanup(){
-                if(_APP && _APP.m_websocket_node){
-                    // Remove the child process if it is set.
-                    try{
-                        if(_APP.m_websocket_node.ws){ 
-                            console.log(`  cleanUp: (via: ${byWhat}): serverCleanup: websocket... DONE`);
-                            _APP.m_websocket_node.ws.close();
-                            _APP.m_websocket_node.ws = null;
-                        }
-                        if(_APP.server){
-                            _APP.server.close();
-                            console.log(`  cleanUp: (via: ${byWhat}): serverCleanup: server... DONE`);
-                        }
-                    }
-                    catch(e){
-                        console.log(`  cleanUp: (via: ${byWhat}): serverCleanup...FAILED`, e);
-                    }
-                }
-            },
         ];
         
-        // for(let i=0; i<funcs.length; i+=1){ funcs[i](); }
+        for(let i=0; i<funcs.length; i+=1){ funcs[i](); }
 
         // Set the cleanUpHasRan flag.
         cleanUpHasRan = true;
@@ -184,13 +112,10 @@ let setErrorHandlers = function(){
     setErrorHandlers();
 
     // Create _APP.
-    _APP   = await require(path.join(process.cwd(), './backend/node/M_main.js'))(app, express, server);
+    _APP = await require(path.join(process.cwd(), './backend/node/M_main.js'))(app, express, server);
     
     //
     _APP.timeIt("FULL_STARTUP", "s", __filename);
-
-    // Init _APP.
-    _APP.module_init(_APP);
 
     let printRoutes = function(){
         let routes = _APP.getRoutePaths("manual", app).manual;
@@ -262,6 +187,9 @@ let setErrorHandlers = function(){
     app.use('/'    , express.static(path.join(process.cwd(), './public')));
     app.use('/libs', express.static(path.join(process.cwd(), './node_modules')));
 
+    // Init _APP.
+    _APP.module_init(_APP);
+
     // Init the modules.
     await _APP.module_inits();
 
@@ -278,6 +206,9 @@ let setErrorHandlers = function(){
     // Remove the process if it already exists.
     let responses = await _APP.removeProcessByPort( [ _APP.m_config.config.node.http.port ], true );
     for(let i=0; i<responses.length; i+=1){ _APP.consolelog(responses[i], 4); }
+    
+    // Server start
+    server.on('request', app);
     
     (async function startServer(){
         server.listen(conf, async function () {

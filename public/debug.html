@@ -9,10 +9,63 @@
 	<title>Command-Er Mini (debug)</title>
 	<link rel="icon" type="image/x-icon" href="favicon.ico">
 
+	<link rel="stylesheet" href="css/shared.css">
 	<link rel="stylesheet" href="css/debug.css">
+	<script src="js/shared.js" defer></script>
 	<script src="js/debug.js" defer></script>
 </head>
 
 <body>
+	<div id="container">
+		
+		<div id="top">
+			COMMAND-ER (debug)
+			
+			<div id="top_links">
+				<a class="top_links" href="index.html">index</a> 
+				<a class="top_links" href="main.html">main</a> 
+				<a class="top_links" href="debug.html">debug</a> 
+			</div>
+
+			<div id="top_status">
+				<div id="top_connected_status" class="disconnected"></div>
+				<div id="top_connected_status_text"></div>
+				<br>
+				<span>
+					<label><input id="ws_autoReconnect" type="checkbox">Auto-reconnect</label>
+				</span> 
+			</div>
+
+		</div>
+
+		<div id="main">
+			main
+			<div id="main_tabs">
+				Connect:
+				<button id="ws_connect">Connect control</button>
+				<button id="ws_disconnect">Disconnect control</button>
+				<br>
+
+				Change status color: 
+				<button onclick="ws_control.status.setStatusColor('pinging');">pinging</button>
+				<button onclick="ws_control.status.setStatusColor('connecting');">connecting</button>
+				<button onclick="ws_control.status.setStatusColor('connected');">connected</button>
+				<button onclick="ws_control.status.setStatusColor('disconnecting');">disconnecting</button>
+				<button onclick="ws_control.status.setStatusColor('disconnected');">disconnected</button>
+				<br>
+			</div>
+			<div id="main_views">
+				Get client count:
+				<button id="wsClient_count_btn" onclick="debug.wsClient_count();">debug.wsClient_count()</button>
+				<span id="wsClient_count_output"></span>
+				<br>
+			</div>
+		</div>
+
+		<div id="bottom">
+			bottom
+		</div>
+
+	</div>
 </body>
 </html>

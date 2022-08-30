@@ -21,11 +21,14 @@ let _APP = {
     express  : null,
     server   : null,
 
+    // startupWarnings
+    startupWarnings: [],
+
     // Manual route list. (Emulates something like route annotations.)
     routeList: {}, 
 
     // ROUTED: Outputs a list of registered routes.
-    getRoutePaths : function(type="manual", app){
+    getRoutePaths : function(type = "manual", app = _APP){
         let routes = app._router.stack.filter(r => r.route).map(r => r.route).map(function(r){
             let methods = [];
             for(let m in r.methods){

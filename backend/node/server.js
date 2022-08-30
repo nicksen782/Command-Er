@@ -180,6 +180,29 @@ let setErrorHandlers = function(){
         };
     };
 
+    let missingWsRoutes_check = function(){
+        // Get a list of the manual routes for "ws".
+        let manualWsRoutes = [];
+        for(let file in _APP.routeList){
+            for(let rec of _APP.routeList[file]){
+                if(rec.method == "ws"){ manualWsRoutes.push(rec.path); }
+            }
+        }
+
+        // Get a list of the WS routes from ws_event_handlers.
+        let expectedWsRoutes = [
+            ...Object.keys(_APP.m_websocket_node.ws_event_handlers.JSON),
+            ...Object.keys(_APP.m_websocket_node.ws_event_handlers.TEXT),
+        ]
+        
+        // If any routes are in expected routes but not the manual routes then add them to the warn list. 
+        for(let key of expectedWsRoutes){
+            if(manualWsRoutes.indexOf(key) == -1){
+                _APP.startupWarnings.push(`WARN: Manual Websockets route NOT defined for: ${key}`);
+            }
+        }
+    };
+
     // Add compression.
     app.use( compression(compressionObj) );
 
@@ -242,7 +265,15 @@ let setErrorHandlers = function(){
             printRoutes(); 
             
             _APP.timeIt("FULL_STARTUP", "e", __filename);
-             
+            
+            // Display missing routes and/or other startup warnings. 
+            missingWsRoutes_check();
+            if(_APP.startupWarnings.length){
+                console.log("");
+                console.log("STARTUPWARNINGS:");
+                console.log(_APP.startupWarnings);
+            }
+
             lines = [
                 "-".repeat(36)                                                                          ,
                 ` READY (STARTUP TIME: ${_APP.timeIt("FULL_STARTUP", "t", __filename).toFixed(3).padStart(9, " ")} ms) ` ,

@@ -75,3 +75,11 @@
 
 #wsClient_count_output{
 }
+#main_views_left { display:inline-block; vertical-align:top; }
+#main_views_right{ display:inline-block; vertical-align:top; }
+#main_views_output{
+    width: 600px;
+    height: 200px;
+    font-family: monospace;
+    white-space: pre;
+}

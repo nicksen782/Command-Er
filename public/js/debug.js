@@ -1,9 +1,26 @@
+let appView = "debug";
 let DOM = {};
 let config = {};
 debug = {
     wsClient_count: function(){
         if(!ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
         ws_control.activeWs.send("CLIENT_COUNT");
+    },
+    wsClient_sectionsList: function(){
+        if(!ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
+        ws_control.activeWs.send("SECTIONS_LIST");
+    },
+    wsClient_groupsList: function(){
+        if(!ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
+        ws_control.activeWs.send("GROUPS_LIST");
+    },
+    wsClient_commandsList: function(){
+        if(!ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
+        ws_control.activeWs.send("COMMANDS_LIST");
+    },
+    wsClient_getDbAsJSON: function(){
+        if(!ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
+        ws_control.activeWs.send("GET_DB_AS_JSON");
     },
 };
 let init = async function(){
@@ -30,9 +47,19 @@ let init = async function(){
     // WS Disconnect.
     let ws_disconnect = document.getElementById("ws_disconnect");
     ws_disconnect.addEventListener("click", ()=>{ 
-        ws_control.autoReconnect=false;
-        ws_autoReconnect.checked = false;
-        ws_control.ws_utilities.wsCloseAll(false); 
+        ws_control.skipAutoReconnect = true;
+        // ws_control.autoReconnect=false;
+        // ws_autoReconnect.checked = false;
+        ws_control.ws_utilities.wsCloseAll(); 
+    }, false);
+
+    // WS Disconnect2. (test)
+    let ws_disconnect2 = document.getElementById("ws_disconnect2");
+    ws_disconnect2.addEventListener("click", ()=>{ 
+        // ws_control.skipAutoReconnect = true;
+        // ws_control.autoReconnect=false;
+        // ws_autoReconnect.checked = false;
+        ws_control.ws_utilities.wsCloseAll(); 
     }, false);
 
 };

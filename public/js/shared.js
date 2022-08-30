@@ -103,6 +103,7 @@ let ws_control = {
     activeWs:null,
     wsArr:[],
 
+    skipAutoReconnect         : false,
     autoReconnect             : false,
     autoReconnect_counter     : 0,
     autoReconnect_counter_max : 30,
@@ -159,8 +160,24 @@ let ws_control = {
             },
             CLIENT_COUNT: function(data){
                 console.log("CLIENT_COUNT:", data);
-                let wsClient_count_output = document.getElementById("wsClient_count_output");
-                wsClient_count_output.innerText = JSON.stringify(data);
+                document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
+            },
+
+            GET_DB_AS_JSON: function(data){
+                console.log("GET_DB_AS_JSON:", data);
+                document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
+            },
+            SECTIONS_LIST: function(data){
+                console.log("SECTIONS_LIST:", data);
+                document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
+            },
+            GROUPS_LIST: function(data){
+                console.log("GROUPS_LIST:", data);
+                document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
+            },
+            COMMANDS_LIST: function(data){
+                console.log("COMMANDS_LIST:", data);
+                document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
             },
         },
         TEXT  : {
@@ -228,7 +245,7 @@ let ws_control = {
 
             // Close/reclose previous ws connections. 
             for(let i=0; i<ws_control.wsArr.length; i+=1){
-                if(ws_control.wsArr[i]){
+                if(ws_control.wsArr[i] && ws_control.wsArr[i].close){
                     ws_control.wsArr[i].close();
                 }
             }
@@ -361,27 +378,38 @@ let ws_control = {
             ws_control.status.setStatusColor("disconnecting");
 
             ws_control.uuid = null;
-            event.currentTarget.close(); 
+            ws_control.activeWs = null;
 
             // Remove connected, add disconnected.
             // let wsElems = document.querySelectorAll(".ws");
             // wsElems.forEach(function(d){ d.classList.add("disconnected"); d.classList.remove("connected"); });
 
-            setTimeout(function(){
+            // Skip autoReconnect if the skipAutoReconnect flag is set.
+            if(!ws_control.skipAutoReconnect){
+                setTimeout(function(){
+                    // Gray icon.
+                    ws_control.status.setStatusColor("disconnected");
+                    
+                    ws_control.connecting = false;
+
+                    if(ws_control.autoReconnect){
+                        ws_control.autoReconnect_counter = 0;
+                        console.log(`'autoReconnect' is active. Will try to reconnect ${ws_control.autoReconnect_counter_max} times at ${ws_control.autoReconnect_ms} ms intervals. (${((ws_control.autoReconnect_counter_max*ws_control.autoReconnect_ms)/1000).toFixed(1)} seconds)`);
+                        ws_control.autoReconnect_id = setTimeout(ws_control.ws_utilities.autoReconnect_func, ws_control.autoReconnect_ms);
+                    }
+
+                }, 1000);
+            }
+            else{
+                console.log("skipAutoReconnect was set. AutoReconnect has been skipped.");
+
                 // Gray icon.
                 ws_control.status.setStatusColor("disconnected");
                 
-                ws_control.activeWs=null; 
-                ws_control.connecting = false;
+                // Clear the skipAutoReconnect flag.
+                ws_control.skipAutoReconnect = false;
+            }
 
-                if(ws_control.autoReconnect){
-                    ws_control.autoReconnect_counter = 0;
-                    console.log(`'autoReconnect' is active. Will try to reconnect ${ws_control.autoReconnect_counter_max} times at ${ws_control.autoReconnect_ms} ms intervals. (${((ws_control.autoReconnect_counter_max*ws_control.autoReconnect_ms)/1000).toFixed(1)} seconds)`);
-                    ws_control.autoReconnect_id = setTimeout(ws_control.ws_utilities.autoReconnect_func, ws_control.autoReconnect_ms);
-                }
-
-            }, 1000);
-            // draw.fps.updateDisplay();
         },
         // Connection closed unexpectedly. 
         el_error:function(ws, event){

@@ -6,7 +6,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; font-src 'self' data: fonts.gstatic.com;"> -->
 
-	<title>Command-Er Mini (debug)</title>
+	<title>Command-Er (debug)</title>
 	<link rel="icon" type="image/x-icon" href="favicon.ico">
 
 	<link rel="stylesheet" href="css/shared.css">
@@ -43,7 +43,8 @@
 			<div id="main_tabs">
 				Connect:
 				<button id="ws_connect">Connect control</button>
-				<button id="ws_disconnect">Disconnect control</button>
+				<button id="ws_disconnect">Disconnect control (skipAutoReconnect)</button>
+				<button id="ws_disconnect2">Disconnect control (with autoReconnect)</button>
 				<br>
 
 				Change status color: 
@@ -55,10 +56,33 @@
 				<br>
 			</div>
 			<div id="main_views">
-				Get client count:
-				<button id="wsClient_count_btn" onclick="debug.wsClient_count();">debug.wsClient_count()</button>
-				<span id="wsClient_count_output"></span>
-				<br>
+				<div id="main_views_left">
+					<table>
+						<tr>
+							<td>Get client count</td>
+							<td><button onclick="debug.wsClient_count();">SHOW</button></td>
+						</tr>
+						<tr>
+							<td>Get DB as JSON</td>
+							<td><button onclick="debug.wsClient_getDbAsJSON();">SHOW</button></td>
+						</tr>
+						<tr>
+							<td>Get Sections list</td>
+							<td><button onclick="debug.wsClient_sectionsList();">SHOW</button></td>
+						</tr>
+						<tr>
+							<td>Get Groups list</td>
+							<td><button onclick="debug.wsClient_groupsList();">SHOW</button></td>
+						</tr>
+						<tr>
+							<td>Get Commands list</td>
+							<td><button onclick="debug.wsClient_commandsList();">SHOW</button></td>
+						</tr>
+					</table>
+				</div>
+				<div id="main_views_right">
+					<textarea id="main_views_output"></textarea>
+				</div>
 			</div>
 		</div>
 

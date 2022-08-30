@@ -7,6 +7,8 @@ const child_process = require('child_process');
 // Modules saved within THIS module.
 const m_modules = [
     './m_config.js', // Must be first!
+    './m_dbInit.js', 
+    './m_db.js', 
     './m_websocket_node.js',
     './m_terminals.js',
 ];
@@ -113,9 +115,6 @@ let _APP = {
             _APP.consolelog(`END  : INIT TIME: ${_APP.timeIt(`${key}`, "t", __filename).toFixed(3).padStart(9, " ")} ms`, 0);
             _APP.consolelog(".".repeat(54), 0);
             _APP.consolelog("", 0);
-
-            // Get the config files. 
-            await _APP.m_config.get_configs(_APP);
 
             resolve();
         });
@@ -319,7 +318,7 @@ let _APP = {
             type      : os.type(),
             release   : os.release(),
             arch      : os.arch(),
-            cpus      : os.cpus().map( d=> { return {model: d.model, speed: d.speed }; } ) ,
+            cpus      : os.cpus().map( d=> { return {model: d.model, speed: d.speed }; } ).length ,
             endianness: os.endianness(),
             memory    : { freemem: os.freemem().toLocaleString(), totalmem: os.totalmem().toLocaleString() },
             network   : (()=>{

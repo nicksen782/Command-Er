@@ -211,6 +211,7 @@ let setErrorHandlers = function(){
     server.on('request', app);
     
     (async function startServer(){
+        _APP.consolelog("listen", 2);
         server.listen(conf, async function () {
             _APP.timeIt("expressServerStart", "e", __filename);
             _APP.consolelog(`END  : INIT TIME: ${_APP.timeIt("expressServerStart", "t", __filename).toFixed(3).padStart(9, " ")} ms`, 0);

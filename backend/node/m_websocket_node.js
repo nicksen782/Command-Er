@@ -67,12 +67,12 @@ let _MOD = {
         _APP.addToRouteList({ path: "GET_DB_AS_JSON"    , method: "ws", args: [], file: __filename, desc: "(TEXT): GET_DB_AS_JSON." });
         
         // ********************************************
-        // HTTP routes. (Intended for Command-Er MINI).
+        // HTTP routes. (Command-Er or Command-Er MINI.
         // ********************************************
-        
-        // /MINI/GET_DB_AS_JSON : Get DB as JSON for Command-Er MINI.
-        _APP.addToRouteList({ path: "/MINI/GET_DB_AS_JSON", method: "post", args: [], file: __filename, desc: "Get DB as JSON for Command-Er MINI." });
-        app.post('/MINI/GET_DB_AS_JSON'    ,express.json(), async (req, res) => {
+
+        // /GET_DB_AS_JSON : Get DB as JSON.
+        _APP.addToRouteList({ path: "/GET_DB_AS_JSON", method: "post", args: [], file: __filename, desc: "Get DB as JSON." });
+        app.post('/GET_DB_AS_JSON'    ,express.json(), async (req, res) => {
             // Object to store the results. 
             let obj = {
                 "sections" : [],
@@ -92,6 +92,10 @@ let _MOD = {
 
             res.json(obj);
         });
+
+        // ********************************************
+        // HTTP routes. (Intended for Command-Er MINI).
+        // ********************************************
 
         // /MINI/GET_UNIQUE_UUIDS : Clients connected to this Command-Er server.
         _APP.addToRouteList({ path: "/MINI/GET_UNIQUE_UUIDS", method: "post", args: [], file: __filename, desc: "Get clients connected to this Command-Er server." });
@@ -254,7 +258,7 @@ let _MOD = {
             // TODO
             GET_ONE_CMD: async function(ws, data){
                 console.log(`mode: ${data.mode}, data:`, data.data);
-                let resp = await _MOD.queries.GET_ONE_CMD(data.sId, data.gId, data.cId);
+                let resp = await _MOD.queries.GET_ONE_CMD(data.data.sId, data.data.gId, data.data.cId);
                 ws.send( JSON.stringify( { "mode":"GET_ONE_CMD", "data":resp } ) );
             },
             // TODO:
@@ -655,7 +659,7 @@ let _MOD = {
                     resolve(results3);
                 }
                 else{
-                    reject("NO RESULTS");
+                    reject(`NO RESULTS:" sId: ${sId}, gId: ${gId}, cId: ${cId}`);
                 }
             })
         },

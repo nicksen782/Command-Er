@@ -1,3 +1,9 @@
+// Shared variables.
+let commands = [];
+let appView  = "";
+let DOM      = {};
+let config   = {};
+
 // HTTP REQUESTS USING POST.
 let http = {
     // Can use either "GET" or "POST" and type of either "json" or "text".
@@ -159,25 +165,73 @@ let ws_control = {
                 console.log(`mode: ${data.mode}, data:`, data.data);
             },
             CLIENT_COUNT: function(data){
-                console.log("CLIENT_COUNT:", data);
-                document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
+                if(appView == "debug"){
+                    console.log("CLIENT_COUNT:", data);
+                    document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
+                }
             },
 
             GET_DB_AS_JSON: function(data){
-                console.log("GET_DB_AS_JSON:", data);
-                document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
+                if(appView == "debug"){
+                    console.log("GET_DB_AS_JSON:", data);
+                    document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
+                    // commands = data;
+                }
             },
             SECTIONS_LIST: function(data){
-                console.log("SECTIONS_LIST:", data);
-                document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
+                if(appView == "debug"){
+                    console.log("SECTIONS_LIST:", data);
+                    document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
+                }
             },
             GROUPS_LIST: function(data){
-                console.log("GROUPS_LIST:", data);
-                document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
+                if(appView == "debug"){
+                    console.log("GROUPS_LIST:", data);
+                    document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
+                }
             },
             COMMANDS_LIST: function(data){
-                console.log("COMMANDS_LIST:", data);
-                document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
+                if(appView == "debug"){
+                    console.log("COMMANDS_LIST:", data);
+                    document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
+                }
+            },
+
+            
+            // 
+            GET_ONE_CMD: function(data){
+                if(appView == "debug"){
+                    console.log("GET_ONE_CMD:", data);
+                    document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
+                }
+            },
+            // TODO
+            TYPE_CMD_TO_TERM: function(data){
+                if(appView == "debug"){
+                    console.log("TYPE_CMD_TO_TERM:", data);
+                    document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
+                }
+            },
+            // TODO
+            UPDATE_ONE_SECTION: function(data){
+                if(appView == "debug"){
+                    console.log("UPDATE_ONE_SECTION:", data);
+                    document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
+                }
+            },
+            // TODO
+            UPDATE_ONE_GROUP: function(data){
+                if(appView == "debug"){
+                    console.log("UPDATE_ONE_GROUP:", data);
+                    document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
+                }
+            },
+            // TODO
+            UPDATE_ONE_COMMAND: function(data){
+                if(appView == "debug"){
+                    console.log("UPDATE_ONE_COMMAND:", data);
+                    document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
+                }
             },
         },
         TEXT  : {

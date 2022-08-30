@@ -83,3 +83,37 @@
     font-family: monospace;
     white-space: pre;
 }
+
+.nav{
+    min-height: 0.5em;
+    padding: 0.5em;
+    background-color: rgb(255 255 255 / 50%);
+}
+.nav_tab {
+    border: 1px solid black;
+    display: inline-block;
+    vertical-align: top;
+    padding: 5px;
+    border-radius: 5px;
+    background-color: blanchedalmond;
+    cursor:pointer;
+}
+.nav_tab.active {
+    background-color: lightgoldenrodyellow;
+}
+.nav_tab:hover {
+    background-color: palegoldenrod;
+}
+.nav_tab:active {
+    background-color: yellow;
+}
+
+.view {
+    display: none;
+    min-height: 0.5em;
+    padding: 0.5em;
+    background-color: rgb(255 255 255 / 30%);
+}
+.view.active {
+    display: block;
+}

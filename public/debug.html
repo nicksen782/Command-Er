@@ -78,10 +78,47 @@
 							<td>Get Commands list</td>
 							<td><button onclick="debug.wsClient_commandsList();">SHOW</button></td>
 						</tr>
+						<tr>
+							<td>Get One Command</td>
+							<td><button onclick="debug.wsClient_getOneCommand(1,1,1);">SHOW(1,1,1)</button></td>
+						</tr>
+						<tr>
+							<td>Get One Command</td>
+							<td><button onclick="debug.wsClient_getOneCommand(1,2,2);">SHOW(1,2,2)</button></td>
+						</tr>
 					</table>
 				</div>
 				<div id="main_views_right">
 					<textarea id="main_views_output"></textarea>
+				</div>
+				<div id="main_views_commandEditor">
+					<div class="nav">
+						<div class="nav_tab" group="editor" view="commandEditor_view_section">Section Editor</div>
+						<div class="nav_tab" group="editor" view="commandEditor_view_group">Group Editor</div>
+						<div class="nav_tab" group="editor" view="commandEditor_view_command">Command Editor</div>
+					</div>
+					<div class="views">
+
+						<div class="view" group="editor" id="commandEditor_view_section">
+							Section Editor
+							<br>
+						</div>
+
+						<div class="view" group="editor" id="commandEditor_view_group">
+							Group Editor
+							<br>
+						</div>
+
+						<div class="view" group="editor" id="commandEditor_view_command">
+							Command Editor
+							<select id="commandEditor_section1_select"><option value="">...Choose section</option></select>
+							<select id="commandEditor_group1_select"><option value="">...Choose group</option></select>
+							<select id="commandEditor_command1_select"><option value="">...Choose command</option></select>
+							<br>
+						</div>
+
+					</div>
+
 				</div>
 			</div>
 		</div>

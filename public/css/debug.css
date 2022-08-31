@@ -36,10 +36,10 @@
     background-color: #fff977;
     position: absolute;
     height: 100%;
-    padding: 0.5em;
+    padding: 0.12em;
     top: 0px;
     right: 200px;
-    width: 150px;
+    /* width: 150px; */
     line-height: 1.25em;
 }
 #top_connected_status{border: 1px solid black;width: 1.25em;height: 1.25em; display:inline-block;vertical-align: top;}
@@ -48,7 +48,7 @@
 #top_connected_status.connected    { background-color: #16c60c; }
 #top_connected_status.disconnecting{ background-color: #d44833; }
 #top_connected_status.disconnected { background-color: #383838; }
-#top_connected_status_text{ width: 100px;height: 1.25em; display:inline-block;vertical-align: top;}
+#top_connected_status_text{width: 100px;/* height: 1.25em; *//* display:inline-block; *//* vertical-align: top; */}
 
 #main {
     background-color: #95ff77;
@@ -99,10 +99,10 @@
     cursor:pointer;
 }
 .nav_tab.active {
-    background-color: lightgoldenrodyellow;
+    background-color: yellow;
 }
 .nav_tab:hover {
-    background-color: palegoldenrod;
+    background-color: yellow;
 }
 .nav_tab:active {
     background-color: yellow;
@@ -113,7 +113,49 @@
     min-height: 0.5em;
     padding: 0.5em;
     background-color: rgb(255 255 255 / 30%);
+    height: 400px;
 }
 .view.active {
     display: block;
+}
+
+div#commandEditor_sectionGroupDiv {
+    background-color: rgb(255 255 255 / 30%);
+    border-bottom: 1px solid black;
+    min-height: 0.5em;
+    padding: 0.5em;
+}
+
+.table1{
+    border: 1px solid black;
+    margin-left: 2em;
+    border-collapse: collapse;
+}
+.table1 tr{
+    border-bottom: 1px solid black;
+}
+.table1 th{
+    text-align:left;
+    border-right:1px solid black;
+}
+.table1 th,
+.table1 td{
+    padding:0.25em
+}
+
+table#commandEditor_table {
+    border: 1px solid black;
+    margin-left: 2em;
+    border-collapse: collapse;
+}
+table#commandEditor_table tr{
+    border-bottom: 1px solid black;
+}
+table#commandEditor_table th{
+    text-align:left;
+    border-right:1px solid black;
+}
+table#commandEditor_table th,
+table#commandEditor_table td{
+    padding:0.25em
 }

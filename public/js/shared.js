@@ -110,7 +110,7 @@ let ws_control = {
     wsArr:[],
 
     skipAutoReconnect         : false,
-    autoReconnect             : false,
+    autoReconnect             : true,
     autoReconnect_counter     : 0,
     autoReconnect_counter_max : 30,
     autoReconnect_id          : false,

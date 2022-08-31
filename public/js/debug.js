@@ -24,6 +24,7 @@ let debug = {
         ws_control.activeWs.send( JSON.stringify( { mode:"GET_ONE_CMD", data: { sId:sId, gId:gId, cId:cId } } ) );
     },
 
+    // SECTION/GROUP/COMMAND EDITOR.
     editor: {
         nav: {
             parent: null,
@@ -57,115 +58,208 @@ let debug = {
                 // Add event listeners to the tabs.
                 this.tabs.forEach( (tab) => tab.addEventListener("click", () => this.showOneView(tab), false) ); 
         
-                // Show the first tab and view. 
-                this.showOneView( this.tabs[0] );
+                // Show the Command Editor tab and view. 
+                this.showOneView( this.tabs[2] );
             },
         },
         selects: {
             parent:null,
-            DOM:{},
+            DOM:{
+                // Add objects for each section.
+                shared        : {},
+                sectionEditor : {},
+                groupEditor   : {},
+                commandEditor : {},
+            },
+
+            // POPULATES.
             populate_sections: function(){
                 let frag = document.createDocumentFragment();
                 let option;
+                let count = 0;
                 for(let i=0; i<commands.sections.length; i+=1){
                     let rec = commands.sections[i];
+                    count +=1;
                     option = document.createElement("option");
                     option.value = `${rec.sId}`;
-                    option.innerText = `${rec.name}`;
+                    // option.innerText = `${rec.name}`;
+                    option.innerText = `${rec.name} (sId: ${rec.sId})`;
                     option.setAttribute("order", `${rec.order}`);
                     frag.append(option);
                 }
-                this.DOM.commandEditor["section1_select"].options.length = 1;  
-                this.DOM.commandEditor["section1_select"].append(frag);
+                this.DOM.commandEditor["section_select"].options[0].innerText = `...Sections (${count})`;
+                this.DOM.commandEditor["section_select"].options.length = 1;  
+                this.DOM.commandEditor["section_select"].append(frag);
             },
             populate_groups: function(sId){
                 let frag = document.createDocumentFragment();
                 let option;
+                let count = 0;
                 for(let i=0; i<commands.groups.length; i+=1){
                     let rec = commands.groups[i];
                     if(rec.sId != sId){ continue; }
+                    count +=1;
 
                     option = document.createElement("option");
                     option.value = `${rec.gId}`;
-                    option.innerText = `${rec.name}`;
+                    // option.innerText = `${rec.name}`;
+                    option.innerText = `${rec.name} (gId: ${rec.gId})`;
                     option.setAttribute("order", `${rec.order}`);
                     frag.append(option);
                 }
-                this.DOM.commandEditor["group1_select"].options.length = 1;  
-                this.DOM.commandEditor["group1_select"].append(frag);
+                this.DOM.commandEditor["group_select"].options[0].innerText = `...Groups (${count})`;
+                this.DOM.commandEditor["group_select"].options.length = 1;  
+                this.DOM.commandEditor["group_select"].append(frag);
             },
             populate_commands: function(gId){
                 let frag = document.createDocumentFragment();
                 let option;
+                let count = 0;
                 for(let i=0; i<commands.commands.length; i+=1){
                     let rec = commands.commands[i];
                     if(rec.gId != gId){ continue; }
+                    count +=1;
 
                     option = document.createElement("option");
                     option.value = `${rec.cId}`;
-                    option.innerText = `${rec.title}`;
+                    // option.innerText = `${rec.title}`;
+                    option.innerText = `${rec.title} (cId: ${rec.cId})`;
                     option.setAttribute("order", `${rec.order}`);
                     frag.append(option);
                 }
-                this.DOM.commandEditor["command1_select"].options.length = 1;  
-                this.DOM.commandEditor["command1_select"].append(frag);
+                this.DOM.commandEditor["command_select"].options[0].innerText = `...Commands (${count})`;
+                this.DOM.commandEditor["command_select"].options.length = 1;  
+                this.DOM.commandEditor["command_select"].append(frag);
             },
             populate_command: function(cId){
-                console.log("populate_command:", cId);
-                let cmd = commands.commands.find(d=>d.cId == cId);
-                console.log(cmd);
+                this.parent.commands.display(cId);
             },
-            init: function(){
-                // Add objects for each section.
-                this.DOM.sectionEditor = {};
-                this.DOM.groupEditor   = {};
-                this.DOM.commandEditor = {};
-                                
-                // Command Editor
-                this.DOM.commandEditor["section1_select"] = document.getElementById("commandEditor_section1_select");
-                this.DOM.commandEditor["group1_select"]   = document.getElementById("commandEditor_group1_select");
-                this.DOM.commandEditor["command1_select"] = document.getElementById("commandEditor_command1_select");
 
-                this.populate_sections();
+            // CHANGES.
+            sectionChange:function(sId){
+                if(!sId){ return; }
+                // Clear/reset group select.
+                this.DOM.commandEditor["group_select"].length = 1;
+                this.DOM.commandEditor["group_select"].selectedIndex = 0;
+                
+                // Clear/reset command select.
+                this.DOM.commandEditor["command_select"].length = 1;
+                this.DOM.commandEditor["command_select"].selectedIndex = 0;
+
+                // Clear the editor table.
+                this.parent.commands.clearEditorTable();
+                
+                // Disable the editor table actions. 
+                this.parent.commands.disableEditorTableActions();
+
+                // Populate.
+                this.populate_groups(sId);
+            },
+            groupChange:function(gId){
+                if(!gId){ return; }
+                // Clear/reset command select.
+                this.DOM.commandEditor["command_select"].length = 1;
+                this.DOM.commandEditor["command_select"].selectedIndex = 0;
+                
+                // Clear the editor table.
+                this.parent.commands.clearEditorTable();
+
+                // Disable the editor table actions. 
+                this.parent.commands.disableEditorTableActions();
+
+                // Populate.
+                this.populate_commands(gId);
+            },
+            commandChange:function(cId){
+                if(!cId){ return; }
+                // Display command.
+                this.populate_command(cId);
+            },
+
+            // DEFAULT SELECTIONS.
+            selectDefault: function(){
+                // Pick the first section (if options has length > 1).
+                if(this.DOM.commandEditor["section_select"].options.length > 1){ 
+                    this.DOM.commandEditor["section_select"].selectedIndex = 1; 
+                    this.DOM.commandEditor["section_select"].dispatchEvent(new Event("change")); 
+                }
+                
+                // Pick the first group (if options has length > 1).
+                if(this.DOM.commandEditor["group_select"].options.length > 1){
+                    this.DOM.commandEditor["group_select"].selectedIndex = 1; 
+                    this.DOM.commandEditor["group_select"].dispatchEvent(new Event("change")); 
+                }
+                
+                // Pick the first command (if options has length > 1).
+                if(this.DOM.commandEditor["command_select"].options.length > 1){
+                    this.DOM.commandEditor["command_select"].selectedIndex = 1; 
+                    this.DOM.commandEditor["command_select"].dispatchEvent(new Event("change")); 
+                }
+            },
+
+            // INIT
+            init: function(){
+                // Command Editor
+                this.DOM.commandEditor["section_select"] = document.getElementById("commandEditor_section_select");
+                this.DOM.commandEditor["group_select"]   = document.getElementById("commandEditor_group_select");
+                this.DOM.commandEditor["command_select"] = document.getElementById("commandEditor_command_select");
 
                 // When changing section:
-                this.DOM.commandEditor["section1_select"].addEventListener("change", (ev)=>{
-                    // Clear/reset group select.
-                    this.DOM.commandEditor["group1_select"].length = 1;
-                    this.DOM.commandEditor["group1_select"].selectedIndex = 0;
-                    
-                    // Clear/reset command select.
-                    this.DOM.commandEditor["command1_select"].length = 1;
-                    this.DOM.commandEditor["command1_select"].selectedIndex = 0;
+                this.DOM.commandEditor["section_select"].addEventListener("change", (ev)=>{ this.sectionChange(ev.target.value); }, false);
 
-                    this.populate_groups(ev.target.value);
-                }, false);
-                
                 // When changing group:
-                this.DOM.commandEditor["group1_select"].addEventListener("change", (ev)=>{
-                    // Clear/reset command select.
-                    this.DOM.commandEditor["command1_select"].length = 1;
-                    this.DOM.commandEditor["command1_select"].selectedIndex = 0;
-
-                    this.populate_commands(ev.target.value);
-                }, false);
+                this.DOM.commandEditor["group_select"]  .addEventListener("change", (ev)=>{ this.groupChange  (ev.target.value); }, false);
                 
                 // When changing command:
-                this.DOM.commandEditor["command1_select"].addEventListener("change", (ev)=>{
-                    // Display command.
-                    this.populate_command(ev.target.value);
-                }, false);
+                this.DOM.commandEditor["command_select"].addEventListener("change", (ev)=>{ this.commandChange(ev.target.value); }, false);
 
-                // setTimeout(()=>{
-                //     this.DOM.commandEditor["section1_select"].selectedIndex = 1;
-                //     this.DOM.commandEditor["section1_select"].dispatchEvent(new Event("change"));
-                // }, 2000);
+                // Populate the sections select.
+                this.populate_sections();
+
+                // Select the first options from each select.
+                this.selectDefault();
             },
         },
 
         // TODO
         sections: {
             parent: null,
+            editor_table:{
+                table : null,
+                id    : null,
+                name  : null,
+                order : null,
+            },
+            actions: {
+                // Section
+                add    : null,
+                reset  : null,
+                remove : null,
+                update : null,
+            },
+            clearEditorTable          : function(){
+                this.editor_table.id   .innerText = ``;
+                this.editor_table.name .value     = ``;
+                this.editor_table.order.value     = ``;
+            },
+            // TODO
+            disableEditorTableActions : function(){
+                return true; 
+                console.log("disableEditorTableActions");
+                this.actions.add   .classList.add("disabled");
+                this.actions.reset .classList.add("disabled");
+                this.actions.remove.classList.add("disabled");
+                this.actions.update.classList.add("disabled");
+            },
+            // TODO
+            enableEditorTableActions : function(){
+                return true; 
+                console.log("enableEditorTableActions");
+                this.actions.add   .classList.remove("disabled");
+                this.actions.reset .classList.remove("disabled");
+                this.actions.remove.classList.remove("disabled");
+                this.actions.update.classList.remove("disabled");
+            },
             update: async function(){},
             add   : async function(){},
             remove: async function(){},
@@ -174,6 +268,42 @@ let debug = {
         // TODO
         groups: {
             parent: null,
+            editor_table:{
+                table : null,
+                id    : null,
+                name  : null,
+                order : null,
+            },
+            actions: {
+                // Section
+                add    : null,
+                reset  : null,
+                remove : null,
+                update : null,
+            },
+            clearEditorTable          : function(){
+                this.editor_table.id   .innerText = ``;
+                this.editor_table.name .value     = ``;
+                this.editor_table.order.value     = ``;
+            },
+            // TODO
+            disableEditorTableActions : function(){
+                return true; 
+                console.log("disableEditorTableActions");
+                this.actions.add   .classList.add("disabled");
+                this.actions.reset .classList.add("disabled");
+                this.actions.remove.classList.add("disabled");
+                this.actions.update.classList.add("disabled");
+            },
+            // TODO
+            enableEditorTableActions : function(){
+                return true; 
+                console.log("enableEditorTableActions");
+                this.actions.add   .classList.remove("disabled");
+                this.actions.reset .classList.remove("disabled");
+                this.actions.remove.classList.remove("disabled");
+                this.actions.update.classList.remove("disabled");
+            },
             update: async function(){},
             add   : async function(){},
             remove: async function(){},
@@ -181,6 +311,51 @@ let debug = {
         },
         commands: {
             parent: null,
+            editor_table:{
+                table    : null,
+                ids      : null,
+                title    : null,
+                cmd      : null,
+                f_ctrlc  : null,
+                f_enter  : null,
+                f_hidden : null,
+                order    : null,
+            },
+            actions: {
+                add    : null,
+                reset  : null,
+                remove : null,
+                update : null,
+            },
+            clearEditorTable          : function(){
+                this.editor_table.ids         .innerText = ``;
+                this.editor_table.sectionName .value     = "";
+                this.editor_table.groupName   .value     = "";
+                this.editor_table.title       .value     = "";
+                this.editor_table.cmd         .value     = "";
+                this.editor_table.f_ctrlc     .checked   = false;
+                this.editor_table.f_enter     .checked   = false;
+                this.editor_table.f_hidden    .checked   = false;
+                this.editor_table.order       .value     = "";
+            },
+            // TODO
+            disableEditorTableActions : function(){
+                return true; 
+                console.log("disableEditorTableActions");
+                this.actions.add   .classList.add("disabled");
+                this.actions.reset .classList.add("disabled");
+                this.actions.remove.classList.add("disabled");
+                this.actions.update.classList.add("disabled");
+            },
+            // TODO
+            enableEditorTableActions : function(){
+                return true; 
+                console.log("enableEditorTableActions");
+                this.actions.add   .classList.remove("disabled");
+                this.actions.reset .classList.remove("disabled");
+                this.actions.remove.classList.remove("disabled");
+                this.actions.update.classList.remove("disabled");
+            },
             update: async function(){
                 // Updates require Websockets. 
                 if(!ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
@@ -209,7 +384,30 @@ let debug = {
                 // Requesting the removal should automatically display the command at the previous selectedIndex unless it was 0.
                 // In that case, select 0.
             },
-            display: async function(){},
+            display: async function(cId){
+                let rec = commands.commands.find(d=>d.cId == cId);
+
+                // let t_table       = this.editor_table.table;
+                let t_ids         = this.editor_table.ids;
+                let t_sectionName = this.editor_table.sectionName;
+                let t_groupName   = this.editor_table.groupName;
+                let t_title       = this.editor_table.title;
+                let t_cmd         = this.editor_table.cmd;
+                let t_f_ctrlc     = this.editor_table.f_ctrlc;
+                let t_f_enter     = this.editor_table.f_enter;
+                let t_f_hidden    = this.editor_table.f_hidden;
+                let t_order       = this.editor_table.order;
+
+                t_ids        .innerText = `sId: ${rec.sId}, gId: ${rec.gId}, cId: ${rec.cId}`;
+                t_sectionName.value     = rec.sId;
+                t_groupName  .value     = rec.gId;
+                t_title      .value     = rec.title;
+                t_cmd        .value     = rec.cmd;
+                t_f_ctrlc    .checked   = rec.f_ctrlc  ? true : false;
+                t_f_enter    .checked   = rec.f_enter  ? true : false;
+                t_f_hidden   .checked   = rec.f_hidden ? true : false;
+                t_order      .value     = rec.order;
+            },
         },
 
         init: function(){
@@ -220,11 +418,56 @@ let debug = {
             this.groups.parent   = this;
             this.commands.parent = this;
 
+            // Cache the section editor table DOM.
+            this.sections.editor_table.table = document.getElementById("sectionEditor_table");
+            this.sections.editor_table.id    = document.getElementById("sectionEditor_table_id");
+            this.sections.editor_table.name  = document.getElementById("sectionEditor_table_name");
+            this.sections.editor_table.order = document.getElementById("sectionEditor_table_order");
+
+            // Cache the section editor action buttons. 
+            this.sections.actions.add    = document.getElementById("sectionEditor_table_add");
+            this.sections.actions.reset  = document.getElementById("sectionEditor_table_reset");
+            this.sections.actions.remove = document.getElementById("sectionEditor_table_remove");
+            this.sections.actions.update = document.getElementById("sectionEditor_table_update");
+
+
+            // Cache the group editor table DOM.
+            this.groups.editor_table.table = document.getElementById("groupEditor_table");
+            this.groups.editor_table.id    = document.getElementById("groupEditor_table_id");
+            this.groups.editor_table.name  = document.getElementById("groupEditor_table_name");
+            this.groups.editor_table.order = document.getElementById("groupEditor_table_order");
+
+            // Cache the group editor action buttons. 
+            this.groups.actions.add    = document.getElementById("groupEditor_table_add");
+            this.groups.actions.reset  = document.getElementById("groupEditor_table_reset");
+            this.groups.actions.remove = document.getElementById("groupEditor_table_remove");
+            this.groups.actions.update = document.getElementById("groupEditor_table_update");
+
+
+            // Cache the command editor table DOM.
+            this.commands.editor_table.table       = document.getElementById("commandEditor_table");
+            this.commands.editor_table.ids         = document.getElementById("commandEditor_table_ids");
+            this.commands.editor_table.sectionName = document.getElementById("commandEditor_table_sectionName");
+            this.commands.editor_table.groupName   = document.getElementById("commandEditor_table_groupName");
+            this.commands.editor_table.title       = document.getElementById("commandEditor_table_title");
+            this.commands.editor_table.cmd         = document.getElementById("commandEditor_table_cmd");
+            this.commands.editor_table.f_ctrlc     = document.getElementById("commandEditor_table_f_ctrlc");
+            this.commands.editor_table.f_enter     = document.getElementById("commandEditor_table_f_enter");
+            this.commands.editor_table.f_hidden    = document.getElementById("commandEditor_table_f_hidden");
+            this.commands.editor_table.order       = document.getElementById("commandEditor_table_order");
+
+            // Cache the command editor action buttons. 
+            this.commands.actions.add    = document.getElementById("commandEditor_table_add");
+            this.commands.actions.reset  = document.getElementById("commandEditor_table_reset");
+            this.commands.actions.remove = document.getElementById("commandEditor_table_remove");
+            this.commands.actions.update = document.getElementById("commandEditor_table_update");
+
+
             // Init the nav.
-            debug.editor.nav.init();
+            this.nav.init();
             
             // Init the selects.
-            debug.editor.selects.init();
+            this.selects.init();
         },
     },
 
@@ -258,23 +501,18 @@ let init = async function(){
     
     // WS Connect.
     let ws_connect    = document.getElementById("ws_connect");
-    ws_connect.addEventListener("click", ()=>{ ws_control.ws_utilities.initWss() }, false);
+    ws_connect.addEventListener("click", ()=>{ ws_control.ws_utilities.initWss(); }, false);
     
     // WS Disconnect.
     let ws_disconnect = document.getElementById("ws_disconnect");
     ws_disconnect.addEventListener("click", ()=>{ 
         ws_control.skipAutoReconnect = true;
-        // ws_control.autoReconnect=false;
-        // ws_autoReconnect.checked = false;
         ws_control.ws_utilities.wsCloseAll(); 
     }, false);
 
     // WS Disconnect2. (test)
     let ws_disconnect2 = document.getElementById("ws_disconnect2");
     ws_disconnect2.addEventListener("click", ()=>{ 
-        // ws_control.skipAutoReconnect = true;
-        // ws_control.autoReconnect=false;
-        // ws_autoReconnect.checked = false;
         ws_control.ws_utilities.wsCloseAll(); 
     }, false);
 
@@ -286,4 +524,6 @@ window.onload = async function(){
     window.onload = null;
     appView = "debug";
     init();
+
+    ws_control.ws_utilities.initWss();
 };

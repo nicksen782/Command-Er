@@ -1,10 +1,14 @@
 body{
     background-color:#051c27;
+    width: 900px;
+    margin: auto;
+    margin-top: 5px;
 }
 #container {
-    background-color: #7787ff;
+    background-color: #264757;
     min-height: 0.5em;
     padding: 0.5em;
+    border-radius: 10px;
 }
 
 #top {
@@ -12,10 +16,11 @@ body{
     min-height: 1em;
     padding: 1em;
     position: relative;
+    margin-bottom: 5px;
 }
 
 #top_links {
-    background-color: #005c80;
+    background-color: rgb(0 92 128 / 25%);
     position: absolute;
     height: 100%;
     padding: 1em;
@@ -36,45 +41,56 @@ body{
     background-color: #fdff00;
 }
 #top_status{
-    background-color: #005c80;
+    background-color: rgb(0 92 128 / 25%);
     position: absolute;
     height: 100%;
     padding: 0.12em;
     top: 0px;
-    right: 200px;
+    right: 195px;
     /* width: 150px; */
     line-height: 1.25em;
     color: white;
 }
 #top_connected_status{border: 1px solid black;width: 1.25em;height: 1.25em; display:inline-block;vertical-align: top;}
-#top_connected_status.pinging      { background-color: #2662f7; }
-#top_connected_status.connecting   { background-color: #eab700; }
-#top_connected_status.connected    { background-color: #16c60c; }
-#top_connected_status.disconnecting{ background-color: #d44833; }
-#top_connected_status.disconnected { background-color: #383838; }
-#top_connected_status_text{width: 100px;/* height: 1.25em; *//* display:inline-block; *//* vertical-align: top; */}
+#top_connected_status.pinging      , #top.pinging      { background-color: #2662f7; }
+#top_connected_status.connecting   , #top.connecting   { background-color: #eab700; }
+#top_connected_status.connected    , #top.connected    {background-color: #16c60c;/* border-radius: 10px; *//* overflow: hidden; */}
+#top_connected_status.disconnecting, #top.disconnecting{ background-color: #d44833; }
+#top_connected_status.disconnected , #top.disconnected { background-color: #383838; }
+#top.disconnected { color:white; }
+#top_connected_status_text{width: 105px;/* height: 1.25em; *//* display:inline-block; *//* vertical-align: top; */}
 
 #main {
     background-color: #95ff77;
-    min-height: 1em;
-    padding: 1em;
+    min-height: 650px;
+    padding: 0.5em;
+    margin-bottom: 5px;
 }
 
-#main_tabs {
-    background-color: #c3f5b5;
-    min-height: 1em;
-    padding: 1em;
-}
-#main_views {
+#main_connectivity{
     background-color: #97c08c;
+    /* background-color: #c3f5b5; */
     min-height: 1em;
-    padding: 1em;
+    padding: 0.5em;
+    margin-bottom: 10px;
 }
+/* #main_tabs { */
+/*     background-color: #c3f5b5; */
+/*     min-height: 1em; */
+/*     padding: 1em; */
+/* } */
+/* #main_views { */
+/*     background-color: #97c08c; */
+/*     min-height: 1em; */
+/*     padding: 1em; */
+/* } */
 
 #bottom {
     background-color: #35eee6;
     min-height: 1em;
-    padding: 1em;
+    padding: 0.5em;
+    border-radius: 0px 0px 10px 10px;
+    overflow: hidden;
 }
 
 #wsClient_count_output{
@@ -82,7 +98,7 @@ body{
 #main_views_left { display:inline-block; vertical-align:top; }
 #main_views_right{ display:inline-block; vertical-align:top; }
 #main_views_output{
-    width: 600px;
+    width: 550px;
     height: 200px;
     font-family: monospace;
     white-space: pre;
@@ -90,8 +106,9 @@ body{
 
 .nav{
     min-height: 0.5em;
-    padding: 0.5em;
+    padding: 0.25em;
     background-color: rgb(255 255 255 / 50%);
+    border-bottom: 1px solid black;
 }
 .nav_tab {
     border: 1px solid black;
@@ -114,10 +131,11 @@ body{
 
 .view {
     display: none;
-    min-height: 400px;
-    padding: 0.5em;
+    min-height: 350px;
+    /* padding: 0.5em; */
     background-color: rgb(255 255 255 / 30%);
     /* height: 400px; */
+    padding: 0.25em;
 }
 .view.active {
     display: block;
@@ -125,9 +143,9 @@ body{
 
 div#commandEditor_sectionGroupDiv {
     background-color: rgb(255 255 255 / 30%);
-    border-bottom: 1px solid black;
+    border-bottom: 1px dotted black;
     min-height: 0.5em;
-    padding: 0.5em;
+    /* padding: 0.5em; */
 }
 
 .table1{
@@ -165,20 +183,24 @@ table#commandEditor_table td{
 }
 
 #top_status2{
-    background-color: #005c80;
+    background-color: rgb(0 92 128 / 25%);
     position: absolute;
     height: 100%;
     padding: 0.12em;
     top: 0px;
-    right: 345px;
-    width: 510px;
+    right: 340px;
+    width: 350px;
     /* line-height: 1.25em; */
     padding: 1em;
 }
 #top_status2_uuid{
     font-family: monospace;
-    font-size: 24px;
-    /* line-height: 48px; */
+    font-size: 16px;
+    line-height: 24px;
     font-weight: bold;
     color: white;
+}
+
+.views {
+    /* padding: 0.25em; */
 }

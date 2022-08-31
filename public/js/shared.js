@@ -232,8 +232,17 @@ let ws_control = {
             // TODO
             UPDATE_ONE_COMMAND: function(data){
                 if(appView == "debug"){
+                    // Server will send updated command record.
                     console.log("UPDATE_ONE_COMMAND:", data);
-                    document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
+                    
+                    // Find the existing record's index by cId.
+                    let index = debug.editor.commands.findCommandIndexBy_cId(data.data.updatedRec.cId);
+
+                    // Update the old record with the updated record. 
+                    commands.commands[index] = data.data.updatedRec;
+
+                    // Load the recently edited command.
+                    debug.editor.selects.populateSelectsBy_cId(data.data.updatedRec.cId);
                 }
             },
         },
@@ -496,6 +505,10 @@ let ws_control = {
 
     // Status changer for the Websocket status indicator.
     status:{
+        elems: {
+            top:null,
+            top_connected_status:null
+        },
         previousClass: "disconnected",
         classes: [
             "pinging",
@@ -513,12 +526,14 @@ let ws_control = {
         ],
         removeStatus: function(){
             // Find the element. 
-            let { elem, text } = this.findStatusIndicator();
-            if(elem === false){ console.log("Status indicator was NOT found."); return; }
+            let { elem, elem2, text } = this.findStatusIndicator();
+            if(elem  === false){ console.log("Status indicator was NOT found."); return; }
+            if(elem2 === false){ console.log("Status indicator2 was NOT found."); return; }
 
             // Remove the classes.
             for(let i=0; i<this.classes.length; i+=1){
                 elem.classList.remove(this.classes[i]);
+                elem2.classList.remove(this.classes[i]);
             }
 
             // Remove the text.
@@ -527,10 +542,12 @@ let ws_control = {
         findStatusIndicator: function(){
             // Find the element. 
             let elem = document.getElementById("top_connected_status");
+            let elem2 = document.getElementById("top");
             let text = document.getElementById("top_connected_status_text");
-            if(elem && text){ 
+            if(elem && elem2 && text){ 
                 return {
                     elem:elem, 
+                    elem2:elem2, 
                     text:text, 
                 }; 
             }
@@ -540,8 +557,9 @@ let ws_control = {
         },
         getStatusColor: function(){
             // Find the element. 
-            let { elem, text } = this.findStatusIndicator();
-            if(elem === false){ console.log("Status indicator was NOT found."); return; }
+            let { elem, elem2, text } = this.findStatusIndicator();
+            if(elem  === false){ console.log("Status indicator was NOT found."); return; }
+            if(elem2 === false){ console.log("Status indicator2 was NOT found."); return; }
 
             // Get the active classes that are within the classes list.
             let classes =  Array.from(elem.classList).sort().filter(c => this.classes.indexOf(c) != -1 );
@@ -557,8 +575,9 @@ let ws_control = {
             }
 
             // Find the element. 
-            let { elem, text } = this.findStatusIndicator();
-            if(elem === false){ console.log("Status indicator was NOT found."); return; }
+            let { elem, elem2, text } = this.findStatusIndicator();
+            if(elem  === false){ console.log("Status indicator was NOT found."); return; }
+            if(elem2 === false){ console.log("Status indicator2 was NOT found."); return; }
             
             // Update the previous class.
             this.previousClass = this.getStatusColor();
@@ -568,6 +587,7 @@ let ws_control = {
 
             // Set the new status.
             elem.classList.add(newClass);
+            elem2.classList.add(newClass);
 
             // Set the status text.
             text.innerText = this.classes_text[this.classes.indexOf(newClass)];

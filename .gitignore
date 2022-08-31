@@ -15,3 +15,4 @@ backend/db/.gitkeep
 
 # Miscellaneous
 INFO.TXT
+ecosystem.config.js

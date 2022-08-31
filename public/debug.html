@@ -53,220 +53,233 @@
 		</div>
 
 		<div id="main">
-			<div id="main_tabs">
-				Connect:
-				<button id="ws_connect">Connect control</button>
-				<button id="ws_disconnect">Disconnect control (skipAutoReconnect)</button>
-				<button id="ws_disconnect2">Disconnect control (with autoReconnect)</button>
-				<br>
-
-				Change status color: 
-				<button onclick="ws_control.status.setStatusColor('pinging');">pinging</button>
-				<button onclick="ws_control.status.setStatusColor('connecting');">connecting</button>
-				<button onclick="ws_control.status.setStatusColor('connected');">connected</button>
-				<button onclick="ws_control.status.setStatusColor('disconnecting');">disconnecting</button>
-				<button onclick="ws_control.status.setStatusColor('disconnected');">disconnected</button>
-				<br>
-				Restart/Exit: 
-				<button onclick="debug.wsClient_restart();">process.exit()</button>
-
+			<div id="main_connectivity">
+				<table>
+					<tr>
+						<td>WS Connect:</td>
+						<td>
+							<button id="ws_connect">Connect</button>
+							<button id="ws_disconnect">Disconnect (skipAutoReconnect)</button>
+							<button id="ws_disconnect2">Disconnect (with autoReconnect)</button>
+						</td>
+					</tr>
+					<tr>
+						<td>Change status color:</td>
+						<td>
+							<button onclick="ws_control.status.setStatusColor('pinging');">Pinging</button>
+							<button onclick="ws_control.status.setStatusColor('connecting');">Connecting</button>
+							<button onclick="ws_control.status.setStatusColor('connected');">Connected</button>
+							<button onclick="ws_control.status.setStatusColor('disconnecting');">Disconnecting</button>
+							<button onclick="ws_control.status.setStatusColor('disconnected');">Disconnected</button>
+						</td>
+					</tr>
+					<tr>
+						<td>Restart/Exit:</td>
+						<td>
+							<button onclick="debug.wsClient_restart();">process.exit()</button>
+						</td>
+					</tr>
+				</table>
 			</div>
-			<div id="main_views">
-				<div class="nav">
-					<div class="nav_tab" group="top_nav" view="top_nav_view_tests1">Tests1</div>
-					<div class="nav_tab" group="top_nav" view="top_nav_view_editor">Editor</div>
+
+			<div class="nav">
+				<div class="nav_tab" group="top_nav" view="top_nav_view_tests1">Tests1</div>
+				<div class="nav_tab" group="top_nav" view="top_nav_view_editor">Editor</div>
+			</div>
+
+			<div class="views">
+				<div id="top_nav_view_tests1" group="top_nav" class="view">
+					<div id="main_views_left">
+						<table>
+							<tr>
+								<td>Get client count</td>
+								<td><button onclick="debug.wsClient_count();">SHOW</button></td>
+							</tr>
+							<tr>
+								<td>Get DB as JSON</td>
+								<td><button onclick="debug.wsClient_getDbAsJSON();">SHOW</button></td>
+							</tr>
+							<tr>
+								<td>Get Sections list</td>
+								<td><button onclick="debug.wsClient_sectionsList();">SHOW</button></td>
+							</tr>
+							<tr>
+								<td>Get Groups list</td>
+								<td><button onclick="debug.wsClient_groupsList();">SHOW</button></td>
+							</tr>
+							<tr>
+								<td>Get Commands list</td>
+								<td><button onclick="debug.wsClient_commandsList();">SHOW</button></td>
+							</tr>
+							<tr>
+								<td>Get One Command</td>
+								<td><button onclick="debug.wsClient_getOneCommand(1,1,3);">SHOW(1,1,3)</button></td>
+							</tr>
+							<tr>
+								<td>Get One Command</td>
+								<td><button onclick="debug.wsClient_getOneCommand(2,3, 45);">SHOW(2,3,45)</button></td>
+							</tr>
+						</table>
+					</div>
+	
+					<div id="main_views_right">
+						<textarea id="main_views_output"></textarea>
+					</div>
 				</div>
 
-				<div class="views">
-					<div id="top_nav_view_tests1" group="top_nav" class="view">
-						<div id="main_views_left">
+				<div id="top_nav_view_editor" group="top_nav" class="view">
+					<div class="nav">
+						<div class="nav_tab" group="editor" view="commandEditor_view_section">Section Editor</div>
+						<div class="nav_tab" group="editor" view="commandEditor_view_group">Group Editor</div>
+						<div class="nav_tab" group="editor" view="commandEditor_view_command">Command Editor</div>
+					</div>
+
+					<div class="views">
+						<div id="commandEditor_sectionGroupDiv">
 							<table>
 								<tr>
-									<td>Get client count</td>
-									<td><button onclick="debug.wsClient_count();">SHOW</button></td>
-								</tr>
-								<tr>
-									<td>Get DB as JSON</td>
-									<td><button onclick="debug.wsClient_getDbAsJSON();">SHOW</button></td>
-								</tr>
-								<tr>
-									<td>Get Sections list</td>
-									<td><button onclick="debug.wsClient_sectionsList();">SHOW</button></td>
-								</tr>
-								<tr>
-									<td>Get Groups list</td>
-									<td><button onclick="debug.wsClient_groupsList();">SHOW</button></td>
-								</tr>
-								<tr>
-									<td>Get Commands list</td>
-									<td><button onclick="debug.wsClient_commandsList();">SHOW</button></td>
-								</tr>
-								<tr>
-									<td>Get One Command</td>
-									<td><button onclick="debug.wsClient_getOneCommand(1,1,3);">SHOW(1,1,3)</button></td>
-								</tr>
-								<tr>
-									<td>Get One Command</td>
-									<td><button onclick="debug.wsClient_getOneCommand(2,3, 45);">SHOW(2,3,45)</button></td>
+									<td>SECTION:</td>
+									<td><select id="commandEditor_section_select"><option value="">...Choose section</option></select></td>
+									<td>GROUP:</td>
+									<td><select id="commandEditor_group_select"><option value="">...Choose group</option></select></td>
 								</tr>
 							</table>
 						</div>
-		
-						<div id="main_views_right">
-							<textarea id="main_views_output"></textarea>
-						</div>
-					</div>
 
-					<div id="top_nav_view_editor" group="top_nav" class="view">
-						<div class="nav">
-							<div class="nav_tab" group="editor" view="commandEditor_view_section">Section Editor</div>
-							<div class="nav_tab" group="editor" view="commandEditor_view_group">Group Editor</div>
-							<div class="nav_tab" group="editor" view="commandEditor_view_command">Command Editor</div>
+						<div class="view" group="editor" id="commandEditor_view_section">
+							<table>
+								<tr>
+									<td>SECTION:</td>
+									<td><button id="sectionEditor_table_add">Add New Section</button></td>
+								</tr>
+							</table>
+							<br>
+
+							<table id="sectionEditor_table" class="table1">
+								<tr> 
+									<th>ID:</th>         
+									<td><span  id="sectionEditor_table_id"></span></td> 
+								</tr>
+								<tr> 
+									<th>NAME:</th>         
+									<td><span  id="sectionEditor_table_name"></span></td> 
+								</tr>
+								<tr> 
+									<th>ORDER:</th>         
+									<td><span  id="sectionEditor_table_order"></span></td> 
+								</tr>
+								<tr> 
+									<th>ACTIONS</th>   
+									<td>
+										<button id="sectionEditor_table_reset">Reset</button>
+										<button id="sectionEditor_table_remove">Remove</button>
+										<button id="sectionEditor_table_update">Update</button>
+									</td> 
+								</tr>
+							</table>
+							<br>
 						</div>
-	
-						<div class="views">
-							<div id="commandEditor_sectionGroupDiv">
-								<table>
-									<tr>
-										<td>SECTION:</td>
-										<td><select id="commandEditor_section_select"><option value="">...Choose section</option></select></td>
-										<td>GROUP:</td>
-										<td><select id="commandEditor_group_select"><option value="">...Choose group</option></select></td>
-									</tr>
-								</table>
-							</div>
-	
-							<div class="view" group="editor" id="commandEditor_view_section">
-								<table>
-									<tr>
-										<td>SECTION:</td>
-										<td><button id="sectionEditor_table_add">Add New Section</button></td>
-									</tr>
-								</table>
-								<br>
-	
-								<table id="sectionEditor_table" class="table1">
-									<tr> 
-										<th>ID:</th>         
-										<td><span  id="sectionEditor_table_id"></span></td> 
-									</tr>
-									<tr> 
-										<th>NAME:</th>         
-										<td><span  id="sectionEditor_table_name"></span></td> 
-									</tr>
-									<tr> 
-										<th>ORDER:</th>         
-										<td><span  id="sectionEditor_table_order"></span></td> 
-									</tr>
-									<tr> 
-										<th>ACTIONS</th>   
-										<td>
-											<button id="sectionEditor_table_reset">Reset</button>
-											<button id="sectionEditor_table_remove">Remove</button>
-											<button id="sectionEditor_table_update">Update</button>
-										</td> 
-									</tr>
-								</table>
-								<br>
-							</div>
-							
-							<div class="view" group="editor" id="commandEditor_view_group">
-								<table>
-									<tr>
-										<td>GROUP:</td>
-										<td><button id="groupEditor_table_add">Add New Group</button></td>
-									</tr>
-								</table>
-								<br>
-	
-								<table id="groupEditor_table" class="table1">
-									<tr> 
-										<th>ID:</th>         
-										<td><span  id="groupEditor_table_id"></span></td> 
-									</tr>
-									<tr> 
-										<th>NAME:</th>         
-										<td><span  id="groupEditor_table_name"></span></td> 
-									</tr>
-									<tr> 
-										<th>ORDER:</th>         
-										<td><span  id="groupEditor_table_order"></span></td> 
-									</tr>
-									<tr> 
-										<th>ACTIONS</th>   
-										<td>
-											<button id="groupEditor_table_reset">Reset</button>
-											<button id="groupEditor_table_remove">Remove</button>
-											<button id="groupEditor_table_update">Update</button>
-										</td> 
-									</tr>
-								</table>
-								<br>
-							</div>
-							
-							<div class="view" group="editor" id="commandEditor_view_command">
-								<table>
-									<tr>
-										<td>COMMAND:</td>
-										<td><select id="commandEditor_command_select"><option value="">...Choose command</option></select></td>
-										<td><button id="commandEditor_table_add">Add New Command</button></td>
-									</tr>
-								</table>
-								<br>
-								
-								<table id="commandEditor_table" class="table1">
-									<tr> 
-										<th>IDs:</th>         
-										<td><span  id="commandEditor_table_ids"></span></td> 
-									</tr>
-									<tr> 
-										<th>SECTION:</th>         
-										<td><span  id="commandEditor_table_sectionName"></span></td> 
-									</tr>
-									<tr> 
-										<th>GROUP:</th>         
-										<td><span  id="commandEditor_table_groupName"></span></td> 
-									</tr>
-									<tr> 
-										<th>Title</th>        
-										<td><input id="commandEditor_table_title" type="text"></td> 
-									</tr>
-									<tr> 
-										<th>Command</th>      
-										<td><input id="commandEditor_table_cmd" type="text"></td> 
-									</tr>
-									<tr> 
-										<th><label for="commandEditor_table_f_ctrlc">Press Ctrl</label></th> 
-										<td><input id="commandEditor_table_f_ctrlc" type="checkbox"></td> 
-									</tr>
-									<tr> 
-										<th><label for="commandEditor_table_f_enter">Press enter</label></th>  
-										<td><input id="commandEditor_table_f_enter" type="checkbox"></td> 
-									</tr>
-									<tr> 
-										<th><label for="commandEditor_table_f_hidden">Is hidden</label></th>    
-										<td><input id="commandEditor_table_f_hidden" type="checkbox"></td> 
-									</tr>
-									<tr> 
-										<th>Sort order</th>   
-										<td><input id="commandEditor_table_order" type="number" min="1"></td> 
-									</tr>
-									<tr> 
-										<th>ACTIONS</th>   
-										<td>
-											<button id="commandEditor_table_reset">Reset</button>
-											<button id="commandEditor_table_remove">Remove</button>
-											<button id="commandEditor_table_update">Update</button>
-										</td> 
-									</tr>
-								</table>
-							</div>
-	
+						
+						<div class="view" group="editor" id="commandEditor_view_group">
+							<table>
+								<tr>
+									<td>GROUP:</td>
+									<td><button id="groupEditor_table_add">Add New Group</button></td>
+								</tr>
+							</table>
+							<br>
+
+							<table id="groupEditor_table" class="table1">
+								<tr> 
+									<th>ID:</th>         
+									<td><span  id="groupEditor_table_id"></span></td> 
+								</tr>
+								<tr> 
+									<th>NAME:</th>         
+									<td><span  id="groupEditor_table_name"></span></td> 
+								</tr>
+								<tr> 
+									<th>ORDER:</th>         
+									<td><span  id="groupEditor_table_order"></span></td> 
+								</tr>
+								<tr> 
+									<th>ACTIONS</th>   
+									<td>
+										<button id="groupEditor_table_reset">Reset</button>
+										<button id="groupEditor_table_remove">Remove</button>
+										<button id="groupEditor_table_update">Update</button>
+									</td> 
+								</tr>
+							</table>
+							<br>
 						</div>
+						
+						<div class="view" group="editor" id="commandEditor_view_command">
+							<table>
+								<tr>
+									<td>COMMAND:</td>
+									<td><select id="commandEditor_command_select"><option value="">...Choose command</option></select></td>
+									<td><button id="commandEditor_table_add">Add New Command</button></td>
+								</tr>
+							</table>
+							<br>
+							
+							<table id="commandEditor_table" class="table1">
+								<tr> 
+									<th>IDs:</th>         
+									<td><span  id="commandEditor_table_ids"></span></td> 
+								</tr>
+								<tr> 
+									<th>SECTION:</th>         
+									<td>
+										<select id="commandEditor_table_sectionName"><option value="">...Choose command</option></select>
+									</td> 
+								</tr>
+								<tr> 
+									<th>GROUP:</th>         
+									<td>
+										<select id="commandEditor_table_groupName"><option value="">...Choose command</option></select>
+									</td> 
+								</tr>
+								<tr> 
+									<th>Title</th>        
+									<td><input id="commandEditor_table_title" type="text"></td> 
+								</tr>
+								<tr> 
+									<th>Command</th>      
+									<td><input id="commandEditor_table_cmd" type="text"></td> 
+								</tr>
+								<tr> 
+									<th><label for="commandEditor_table_f_ctrlc">Press Ctrl</label></th> 
+									<td><input id="commandEditor_table_f_ctrlc" type="checkbox"></td> 
+								</tr>
+								<tr> 
+									<th><label for="commandEditor_table_f_enter">Press enter</label></th>  
+									<td><input id="commandEditor_table_f_enter" type="checkbox"></td> 
+								</tr>
+								<tr> 
+									<th><label for="commandEditor_table_f_hidden">Is hidden</label></th>    
+									<td><input id="commandEditor_table_f_hidden" type="checkbox"></td> 
+								</tr>
+								<tr> 
+									<th>Sort order</th>   
+									<td><input id="commandEditor_table_order" type="number" min="1"></td> 
+								</tr>
+								<tr> 
+									<th>ACTIONS</th>   
+									<td>
+										<button id="commandEditor_table_reset">Reset</button>
+										<button id="commandEditor_table_remove">Remove</button>
+										<button id="commandEditor_table_update">Update</button>
+									</td> 
+								</tr>
+							</table>
+						</div>
+
 					</div>
 				</div>
-
 			</div>
+
 		</div>
 
 		<div id="bottom">

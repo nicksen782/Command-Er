@@ -291,20 +291,28 @@ let _MOD = {
             },
             // TODO:
             UPDATE_ONE_COMMAND: async function(ws, data){
-                console.log(`mode: ${data.mode}, data:`, data.data);
+                // console.log(`mode: ${data.mode}, data:`, data.data);
+                
                 let obj = {
-                    "cId"     : data.cid,
-                    "sId"     : data.sId,
-                    "gId"     : data.gId,
-                    "title"   : data.title,
-                    "cmd"     : data.cmd,
-                    "f_ctrlc" : data.f_ctrlc,
-                    "f_enter" : data.f_enter,
-                    "f_hidden": data.f_hidden,
-                    "order"   : data.order,
+                    "cId"     : data.data.cId,
+                    "sId"     : data.data.updated.sId,
+                    "gId"     : data.data.updated.gId,
+                    "title"   : data.data.updated.title,
+                    "cmd"     : data.data.updated.cmd,
+                    "f_ctrlc" : data.data.updated.f_ctrlc,
+                    "f_enter" : data.data.updated.f_enter,
+                    "f_hidden": data.data.updated.f_hidden,
+                    "order"   : data.data.updated.order,
                 };
+
                 let resp = await _MOD.queries.UPDATE_ONE_COMMAND(obj);
-                ws.send( JSON.stringify( { "mode":"UPDATE_ONE_COMMAND", "data":resp } ) );
+                ws.send( JSON.stringify( { 
+                    "mode":"UPDATE_ONE_COMMAND", 
+                    "data":{
+                        updatedRec : await _MOD.queries.GET_ONE_CMD(obj.sId, obj.gId, obj.cId), 
+                        _err: resp.err ? resp.err : false
+                    } 
+                } ) );
             },
 
             // STATS1: async function(ws, data){
@@ -803,7 +811,6 @@ let _MOD = {
         UPDATE_ONE_COMMAND: function(data){
             return new Promise(async function(resolve,reject){
                 if(!data){ reject("Missing data."); return; }
-                
                 let q = {
                     "sql" : `
                         UPDATE 'commands'
@@ -820,7 +827,7 @@ let _MOD = {
                             commands.'cId' = :cId 
                         ;`.replace(/\t/g, " ").replace(/  +/g, "  "), 
                     "params" : {
-                        ":cId"     : data.cid,
+                        ":cId"     : data.cId,
                         ":sId"     : data.sId,
                         ":gId"     : data.gId,
                         ":title"   : data.title,
@@ -833,7 +840,7 @@ let _MOD = {
                     "type": "UPDATE",
                 };
                 let results = await _APP.m_db.query(q.sql, q.params, q.type); if(results.err){ console.log(results); reject(); return; }
-                resolve();
+                resolve(results);
             });
         },
     },

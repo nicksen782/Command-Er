@@ -184,6 +184,21 @@ let debug = {
             populate_command: function(cId){
                 this.parent.commands.display(cId);
             },
+            populateSelectsBy_cId: function(cId){
+                let rec = commands.commands.find(d=>d.cId == cId);
+
+                // Change the section select.
+                this.DOM.commandEditor["section_select"].value = rec.sId;
+                this.DOM.commandEditor["section_select"].dispatchEvent(new Event("change")); 
+                
+                // Change the group select.
+                this.DOM.commandEditor["group_select"].value = rec.gId;
+                this.DOM.commandEditor["group_select"].dispatchEvent(new Event("change")); 
+                
+                // Change the command select.
+                this.DOM.commandEditor["command_select"].value = rec.cId;
+                this.DOM.commandEditor["command_select"].dispatchEvent(new Event("change")); 
+            },
 
             // CHANGES.
             sectionChange:function(sId){
@@ -406,15 +421,35 @@ let debug = {
                 this.actions.remove.classList.remove("disabled");
                 this.actions.update.classList.remove("disabled");
             },
-            update: async function(){
+            update: async function(cId){
                 // Updates require Websockets. 
                 if(!ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
-    
+                
+                let original_rec = commands.commands.find(d=>d.cId == cId);
+                console.log("UPDATE", original_rec, cId);
+                
+                let obj = {
+                    // Needed to update the record. 
+                    cId:cId,
+                    // sId:original_rec.sId,
+                    // gId:original_rec.gId,
+
+                    // Data that the record will be updated with.
+                    updated: {
+                        // cId      : Number(cId),
+                        sId      : Number(original_rec.sId), // TODO
+                        gId      : Number(original_rec.gId), // TODO
+                        title    : this.editor_table.title.value,
+                        cmd      : this.editor_table.cmd.value,
+                        f_ctrlc  : this.editor_table.f_ctrlc .checked ? true : false,
+                        f_enter  : this.editor_table.f_enter .checked ? true : false,
+                        f_hidden : this.editor_table.f_hidden.checked ? true : false,
+                        order    : Number(this.editor_table.order.value),
+                    },
+                };
+                
                 // Request the server to update the command. 
-                // Server will send new commands list.
-                // Repopulate the selects.
-                // Try to find the command that was edited by cId (it may be in another section or group now.)
-                // Set the section, group, and command selects to match the command and reload the command. 
+                ws_control.activeWs.send( JSON.stringify( { mode:"UPDATE_ONE_COMMAND", data: obj } ) );
             },
             add   : async function(){
                 // Updates require Websockets. 
@@ -458,6 +493,49 @@ let debug = {
                 t_f_hidden   .checked   = rec.f_hidden ? true : false;
                 t_order      .value     = rec.order;
             },
+            findCommandIndexBy_cId: function(cId){
+                for(let i=0; i<commands.commands.length; i+=1){
+                    if(commands.commands[i].cId == cId){ return i; }
+                }
+                return false;
+            },
+            
+            init: function(){
+                // Cache the command editor table DOM.
+                this.editor_table.table       = document.getElementById("commandEditor_table");
+                this.editor_table.ids         = document.getElementById("commandEditor_table_ids");
+                this.editor_table.sectionName = document.getElementById("commandEditor_table_sectionName");
+                this.editor_table.groupName   = document.getElementById("commandEditor_table_groupName");
+                this.editor_table.title       = document.getElementById("commandEditor_table_title");
+                this.editor_table.cmd         = document.getElementById("commandEditor_table_cmd");
+                this.editor_table.f_ctrlc     = document.getElementById("commandEditor_table_f_ctrlc");
+                this.editor_table.f_enter     = document.getElementById("commandEditor_table_f_enter");
+                this.editor_table.f_hidden    = document.getElementById("commandEditor_table_f_hidden");
+                this.editor_table.order       = document.getElementById("commandEditor_table_order");
+
+                // Cache the command editor action buttons. 
+                this.actions.add    = document.getElementById("commandEditor_table_add");
+                this.actions.reset  = document.getElementById("commandEditor_table_reset");
+                this.actions.remove = document.getElementById("commandEditor_table_remove");
+                this.actions.update = document.getElementById("commandEditor_table_update");
+
+                // Event listeners for actions. 
+                this.actions.add    .addEventListener("click", ()=> { 
+                    console.log(this.add, "add"); 
+                }, false);
+
+                this.actions.reset  .addEventListener("click", ()=> {
+                    this.parent.selects.populate_command( Number(this.parent.selects.DOM.commandEditor.command_select.value) );
+                }, false);
+
+                this.actions.remove .addEventListener("click", ()=> { 
+                    console.log(this.remove, "remove"); 
+                }, false);
+
+                this.actions.update .addEventListener("click", ()=> { 
+                    this.update( Number(this.parent.selects.DOM.commandEditor.command_select.value) );
+                }, false);
+            },
         },
 
         init: function(){
@@ -493,25 +571,14 @@ let debug = {
             this.groups.actions.remove = document.getElementById("groupEditor_table_remove");
             this.groups.actions.update = document.getElementById("groupEditor_table_update");
 
+            // Section editor.
+            // this.section.init();
 
-            // Cache the command editor table DOM.
-            this.commands.editor_table.table       = document.getElementById("commandEditor_table");
-            this.commands.editor_table.ids         = document.getElementById("commandEditor_table_ids");
-            this.commands.editor_table.sectionName = document.getElementById("commandEditor_table_sectionName");
-            this.commands.editor_table.groupName   = document.getElementById("commandEditor_table_groupName");
-            this.commands.editor_table.title       = document.getElementById("commandEditor_table_title");
-            this.commands.editor_table.cmd         = document.getElementById("commandEditor_table_cmd");
-            this.commands.editor_table.f_ctrlc     = document.getElementById("commandEditor_table_f_ctrlc");
-            this.commands.editor_table.f_enter     = document.getElementById("commandEditor_table_f_enter");
-            this.commands.editor_table.f_hidden    = document.getElementById("commandEditor_table_f_hidden");
-            this.commands.editor_table.order       = document.getElementById("commandEditor_table_order");
+            // Group editor.
+            // this.groups.init();
 
-            // Cache the command editor action buttons. 
-            this.commands.actions.add    = document.getElementById("commandEditor_table_add");
-            this.commands.actions.reset  = document.getElementById("commandEditor_table_reset");
-            this.commands.actions.remove = document.getElementById("commandEditor_table_remove");
-            this.commands.actions.update = document.getElementById("commandEditor_table_update");
-
+            // Command editor.
+            this.commands.init();
 
             // Init the nav.
             this.nav.init();
@@ -570,13 +637,11 @@ let init = async function(){
 
     debug.editor.init();
     debug.tests1.init();
-
 };
 
 window.onload = async function(){
     window.onload = null;
     appView = "debug";
     init();
-
     ws_control.ws_utilities.initWss();
 };

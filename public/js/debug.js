@@ -23,6 +23,56 @@ let debug = {
         if(!ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
         ws_control.activeWs.send( JSON.stringify( { mode:"GET_ONE_CMD", data: { sId:sId, gId:gId, cId:cId } } ) );
     },
+    wsClient_restart: function(sId, gId, cId){
+        if(!ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
+        ws_control.activeWs.send( "PROCESS_EXIT" );
+    },
+    
+    // TESTS1
+    tests1: {
+        nav: {
+            parent:null,
+            tabs:[],
+            views:[],
+            hideAllViews: function(){
+                // Deactivate all tabs and views. 
+                this.tabs.forEach(d=>{ d.classList.remove("active"); })
+                this.views.forEach(d=>{ d.classList.remove("active"); })
+            },
+            showOneView: function(tabElem){
+                // Deactivate all tabs and views. 
+                this.hideAllViews();
+    
+                // Get the view.
+                let viewElem = document.getElementById( tabElem.getAttribute("view") ); 
+    
+                // Set the active class for this tab and view. 
+                tabElem.classList.add("active");
+                viewElem.classList.add("active");
+            },
+            init : function(){
+                // Save the tabs and views. 
+                this.tabs =   document.querySelectorAll(`.nav_tab[group='top_nav']`);
+                this.views =  document.querySelectorAll(`.view[group='top_nav']`);
+    
+                // Deactivate all tabs and views. 
+                this.hideAllViews();
+    
+                // Add event listeners to the tabs.
+                this.tabs.forEach( (tab) => tab.addEventListener("click", () => this.showOneView(tab), false) ); 
+        
+                // Show the Command Editor tab and view. 
+                this.showOneView( this.tabs[1] );
+            },
+        },
+        init: function(){
+            // Set the parent object of all the first-level objects within this object. 
+            this.nav.parent      = this;
+
+            // Init the nav.
+            this.nav.init();
+        },
+    },
 
     // SECTION/GROUP/COMMAND EDITOR.
     editor: {
@@ -51,7 +101,7 @@ let debug = {
                 // Save the tabs and views. 
                 this.tabs =   document.querySelectorAll(`.nav_tab[group='editor']`);
                 this.views =  document.querySelectorAll(`.view[group='editor']`);
-    
+
                 // Deactivate all tabs and views. 
                 this.hideAllViews();
     
@@ -506,6 +556,7 @@ let init = async function(){
     // WS Disconnect.
     let ws_disconnect = document.getElementById("ws_disconnect");
     ws_disconnect.addEventListener("click", ()=>{ 
+        if(!ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); }
         ws_control.skipAutoReconnect = true;
         ws_control.ws_utilities.wsCloseAll(); 
     }, false);
@@ -513,10 +564,12 @@ let init = async function(){
     // WS Disconnect2. (test)
     let ws_disconnect2 = document.getElementById("ws_disconnect2");
     ws_disconnect2.addEventListener("click", ()=>{ 
+        if(!ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); }
         ws_control.ws_utilities.wsCloseAll(); 
     }, false);
 
     debug.editor.init();
+    debug.tests1.init();
 
 };
 

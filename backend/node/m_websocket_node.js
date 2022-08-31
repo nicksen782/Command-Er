@@ -60,6 +60,7 @@ let _MOD = {
         _APP.addToRouteList({ path: "UPDATE_ONE_GROUP"  , method: "ws", args: [], file: __filename, desc: "(JSON): UPDATE_ONE_GROUP." });
         _APP.addToRouteList({ path: "UPDATE_ONE_COMMAND", method: "ws", args: [], file: __filename, desc: "(JSON): UPDATE_ONE_COMMAND." });
         _APP.addToRouteList({ path: "PING"              , method: "ws", args: [], file: __filename, desc: "(TEXT): PING." });
+        _APP.addToRouteList({ path: "PROCESS_EXIT"      , method: "ws", args: [], file: __filename, desc: "(TEXT): PROCESS_EXIT." });
         _APP.addToRouteList({ path: "CLIENT_COUNT"      , method: "ws", args: [], file: __filename, desc: "(TEXT): CLIENT_COUNT." });
         _APP.addToRouteList({ path: "SECTIONS_LIST"     , method: "ws", args: [], file: __filename, desc: "(TEXT): SECTIONS_LIST." });
         _APP.addToRouteList({ path: "GROUPS_LIST"       , method: "ws", args: [], file: __filename, desc: "(TEXT): GROUPS_LIST." });
@@ -319,6 +320,12 @@ let _MOD = {
                 ws.send("PONG");
             },
 
+            PROCESS_EXIT: async function(ws, data){
+                // console.log(`mode: ${data.mode}, data:`, data.data);
+                console.log(":: PROCESS_EXIT ::");
+                process.exit(0);
+            },
+            
             CLIENT_COUNT:      async function(ws, data){
                 // console.log(`mode: ${data.mode}, data:`, data.data);
                 ws.send( JSON.stringify( { "mode":"CLIENT_COUNT", "data":_MOD.ws_utilities.getClientCount() } ) );
@@ -659,7 +666,7 @@ let _MOD = {
                     resolve(results3);
                 }
                 else{
-                    reject(`NO RESULTS:" sId: ${sId}, gId: ${gId}, cId: ${cId}`);
+                    reject(`NO RESULTS:" sId: ${sId}, gId: ${gId}, cId: ${cId}"`);
                 }
             })
         },

@@ -153,6 +153,9 @@ let ws_control = {
             NEWCONNECTION: function(data){
                 console.log(`mode: ${data.mode}, data:`, data.data);
                 ws_control.uuid = data.data;
+                if(appView == "debug"){
+                    document.getElementById("top_status2_uuid").innerText = ws_control.uuid.toUpperCase();
+                }
             },
             WELCOMEMESSAGE: function(data){
                 console.log(`mode: ${data.mode}, data:`, data.data);
@@ -428,6 +431,10 @@ let ws_control = {
         el_close:function(event){
             // console.log("Web WebSockets Client: CLOSE:", event); 
 
+            if(appView == "debug"){
+                document.getElementById("top_status2_uuid").innerText = "";
+            }
+
             // Yellow icon.
             ws_control.status.setStatusColor("disconnecting");
 
@@ -452,7 +459,7 @@ let ws_control = {
                         ws_control.autoReconnect_id = setTimeout(ws_control.ws_utilities.autoReconnect_func, ws_control.autoReconnect_ms);
                     }
 
-                }, 1000);
+                }, 500);
             }
             else{
                 console.log("skipAutoReconnect was set. AutoReconnect has been skipped.");
@@ -469,6 +476,10 @@ let ws_control = {
         el_error:function(ws, event){
             console.log("Web WebSockets Client: ERROR:", event); 
             
+            if(appView == "debug"){
+                document.getElementById("top_status2_uuid").innerText = "";
+            }
+
             // If not CLOSING or CLOSED.
             if(ws.readyState != 2 || ws.readyState != 3){
                 // Red icon.

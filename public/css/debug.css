@@ -1,3 +1,6 @@
+body{
+    background-color:#051c27;
+}
 #container {
     background-color: #7787ff;
     min-height: 0.5em;
@@ -12,7 +15,7 @@
 }
 
 #top_links {
-    background-color: #fff977;
+    background-color: #005c80;
     position: absolute;
     height: 100%;
     padding: 1em;
@@ -33,7 +36,7 @@
     background-color: #fdff00;
 }
 #top_status{
-    background-color: #fff977;
+    background-color: #005c80;
     position: absolute;
     height: 100%;
     padding: 0.12em;
@@ -41,6 +44,7 @@
     right: 200px;
     /* width: 150px; */
     line-height: 1.25em;
+    color: white;
 }
 #top_connected_status{border: 1px solid black;width: 1.25em;height: 1.25em; display:inline-block;vertical-align: top;}
 #top_connected_status.pinging      { background-color: #2662f7; }
@@ -110,10 +114,10 @@
 
 .view {
     display: none;
-    min-height: 0.5em;
+    min-height: 400px;
     padding: 0.5em;
     background-color: rgb(255 255 255 / 30%);
-    height: 400px;
+    /* height: 400px; */
 }
 .view.active {
     display: block;
@@ -158,4 +162,23 @@ table#commandEditor_table th{
 table#commandEditor_table th,
 table#commandEditor_table td{
     padding:0.25em
+}
+
+#top_status2{
+    background-color: #005c80;
+    position: absolute;
+    height: 100%;
+    padding: 0.12em;
+    top: 0px;
+    right: 345px;
+    width: 510px;
+    /* line-height: 1.25em; */
+    padding: 1em;
+}
+#top_status2_uuid{
+    font-family: monospace;
+    font-size: 24px;
+    /* line-height: 48px; */
+    font-weight: bold;
+    color: white;
 }

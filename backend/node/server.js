@@ -5,11 +5,11 @@ let lines = [
     " . . C O M M A N D E R . . " ,
     "-".repeat(27)  ,
 ];
-// console.log("");
+// console.log("\n");
 for(let i=0; i<lines.length; i+=1){
     console.log("\x1b[40m" + "\x1b[1;31m" + lines[i].padEnd(27, " ") + "\x1b[0m");
 }
-console.log("");
+console.log("\n");
 
 // OS/Filesystem requires. 
 const os       = require('os');
@@ -147,7 +147,7 @@ let setErrorHandlers = function(){
         };
 
         // WS routes.
-        console.log("");
+        console.log("\n");
         console.log(`ROUTES: (WEBSOCKET)`);
         maxes = { "filename" : 0, "method" : 0, "path" : 0, "args": 0 };
         for(filename in routes){ { if(maxes.filename < filename.length){ maxes.filename = filename.length; } } }
@@ -255,11 +255,11 @@ let setErrorHandlers = function(){
                 "-".repeat(52)                                                                              ,
             ];
             // https://gist.github.com/JBlond/2fea43a3049b38287e5e9cefc87b2124
-            console.log("");
+            console.log("\n");
             for(let i=0; i<lines.length; i+=1){
                 console.log("\x1b[40m" + "\x1b[1;93m" + lines[i].padEnd(27, " ") + "\x1b[0m");
             }
-            console.log("");
+            console.log("\n");
 
             // ROUTES
             printRoutes(); 
@@ -269,7 +269,7 @@ let setErrorHandlers = function(){
             // Display missing routes and/or other startup warnings. 
             missingWsRoutes_check();
             if(_APP.startupWarnings.length){
-                console.log("");
+                console.log("\n");
                 console.log("STARTUPWARNINGS:");
                 console.log(_APP.startupWarnings);
             }
@@ -279,11 +279,11 @@ let setErrorHandlers = function(){
                 ` READY (STARTUP TIME: ${_APP.timeIt("FULL_STARTUP", "t", __filename).toFixed(3).padStart(9, " ")} ms) ` ,
                 "-".repeat(36)                                                                          ,
             ];
-            console.log("");
+            console.log("\n");
             for(let i=0; i<lines.length; i+=1){
                 console.log("\x1b[40m" + "\x1b[1;92m" + lines[i].padEnd(36, " ") + "\x1b[0m");
             }
-            console.log("");
+            console.log("\n");
 
             // READY
         });

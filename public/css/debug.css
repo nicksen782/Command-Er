@@ -186,7 +186,10 @@ table#commandEditor_table {
 	border: 1px solid black;
 	margin-left: 2em;
 	border-collapse: collapse;
+	width: calc(100% - 4em);
 }
+table#commandEditor_table th{ width:20%; }
+table#commandEditor_table td{ width:80% }
 table#commandEditor_table tr{
 	border-bottom: 1px solid black;
 }
@@ -233,4 +236,16 @@ select#commandEditor_group_select {
 
 select#commandEditor_command_select {
     min-width: 340px;
+}
+
+select#commandEditor_table_sectionGroup {
+    width: 100%;
+}
+
+input#commandEditor_table_title {
+    width: 100%;
+}
+
+input#commandEditor_table_cmd {
+    width: 100%;
 }

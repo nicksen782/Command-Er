@@ -51,21 +51,22 @@ let _MOD = {
         // Websockets routes.
         // ******************
 
-        _APP.addToRouteList({ path: "SUBSCRIBE"         , method: "ws", args: [], file: __filename, desc: "(JSON): Subscript to event." });
-        _APP.addToRouteList({ path: "UNSUBSCRIBE"       , method: "ws", args: [], file: __filename, desc: "(JSON): Unsubscribe from event." });
-        _APP.addToRouteList({ path: "GET_SUBSCRIPTIONS" , method: "ws", args: [], file: __filename, desc: "(JSON): Get list of active subscriptions." });
-        _APP.addToRouteList({ path: "GET_ONE_CMD"       , method: "ws", args: [], file: __filename, desc: "(JSON): GET_ONE_CMD." });
-        _APP.addToRouteList({ path: "TYPE_CMD_TO_TERM"  , method: "ws", args: [], file: __filename, desc: "(JSON): TYPE_CMD_TO_TERM." });
-        _APP.addToRouteList({ path: "UPDATE_ONE_SECTION", method: "ws", args: [], file: __filename, desc: "(JSON): UPDATE_ONE_SECTION." });
-        _APP.addToRouteList({ path: "UPDATE_ONE_GROUP"  , method: "ws", args: [], file: __filename, desc: "(JSON): UPDATE_ONE_GROUP." });
-        _APP.addToRouteList({ path: "UPDATE_ONE_COMMAND", method: "ws", args: [], file: __filename, desc: "(JSON): UPDATE_ONE_COMMAND." });
-        _APP.addToRouteList({ path: "PING"              , method: "ws", args: [], file: __filename, desc: "(TEXT): PING." });
-        _APP.addToRouteList({ path: "PROCESS_EXIT"      , method: "ws", args: [], file: __filename, desc: "(TEXT): PROCESS_EXIT." });
-        _APP.addToRouteList({ path: "CLIENT_COUNT"      , method: "ws", args: [], file: __filename, desc: "(TEXT): CLIENT_COUNT." });
-        _APP.addToRouteList({ path: "SECTIONS_LIST"     , method: "ws", args: [], file: __filename, desc: "(TEXT): SECTIONS_LIST." });
-        _APP.addToRouteList({ path: "GROUPS_LIST"       , method: "ws", args: [], file: __filename, desc: "(TEXT): GROUPS_LIST." });
-        _APP.addToRouteList({ path: "COMMANDS_LIST"     , method: "ws", args: [], file: __filename, desc: "(TEXT): COMMANDS_LIST." });
-        _APP.addToRouteList({ path: "GET_DB_AS_JSON"    , method: "ws", args: [], file: __filename, desc: "(TEXT): GET_DB_AS_JSON." });
+        _APP.addToRouteList({ path: "SUBSCRIBE"                 , method: "ws", args: [], file: __filename, desc: "(JSON): Subscript to event." });
+        _APP.addToRouteList({ path: "UNSUBSCRIBE"               , method: "ws", args: [], file: __filename, desc: "(JSON): Unsubscribe from event." });
+        _APP.addToRouteList({ path: "GET_SUBSCRIPTIONS"         , method: "ws", args: [], file: __filename, desc: "(JSON): Get list of active subscriptions." });
+        _APP.addToRouteList({ path: "GET_ONE_CMD"               , method: "ws", args: [], file: __filename, desc: "(JSON): GET_ONE_CMD." });
+        _APP.addToRouteList({ path: "TYPE_CMD_TO_TERM"          , method: "ws", args: [], file: __filename, desc: "(JSON): TYPE_CMD_TO_TERM." });
+        _APP.addToRouteList({ path: "UPDATE_ONE_SECTION"        , method: "ws", args: [], file: __filename, desc: "(JSON): UPDATE_ONE_SECTION." });
+        _APP.addToRouteList({ path: "UPDATE_ONE_GROUP"          , method: "ws", args: [], file: __filename, desc: "(JSON): UPDATE_ONE_GROUP." });
+        _APP.addToRouteList({ path: "UPDATE_ONE_COMMAND"        , method: "ws", args: [], file: __filename, desc: "(JSON): UPDATE_ONE_COMMAND." });
+        _APP.addToRouteList({ path: "PING"                      , method: "ws", args: [], file: __filename, desc: "(TEXT): PING." });
+        _APP.addToRouteList({ path: "PROCESS_EXIT"              , method: "ws", args: [], file: __filename, desc: "(TEXT): PROCESS_EXIT." });
+        _APP.addToRouteList({ path: "CLIENT_COUNT"              , method: "ws", args: [], file: __filename, desc: "(TEXT): CLIENT_COUNT." });
+        _APP.addToRouteList({ path: "SECTIONS_LIST"             , method: "ws", args: [], file: __filename, desc: "(TEXT): SECTIONS_LIST." });
+        _APP.addToRouteList({ path: "CONNECTIVITY_STATUS_UPDATE", method: "ws", args: [], file: __filename, desc: "(TEXT): CONNECTIVITY_STATUS_UPDATE." });
+        _APP.addToRouteList({ path: "GROUPS_LIST"               , method: "ws", args: [], file: __filename, desc: "(TEXT): GROUPS_LIST." });
+        _APP.addToRouteList({ path: "COMMANDS_LIST"             , method: "ws", args: [], file: __filename, desc: "(TEXT): COMMANDS_LIST." });
+        _APP.addToRouteList({ path: "GET_DB_AS_JSON"            , method: "ws", args: [], file: __filename, desc: "(TEXT): GET_DB_AS_JSON." });
         
         // ********************************************
         // HTTP routes. (Command-Er or Command-Er MINI.
@@ -258,7 +259,7 @@ let _MOD = {
 
             // TODO
             GET_ONE_CMD: async function(ws, data){
-                console.log(`mode: ${data.mode}, data:`, data.data);
+                // console.log(`mode: ${data.mode}, data:`, data.data);
                 let resp = await _MOD.queries.GET_ONE_CMD(data.data.sId, data.data.gId, data.data.cId);
                 ws.send( JSON.stringify( { "mode":"GET_ONE_CMD", "data":resp } ) );
             },

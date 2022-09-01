@@ -34,6 +34,8 @@ let debug = {
     
     // TESTS1
     tests1: {
+        parent: null,
+
         nav: {
             parent:null,
             tabs:[],
@@ -69,9 +71,10 @@ let debug = {
                 this.showOneView( this.tabs[1] );
             },
         },
-        init: function(){
+        init: function(parent){
             return new Promise(async (resolve,reject)=>{
                 // Set the parent object of all the first-level objects within this object. 
+                this.parent          = parent;
                 this.nav.parent      = this;
 
                 // Init the nav.
@@ -91,11 +94,21 @@ let debug = {
 };
 let init = async function(){
     return new Promise(async (resolve,reject)=>{
-        // Get the configs.
-        _APP.config = await _APP.http.send("get_configs", {}, 5000 );
+        // Init: http and websockets.
+        await _APP.ws_control.init(_APP);
+        await _APP.http.init(_APP);
 
-        // Get the DB.
+        // Get the config and DB.
+        _APP.config   = await _APP.http.send("get_configs", {}, 5000 );
         _APP.commands = await _APP.http.send("/GET_DB_AS_JSON", {}, 5000 );
+
+        // Init the other modules.
+        await debug.tests1.init(_APP);
+        await _APP.editor.init(_APP);
+        await _APP.terminals.init(_APP);
+        
+        // Set the initial status.
+        _APP.ws_control.status.setStatusColor('disconnected');
 
         // WS Auto-reconnect.
         let ws_autoReconnect = document.getElementById("ws_autoReconnect");
@@ -125,22 +138,18 @@ let init = async function(){
             _APP.ws_control.ws_utilities.wsCloseAll(); 
         }, false);
 
-        // Inits
-        // console.log("await _APP.ws_control.status.init();");
-        await _APP.ws_control.status.init();
-        
-        // Set the initial state of the Websocket connection.
-        _APP.ws_control.status.setStatusColor('disconnected');
+        // Show initial connectivity status.
+        _APP.ws_control.connectivity_status_update.display();
 
-        // console.log("await debug.tests1.init();");
-        await debug.tests1.init();
+        // Remove the darken class.
+        document.body.classList.remove("darken");
+
+        // Force a short wait.
+        await new Promise(async (res,rej)=>{ setTimeout(function(){ res(); }, 1000); });
         
-        // console.log("await _APP.editor.init();");
-        await _APP.editor.init();
-        
-        // console.log("_APP.ws_control.connectivity_status_update.init();");
-        _APP.ws_control.connectivity_status_update.init();
-        
+        // Start the web socket connection. 
+        _APP.ws_control.ws_utilities.initWss();
+
         // console.log("debug init is done.");
 
         resolve();
@@ -156,16 +165,4 @@ window.onload = async function(){
     // Run init.
     await init();
 
-    // Show initial connectivity status.
-    _APP.ws_control.connectivity_status_update.display();
-
-    // Remove the darken class.
-    document.body.classList.remove("darken");
-    
-    // Force a short wait.
-    // await new Promise(async (res,rej)=>{ setTimeout(function(){ res(); }, _APP.ws_control.forcedDelay_ms * 4); });
-    await new Promise(async (res,rej)=>{ setTimeout(function(){ res(); }, 1000); });
-
-    // Start the web socket connection. 
-    _APP.ws_control.ws_utilities.initWss();
 };

@@ -1,5 +1,7 @@
 // SECTION/GROUP/COMMAND EDITOR.
 _APP.editor = {
+    parent: null,
+
     nav: {
         parent: null,
         tabs:[],
@@ -51,8 +53,8 @@ _APP.editor = {
             let frag = document.createDocumentFragment();
             let option;
             let count = 0;
-            for(let i=0; i<_APP.commands.sections.length; i+=1){
-                let rec = _APP.commands.sections[i];
+            for(let i=0; i<this.parent.parent.commands.sections.length; i+=1){
+                let rec = this.parent.parent.commands.sections[i];
                 count +=1;
                 option = document.createElement("option");
                 option.value = `${rec.sId}`;
@@ -68,8 +70,8 @@ _APP.editor = {
             let frag = document.createDocumentFragment();
             let option;
             let count = 0;
-            for(let i=0; i<_APP.commands.groups.length; i+=1){
-                let rec = _APP.commands.groups[i];
+            for(let i=0; i<this.parent.parent.commands.groups.length; i+=1){
+                let rec = this.parent.parent.commands.groups[i];
                 if(rec.sId != sId){ continue; }
                 count +=1;
 
@@ -88,8 +90,8 @@ _APP.editor = {
             let frag = document.createDocumentFragment();
             let option;
             let count = 0;
-            for(let i=0; i<_APP.commands.commands.length; i+=1){
-                let rec = _APP.commands.commands[i];
+            for(let i=0; i<this.parent.parent.commands.commands.length; i+=1){
+                let rec = this.parent.parent.commands.commands[i];
                 if(rec.gId != gId){ continue; }
                 count +=1;
 
@@ -108,7 +110,7 @@ _APP.editor = {
             this.parent.commands.display(cId);
         },
         populateSelectsBy_cId: function(cId){
-            let rec = _APP.commands.commands.find(d=>d.cId == cId);
+            let rec = this.parent.parent.commands.commands.find(d=>d.cId == cId);
 
             // Change the section select.
             this.DOM.commandEditor["section_select"].value = rec.sId;
@@ -348,7 +350,7 @@ _APP.editor = {
         },
         update: async function(cId){
             // Updates require Websockets. 
-            if(!_APP.ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
+            if(!this.parent.parent.ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
             
             // Need to get a handle on the actual selected option for sectionGroup.
             let sectionGroup_option = this.editor_table.sectionGroup.options[this.editor_table.sectionGroup.options.selectedIndex];
@@ -372,11 +374,11 @@ _APP.editor = {
             
             // Request the server to update the command. 
             // console.log(obj);
-            _APP.ws_control.activeWs.send( JSON.stringify( { mode:"UPDATE_ONE_COMMAND", data: obj } ) );
+            this.parent.parent.ws_control.activeWs.send( JSON.stringify( { mode:"UPDATE_ONE_COMMAND", data: obj } ) );
         },
         add   : async function(){
             // Updates require Websockets. 
-            if(!_APP.ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
+            if(!this.parent.parent.ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
 
             // Ignore existing loaded command. Make a blank command other than having a matching sId and gId and new cId.
             // Requesting the add should automatically display the new command.
@@ -384,7 +386,7 @@ _APP.editor = {
         },
         remove: async function(){
             // Updates require Websockets. 
-            if(!_APP.ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
+            if(!this.parent.parent.ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
 
             // Confirm.
 
@@ -401,25 +403,28 @@ _APP.editor = {
 
             // Determine the longest section name for padding.
             let longest = 0; 
-            for(let i=0; i<_APP.commands.sections.length; i+=1){
-                let rec = _APP.commands.sections[i];
+            for(let i=0; i<this.parent.parent.commands.sections.length; i+=1){
+                let rec = this.parent.parent.commands.sections[i];
                 if(rec.name.length > longest){ longest = rec.name.length; }
             }
 
             // Create an entry for each group and include it's section name and both the sId and the gId.
             let entries = 1;
-            for(let i=0; i<_APP.commands.groups.length; i+=1){
-                let rec = _APP.commands.groups[i];
+            for(let i=0; i<this.parent.parent.commands.groups.length; i+=1){
+                let rec = this.parent.parent.commands.groups[i];
                 
                 // Get the names. 
-                let sectionName = _APP.commands.sections.find(d=>d.sId==rec.sId).name;
+                let sectionName = this.parent.parent.commands.sections.find(d=>d.sId==rec.sId).name;
                 let groupName   = rec.name;
 
                 // Create the option. 
                 option = document.createElement("option");
                 option.value = entries.toString(); // FAKE VALUE... lookup only. Do NOT send.
                 entries += 1;
-                option.innerText = `${commandRec.gId==rec.gId?"*":""}(${("S:"+rec.sId)}) ${sectionName.padEnd(longest, decodeURI("%C2%A0"))}: (${("G:"+rec.gId)}) ${groupName}`;
+                option.innerText = `` +
+                    `${commandRec.gId==rec.gId?"*":decodeURI("%C2%A0")}` +
+                    `(${("S:"+rec.sId)}) ${sectionName.padEnd(longest, decodeURI("%C2%A0"))}: ` +
+                    `(${("G:"+rec.gId)}) ${groupName}`;
                 option.setAttribute("sId", `${rec.sId}`);
                 option.setAttribute("gId", `${rec.gId}`);
                 frag_sectionGroup.append(option);
@@ -429,7 +434,7 @@ _APP.editor = {
             this.editor_table.sectionGroup.append(frag_sectionGroup);
         },
         display: async function(cId){
-            let rec = _APP.commands.commands.find(d=>d.cId == cId);
+            let rec = this.parent.parent.commands.commands.find(d=>d.cId == cId);
 
             // let t_table       = this.editor_table.table;
             let t_ids         = this.editor_table.ids;
@@ -470,8 +475,8 @@ _APP.editor = {
             t_order      .value     = rec.order;
         },
         findCommandIndexBy_cId: function(cId){
-            for(let i=0; i<_APP.commands.commands.length; i+=1){
-                if(_APP.commands.commands[i].cId == cId){ return i; }
+            for(let i=0; i<this.parent.parent.commands.commands.length; i+=1){
+                if(this.parent.parent.commands.commands[i].cId == cId){ return i; }
             }
             return false;
         },
@@ -516,9 +521,11 @@ _APP.editor = {
         },
     },
 
-    init: function(){
+    init: function(parent){
         return new Promise(async (resolve,reject)=>{
             // Set the parent object of all the first-level objects within this object. 
+            this.parent          = parent;
+
             this.nav.parent      = this;
             this.selects.parent  = this;
             this.sections.parent = this;

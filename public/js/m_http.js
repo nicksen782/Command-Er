@@ -1,13 +1,16 @@
-// HTTP REQUESTS USING POST.
+// HTTP REQUESTS USING POST/GET, with text/json.
 _APP.http = {
+    parent: null,
+
     // Can use either "GET" or "POST" and type of either "json" or "text".
     send: async function(url, userOptions, timeoutMs=5000){
-        return new Promise(async function(resolve,reject){
+        return new Promise(async (resolve,reject)=>{
             // Set default values if the value is missing.
             if(!userOptions || typeof userOptions != "object"){ userOptions = {}; }
             if(!userOptions.method){ userOptions.method = "POST"; }
             if(!userOptions.type)  { userOptions.type = "json"; }
 
+            // Set method.
             method = userOptions.method.toUpperCase();
             let options = {
                 method: userOptions.method, 
@@ -40,18 +43,19 @@ _APP.http = {
                 default : { throw "ERROR: INVALID TYPE: " + userOptions.type; resolve(false); return; break; }
             };
 
-            // Make the request.
+            // Setup an AbortController to control the timeout length of the request.
             const controller = new AbortController();
             const id = setTimeout(() => controller.abort(), timeoutMs);
             options.signal = controller.signal;
             let aborted = false;
             
+            // Make the request.
             let resp;
             try{
                 resp = await fetch(url, options )
                 .catch(e=>{ 
                     clearTimeout(id);
-                    if(e.type=="aborted"){ resolve(e.type); return; }
+                    if(e.type=="aborted"){ aborted = true; resolve(e.type); return; }
                     throw e; 
                 });
 
@@ -60,6 +64,9 @@ _APP.http = {
                     if     (userOptions.type=="json"){ resp = await resp.json(); }
                     else if(userOptions.type=="text"){ resp = await resp.text(); }
                     resolve(resp); return;
+                }
+                else{
+                    resolve(false); return;
                 }
                 
             }
@@ -71,27 +78,37 @@ _APP.http = {
 
     // Ping the server.
     pingServer: async function(){
-        return new Promise(async function(resolve,reject){
-            // Set the blue icon.
-            _APP.ws_control.status.setStatusColor("pinging");
+        return new Promise(async (resolve,reject)=>{
+            // Set the status.
+            this.parent.ws_control.status.setStatusColor("pinging");
 
+            // Generate the url of the server.
             let serverUrl = `` +
                 `${window.location.protocol == "https:" ? "https" : "http"}://` +
                 `${location.hostname}` + 
                 `${location.port ? ':'+location.port : ''}`
             ;
+
+            // Make the request. 
             let options = { type:"text", method:"GET" };
-            let resp = await _APP.http.send(serverUrl, options, 5000);
+            let resp = await this.send(serverUrl, options, 5000);
             resp = resp === false ? false : true;
 
             // Force a short wait.
-            await new Promise(async (res,rej)=>{ setTimeout(function(){ res(); }, _APP.ws_control.forcedDelay_ms); });
+            await new Promise(async (res,rej)=>{ setTimeout(function(){ res(); }, this.parent.ws_control.forcedDelay_ms); });
 
-            // Reset to the previous connection icon.
-            _APP.ws_control.status.restorePrevStatusColor();
+            // Reset to the previous status.
+            this.parent.ws_control.status.restorePrevStatusColor();
 
             // End.
             resolve(resp);
+        });
+    },
+
+    init: function(parent){
+        return new Promise(async (resolve,reject)=>{
+            this.parent = parent;
+            resolve();
         });
     },
 };

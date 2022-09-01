@@ -34,8 +34,14 @@ _APP.editor = {
             // Add event listeners to the tabs.
             this.tabs.forEach( (tab) => tab.addEventListener("click", () => this.showOneView(tab), false) ); 
     
+            // Show the Section Editor tab and view. 
+            // this.showOneView( this.tabs[0] );
+
+            // Show the Group Editor tab and view. 
+            this.showOneView( this.tabs[1] );
+
             // Show the Command Editor tab and view. 
-            this.showOneView( this.tabs[2] );
+            // this.showOneView( this.tabs[2] );
         },
     },
     selects: {
@@ -137,12 +143,15 @@ _APP.editor = {
             this.DOM.commandEditor["command_select"].selectedIndex = 0;
 
             // Clear the editor table.
+            this.parent.groups.clearEditorTable();
             this.parent.commands.clearEditorTable();
             
             // Disable the editor table actions. 
+            this.parent.groups.disableEditorTableActions();
             this.parent.commands.disableEditorTableActions();
 
             // Populate.
+            this.parent.sections.display(sId);
             this.populate_groups(sId);
         },
         groupChange:function(gId){
@@ -152,10 +161,15 @@ _APP.editor = {
             this.DOM.commandEditor["command_select"].selectedIndex = 0;
             
             // Clear the editor table.
+            this.parent.groups.clearEditorTable();
             this.parent.commands.clearEditorTable();
 
             // Disable the editor table actions. 
+            this.parent.commands.enableEditorTableActions();
             this.parent.commands.disableEditorTableActions();
+
+            // Populate the group edit table.
+            this.parent.groups.display(gId);
 
             // Populate.
             this.populate_commands(gId);
@@ -253,7 +267,47 @@ _APP.editor = {
         update: async function(){},
         add   : async function(){},
         remove: async function(){},
-        display: async function(){},
+        display: async function(sId){
+            let rec = this.parent.parent.commands.sections.find(d=>d.sId == sId);
+            console.log("section display:", sId, rec);
+
+            this.editor_table.id   .innerText = `sId: ${rec.sId}`;
+            this.editor_table.name .value     = rec.name;
+            this.editor_table.order.value     = rec.order;
+        },
+
+        init: function(){
+            // Cache the section editor table DOM.
+            this.editor_table.table = document.getElementById("sectionEditor_table");
+            this.editor_table.id    = document.getElementById("sectionEditor_table_id");
+            this.editor_table.name  = document.getElementById("sectionEditor_table_name");
+            this.editor_table.order = document.getElementById("sectionEditor_table_order");
+
+            // Cache the section editor action buttons. 
+            this.actions.add    = document.getElementById("sectionEditor_table_add");
+            this.actions.reset  = document.getElementById("sectionEditor_table_reset");
+            this.actions.remove = document.getElementById("sectionEditor_table_remove");
+            this.actions.update = document.getElementById("sectionEditor_table_update");
+
+            // Event listeners for actions. 
+            this.actions.add    .addEventListener("click", ()=> { 
+                console.log(this.add, "add - NOT READY YET"); 
+            }, false);
+
+            this.actions.reset  .addEventListener("click", ()=> {
+                this.display( Number(this.parent.selects.DOM.commandEditor.section_select.value) );
+            }, false);
+
+            this.actions.remove .addEventListener("click", ()=> { 
+                console.log(this.remove, "remove - NOT READY YET"); 
+            }, false);
+
+            this.actions.update .addEventListener("click", ()=> { 
+                console.log(this.update, "update - NOT READY YET"); 
+                // this.update( Number(this.parent.selects.DOM.commandEditor.command_select.value) );
+            }, false);
+        },
+
     },
     // TODO
     groups: {
@@ -273,6 +327,7 @@ _APP.editor = {
         },
         clearEditorTable          : function(){
             this.editor_table.id   .innerText = ``;
+            this.editor_table.section.value   = "";
             this.editor_table.name .value     = ``;
             this.editor_table.order.value     = ``;
         },
@@ -297,7 +352,65 @@ _APP.editor = {
         update: async function(){},
         add   : async function(){},
         remove: async function(){},
-        display: async function(){},
+        display: async function(gId){
+            let rec = this.parent.parent.commands.groups.find(d=>d.gId == gId);
+            // this.editor_table.section
+            // console.log("group display:", gId, rec);
+
+            this.editor_table.id   .innerText = `gId: ${rec.gId}`;
+            this.editor_table.section.value   = rec.sId;
+            this.editor_table.name .value     = rec.name;
+            this.editor_table.order.value     = rec.order;
+        },
+        createSectionSelectOptions: function(){
+            let frag = document.createDocumentFragment();
+            let option;
+            for(let i=0; i<this.parent.parent.commands.sections.length; i+=1){
+                let rec = this.parent.parent.commands.sections[i];
+                option = document.createElement("option");
+                option.value = `${rec.sId}`;
+                option.innerText = `(${("S:"+rec.sId)}) ${rec.name}`;
+                frag.append(option);
+            }
+            this.editor_table.section.append(frag);
+        },
+
+        init: function(){
+            // Cache the group editor table DOM.
+            this.editor_table.table   = document.getElementById("groupEditor_table");
+            this.editor_table.id      = document.getElementById("groupEditor_table_id");
+            this.editor_table.section = document.getElementById("groupEditor_table_section");
+            this.editor_table.name    = document.getElementById("groupEditor_table_name");
+            this.editor_table.order   = document.getElementById("groupEditor_table_order");
+
+            // Cache the group editor action buttons. 
+            this.actions.add    = document.getElementById("groupEditor_table_add");
+            this.actions.reset  = document.getElementById("groupEditor_table_reset");
+            this.actions.remove = document.getElementById("groupEditor_table_remove");
+            this.actions.update = document.getElementById("groupEditor_table_update");
+
+            // Populate the section select menu.
+            this.createSectionSelectOptions();
+            
+            // Event listeners for actions. 
+            this.actions.add    .addEventListener("click", ()=> { 
+                console.log(this.add, "add - NOT READY YET"); 
+            }, false);
+
+            this.actions.reset  .addEventListener("click", ()=> {
+                console.log(this.remove, "reset - NOT READY YET"); 
+                // this.parent.selects.populate_command( Number(this.parent.selects.DOM.commandEditor.command_select.value) );
+            }, false);
+
+            this.actions.remove .addEventListener("click", ()=> { 
+                console.log(this.remove, "remove - NOT READY YET"); 
+            }, false);
+
+            this.actions.update .addEventListener("click", ()=> { 
+                console.log(this.remove, "update - NOT READY YET"); 
+                // this.update( Number(this.parent.selects.DOM.commandEditor.command_select.value) );
+            }, false);
+        },
     },
     commands: {
         parent: null,
@@ -389,6 +502,7 @@ _APP.editor = {
             if(!this.parent.parent.ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
 
             // Confirm.
+            // 
 
             // Request the server to remove the command.
             // Requesting the removal should automatically display the command at the previous selectedIndex unless it was 0.
@@ -504,7 +618,7 @@ _APP.editor = {
 
             // Event listeners for actions. 
             this.actions.add    .addEventListener("click", ()=> { 
-                console.log(this.add, "add"); 
+                console.log(this.add, "add - NOT READY YET"); 
             }, false);
 
             this.actions.reset  .addEventListener("click", ()=> {
@@ -512,7 +626,7 @@ _APP.editor = {
             }, false);
 
             this.actions.remove .addEventListener("click", ()=> { 
-                console.log(this.remove, "remove"); 
+                console.log(this.remove, "remove - NOT READY YET"); 
             }, false);
 
             this.actions.update .addEventListener("click", ()=> { 
@@ -525,43 +639,17 @@ _APP.editor = {
         return new Promise(async (resolve,reject)=>{
             // Set the parent object of all the first-level objects within this object. 
             this.parent          = parent;
-
             this.nav.parent      = this;
             this.selects.parent  = this;
             this.sections.parent = this;
             this.groups.parent   = this;
             this.commands.parent = this;
 
-            // Cache the section editor table DOM.
-            this.sections.editor_table.table = document.getElementById("sectionEditor_table");
-            this.sections.editor_table.id    = document.getElementById("sectionEditor_table_id");
-            this.sections.editor_table.name  = document.getElementById("sectionEditor_table_name");
-            this.sections.editor_table.order = document.getElementById("sectionEditor_table_order");
-
-            // Cache the section editor action buttons. 
-            this.sections.actions.add    = document.getElementById("sectionEditor_table_add");
-            this.sections.actions.reset  = document.getElementById("sectionEditor_table_reset");
-            this.sections.actions.remove = document.getElementById("sectionEditor_table_remove");
-            this.sections.actions.update = document.getElementById("sectionEditor_table_update");
-
-
-            // Cache the group editor table DOM.
-            this.groups.editor_table.table = document.getElementById("groupEditor_table");
-            this.groups.editor_table.id    = document.getElementById("groupEditor_table_id");
-            this.groups.editor_table.name  = document.getElementById("groupEditor_table_name");
-            this.groups.editor_table.order = document.getElementById("groupEditor_table_order");
-
-            // Cache the group editor action buttons. 
-            this.groups.actions.add    = document.getElementById("groupEditor_table_add");
-            this.groups.actions.reset  = document.getElementById("groupEditor_table_reset");
-            this.groups.actions.remove = document.getElementById("groupEditor_table_remove");
-            this.groups.actions.update = document.getElementById("groupEditor_table_update");
-
             // Section editor.
-            // this.section.init();
+            this.sections.init();
 
             // Group editor.
-            // this.groups.init();
+            this.groups.init();
 
             // Command editor.
             this.commands.init();

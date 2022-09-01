@@ -93,6 +93,9 @@ let http = {
             let resp = await http.send(serverUrl, options, 5000);
             resp = resp === false ? false : true;
 
+            // Force a short wait.
+            await new Promise(async (res,rej)=>{ setTimeout(function(){ res(); }, ws_control.forcedDelay_ms); });
+
             // Reset to the previous connection icon.
             ws_control.status.restorePrevStatusColor();
 
@@ -115,6 +118,8 @@ let ws_control = {
     autoReconnect_counter_max : 30,
     autoReconnect_id          : false,
     autoReconnect_ms          : 2000,
+    forcedDelay_ms            : 500,
+    connectivity_status_update_ms : 5000,
 
     // STATUS CODES
     ws_statusCodes: {
@@ -151,14 +156,31 @@ let ws_control = {
         JSON  : {
             // OPENING A NEW CONNECTION.
             NEWCONNECTION: function(data){
-                console.log(`mode: ${data.mode}, data:`, data.data);
-                ws_control.uuid = data.data;
+                // console.log(`mode: ${data.mode}, data:`, data.data);
+                ws_control.connectivity_status_update.data.uuid = data.data;
                 if(appView == "debug"){
-                    document.getElementById("top_status2_uuid").innerText = ws_control.uuid.toUpperCase();
+                    ws_control.activeWs.send( "CONNECTIVITY_STATUS_UPDATE" );
                 }
             },
             WELCOMEMESSAGE: function(data){
                 console.log(`mode: ${data.mode}, data:`, data.data);
+            },
+            CONNECTIVITY_STATUS_UPDATE: function(data){
+                // console.log(`mode: ${data.mode}, data:`, data.data);
+                try{
+                    ws_control.connectivity_status_update.data.local.controls  = data.data.local.controls;
+                    ws_control.connectivity_status_update.data.local.terms     = data.data.local.terms;
+                    ws_control.connectivity_status_update.data.global.controls = data.data.global.controls;
+                    ws_control.connectivity_status_update.data.global.terms    = data.data.global.terms;
+                    ws_control.connectivity_status_update.display();
+                }
+                catch(e){
+                    ws_control.connectivity_status_update.data.local.controls  = "??";
+                    ws_control.connectivity_status_update.data.local.terms     = "??";
+                    ws_control.connectivity_status_update.data.global.controls = "??";
+                    ws_control.connectivity_status_update.data.global.terms    = "??";
+                    ws_control.connectivity_status_update.display();
+                }
             },
 
             SUBSCRIBE: function(data){
@@ -286,6 +308,10 @@ let ws_control = {
 
                 // Create new WebSocket connection. 
                 ws_control.connecting = true;
+
+                // Force a short wait.
+                await new Promise(async (res,rej)=>{ setTimeout(function(){ res(); }, ws_control.forcedDelay_ms); });
+                
                 let ws = new WebSocket(locUrl);
                 resolve(); true;
                 ws.onopen   = ws_control.ws_events.el_open   ;
@@ -437,17 +463,22 @@ let ws_control = {
                 return;
             }
         },
-        el_close:function(event){
+        el_close: async function(event){
             // console.log("Web WebSockets Client: CLOSE:", event); 
 
             if(appView == "debug"){
-                document.getElementById("top_status2_uuid").innerText = "";
+                // document.getElementById("bottom_status2_connectionDetails").innerText = "";
+                ws_control.connectivity_status_update.data.local.controls  = "??";
+                ws_control.connectivity_status_update.data.local.terms     = "??";
+                ws_control.connectivity_status_update.data.global.controls = "??";
+                ws_control.connectivity_status_update.data.global.terms    = "??";
+                ws_control.connectivity_status_update.display();
             }
 
             // Yellow icon.
             ws_control.status.setStatusColor("disconnecting");
 
-            ws_control.uuid = null;
+            ws_control.connectivity_status_update.data.uuid = null;
             ws_control.activeWs = null;
 
             // Remove connected, add disconnected.
@@ -468,10 +499,13 @@ let ws_control = {
                         ws_control.autoReconnect_id = setTimeout(ws_control.ws_utilities.autoReconnect_func, ws_control.autoReconnect_ms);
                     }
 
-                }, 500);
+                }, ws_control.forcedDelay_ms);
             }
             else{
                 console.log("skipAutoReconnect was set. AutoReconnect has been skipped.");
+
+                // Force a short wait.
+                await new Promise(async (res,rej)=>{ setTimeout(function(){ res(); }, ws_control.forcedDelay_ms); });
 
                 // Gray icon.
                 ws_control.status.setStatusColor("disconnected");
@@ -486,7 +520,12 @@ let ws_control = {
             console.log("Web WebSockets Client: ERROR:", event); 
             
             if(appView == "debug"){
-                document.getElementById("top_status2_uuid").innerText = "";
+                // document.getElementById("bottom_status2_connectionDetails").innerText = "";
+                ws_control.connectivity_status_update.data.local.controls  = "??";
+                ws_control.connectivity_status_update.data.local.terms     = "??";
+                ws_control.connectivity_status_update.data.global.controls = "??";
+                ws_control.connectivity_status_update.data.global.terms    = "??";
+                ws_control.connectivity_status_update.display();
             }
 
             // If not CLOSING or CLOSED.
@@ -505,9 +544,15 @@ let ws_control = {
 
     // Status changer for the Websocket status indicator.
     status:{
+        inited: false,
+        coloredElems: {
+            // top          : { elem:null, id:"top" },
+            main         : { elem:null, id:"main" },
+            // bottom       : { elem:null, id:"bottom" },
+            statusSquare : { elem:null, id:"top_connected_status" },
+        },
         elems: {
-            top:null,
-            top_connected_status:null
+            statusText   : { elem:null, id:"top_connected_status_text" },
         },
         previousClass: "disconnected",
         classes: [
@@ -525,60 +570,32 @@ let ws_control = {
             "Disconnected",
         ],
         removeStatus: function(){
-            // Find the element. 
-            let { elem, elem2, text } = this.findStatusIndicator();
-            if(elem  === false){ console.log("Status indicator was NOT found."); return; }
-            if(elem2 === false){ console.log("Status indicator2 was NOT found."); return; }
-
             // Remove the classes.
+            let keys = Object.keys(this.coloredElems);
             for(let i=0; i<this.classes.length; i+=1){
-                elem.classList.remove(this.classes[i]);
-                elem2.classList.remove(this.classes[i]);
+                for(let j=0; j<keys.length; j+=1){
+                    this.coloredElems[keys[j]].classList.remove( this.classes[i] );
+                }
             }
 
             // Remove the text.
-            text.innerText = "top_connected_status_text";
-        },
-        findStatusIndicator: function(){
-            // Find the element. 
-            let elem = document.getElementById("top_connected_status");
-            let elem2 = document.getElementById("top");
-            let text = document.getElementById("top_connected_status_text");
-            if(elem && elem2 && text){ 
-                return {
-                    elem:elem, 
-                    elem2:elem2, 
-                    text:text, 
-                }; 
-            }
-
-            // Not found? Return false.
-            return false;
+            this.elems.statusText.innerText = "";
         },
         getStatusColor: function(){
-            // Find the element. 
-            let { elem, elem2, text } = this.findStatusIndicator();
-            if(elem  === false){ console.log("Status indicator was NOT found."); return; }
-            if(elem2 === false){ console.log("Status indicator2 was NOT found."); return; }
-
             // Get the active classes that are within the classes list.
-            let classes =  Array.from(elem.classList).sort().filter(c => this.classes.indexOf(c) != -1 );
-
+            // NOTE: only check "statusSquare" because the other colored elems should have the same class anyway.
+            let classes =  Array.from(this.coloredElems.statusSquare.classList).sort().filter(c => this.classes.indexOf(c) != -1 );
+            
             // Return the classes. (there should only be one.)
             return classes[0];
         },
         setStatusColor: function(newClass=""){
             // Is this a valid class?
             if(this.classes.indexOf(newClass) == -1){
-                console.log("Not a valid class", newClass, this.classes);
+                console.log("Not a valid class", newClass, "Valid classes are:", this.classes);
                 return; 
             }
 
-            // Find the element. 
-            let { elem, elem2, text } = this.findStatusIndicator();
-            if(elem  === false){ console.log("Status indicator was NOT found."); return; }
-            if(elem2 === false){ console.log("Status indicator2 was NOT found."); return; }
-            
             // Update the previous class.
             this.previousClass = this.getStatusColor();
 
@@ -586,17 +603,15 @@ let ws_control = {
             this.removeStatus();
 
             // Set the new status.
-            elem.classList.add(newClass);
-            elem2.classList.add(newClass);
+            let keys = Object.keys(this.coloredElems);
+            for(let j=0; j<keys.length; j+=1){
+                this.coloredElems[keys[j]].classList.add( newClass );
+            }
 
             // Set the status text.
-            text.innerText = this.classes_text[this.classes.indexOf(newClass)];
+            this.elems.statusText.innerText = this.classes_text[this.classes.indexOf(newClass)];
         },
         restorePrevStatusColor:function(){
-            // Find the element. 
-            let { elem, text } = this.findStatusIndicator();
-            if(elem === false){ console.log("Status indicator was NOT found."); return; }
-            
             // Record the current class.
             let currentClass = this.getStatusColor();
             
@@ -605,6 +620,82 @@ let ws_control = {
 
             // Update the previous class.
             this.previousClass = currentClass;
+        },
+
+        init: function(){
+            return new Promise(async (resolve,reject)=>{
+                if(this.inited){ console.log("status object has already been inited."); return; }
+                
+                // Generate the DOM cache for each element.
+                let keys = Object.keys(this.coloredElems);
+                for(let i=0; i<keys.length; i+=1){
+                    this.coloredElems[ keys[i] ] = document.getElementById( this.coloredElems[ keys[i] ].id );
+                }
+                keys = Object.keys(this.elems);
+                for(let i=0; i<keys.length; i+=1){
+                    this.elems[ keys[i] ] = document.getElementById( this.elems[ keys[i] ].id );
+                }
+                this.inited = true; 
+
+                resolve();
+            });
+        },
+    },
+
+    // Displays uuid, control/term counts for both local and global.
+    connectivity_status_update: {
+        inited:false,
+        intervalId:null,
+        data: {
+            uuid: null,
+            local:{
+                controls: "??",
+                terms: "??",
+            },
+            global:{
+                controls: "??",
+                terms: "??",
+            },
+        },
+        elems: {
+            uuid  : "bottom_status2_connectionDetails_uuid",
+            local : "bottom_status2_connectionDetails_local",
+            global: "bottom_status2_connectionDetails_global",
+        },
+        display:function(){
+            // DOM cache.
+            if(typeof this.elems["uuid"]   == "string"){ this.elems["uuid"]   = document.getElementById(this.elems["uuid"]);   }
+            if(typeof this.elems["local"]  == "string"){ this.elems["local"]  = document.getElementById(this.elems["local"]);  }
+            if(typeof this.elems["global"] == "string"){ this.elems["global"] = document.getElementById(this.elems["global"]); }
+
+            if(!ws_control.activeWs){
+                this.elems["uuid"].innerText = "<Not connected>";
+                this.elems["local"].innerText = "<Not connected>";
+                this.elems["global"].innerText = "<Not connected>";
+                return;
+            }
+
+            // Update UUID.
+            this.elems["uuid"].innerText = this.data.uuid.toUpperCase();
+
+            // Update LOCAL.
+            this.elems["local"].innerText = `Controls: ${this.data.local.controls}, Terminals: ${this.data.local.terms}`;
+
+            // Update GLOBAL.
+            this.elems["global"].innerText = `Controls: ${this.data.global.controls}, Terminals: ${this.data.global.terms}`;
+        },
+        requestUpdate: function(){
+            if(!ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
+            ws_control.activeWs.send( "CONNECTIVITY_STATUS_UPDATE" );
+        },
+        clearInterval: function(){
+            console.log("WARN: 'connectivity_status_update.clearInterval' ran.");
+            clearInterval(this.intervalId);
+            this.inited = false; 
+        },
+        init: function(){
+            setInterval(()=> this.intervalId = this.requestUpdate(), 5000);
+            this.inited = true; 
         },
     },
 };

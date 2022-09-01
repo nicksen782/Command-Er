@@ -1,206 +1,219 @@
 body{
-    background-color:#051c27;
-    width: 900px;
-    margin: auto;
-    margin-top: 5px;
+	background-color: #051c27;
+	width: 900px;
+	margin: auto;
+	margin-top: 5px;
 }
 #container {
-    background-color: #264757;
-    min-height: 0.5em;
-    padding: 0.5em;
-    border-radius: 10px;
+	background-color: #264757;
+	background-color: rgb(0 92 128);
+	min-height: 0.5em;
+	padding: 0.5em;
+	border-radius: 10px;
+	position: relative;
 }
-
 #top {
-    background-color: #ff7777;
-    min-height: 1em;
-    padding: 1em;
-    position: relative;
-    margin-bottom: 5px;
+	min-height: 1em;
+	padding: 0.25em;
+	position: relative;
+	margin-bottom: 5px;
+	border-radius: 10px 10px 0px 0px;
+	border-bottom: 1px solid black;
+	color: white;
+	font-size: 22px;
 }
-
-#top_links {
-    background-color: rgb(0 92 128 / 25%);
-    position: absolute;
-    height: 100%;
-    padding: 1em;
-    top: 0px;
-    right: 0px;
-    width: 190px;
-    text-align: center;
+#bottom_data{
+	background-color: rgb(47 43 214 / 12%);
+	position: absolute;
+	height: 100%;
+	padding: 0.30em;
+	top: 0px;
+	left: 0px;
+	width: 335px;
+	border-radius: 10px;
+	font-size: 16px;
+	line-height: 20px;
+	text-align: left;
 }
-
-.top_links {
-    background-color: #e1d928;
-    padding: 0.25em;
-    border: 1px solid black;
-    border-radius: 0.5em;
+#bottom_links {
+	background-color: rgb(47 43 214 / 12%);
+	position: absolute;
+	height: 100%;
+	padding: 1em;
+	top: 0px;
+	right: 0px;
+	width: 190px;
+	text-align: center;
+	border-radius: 10px;
 }
-
-.top_links:hover {
-    background-color: #fdff00;
+.bottom_links {
+	padding: 0.25em;
+	border: 1px solid darkgray;
+	border-radius: 0.5em;
+	font-size: 16px;
+}
+.bottom_links:hover {
+	background-color: #fdff00;
 }
 #top_status{
-    background-color: rgb(0 92 128 / 25%);
-    position: absolute;
-    height: 100%;
-    padding: 0.12em;
-    top: 0px;
-    right: 195px;
-    /* width: 150px; */
-    line-height: 1.25em;
-    color: white;
+	background-color: rgb(0 92 128 / 25%);
+	background-color: rgb(47 43 214 / 12%);
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	width: 150px;
+	color: white;
+	font-size: 14px;
+	border-radius: 10px;
 }
-#top_connected_status{border: 1px solid black;width: 1.25em;height: 1.25em; display:inline-block;vertical-align: top;}
-#top_connected_status.pinging      , #top.pinging      { background-color: #2662f7; }
-#top_connected_status.connecting   , #top.connecting   { background-color: #eab700; }
-#top_connected_status.connected    , #top.connected    {background-color: #16c60c;/* border-radius: 10px; *//* overflow: hidden; */}
-#top_connected_status.disconnecting, #top.disconnecting{ background-color: #d44833; }
-#top_connected_status.disconnected , #top.disconnected { background-color: #383838; }
-#top.disconnected { color:white; }
-#top_connected_status_text{width: 105px;/* height: 1.25em; *//* display:inline-block; *//* vertical-align: top; */}
-
+#top_connected_status{
+	border: 1px solid black;
+	width: 1.25em;
+	height: 1.25em;
+	display: inline-block;
+	vertical-align: top;
+}
+#top_connected_status.pinging , #top.pinging , #bottom.pinging , #main.pinging {
+	background-color: #2662f7;
+}
+#top_connected_status.connecting , #top.connecting , #bottom.connecting , #main.connecting {
+	background-color: #eab700;
+}
+#top_connected_status.connected , #top.connected , #bottom.connected , #main.connected {
+	background-color: #16c60c;
+}
+#top_connected_status.disconnecting, #top.disconnecting , #bottom.disconnecting, #main.disconnecting{
+	background-color: #ff2100;
+}
+#top_connected_status.disconnected , #top.disconnected , #bottom.disconnected , #main.disconnected {
+	background-color: #cb513f;
+}
+#top_connected_status_text{
+	width: 105px;
+}
 #main {
-    background-color: #95ff77;
-    min-height: 650px;
-    padding: 0.5em;
-    margin-bottom: 5px;
+	max-height: 650px;
+	height: 650px;
+	padding: 0.5em;
+	margin-bottom: 5px;
+	border-radius: 10px;
 }
-
 #main_connectivity{
-    background-color: #97c08c;
-    /* background-color: #c3f5b5; */
-    min-height: 1em;
-    padding: 0.5em;
-    margin-bottom: 10px;
+	min-height: 1em;
+	padding: 0.5em;
+	margin-bottom: 10px;
 }
-/* #main_tabs { */
-/*     background-color: #c3f5b5; */
-/*     min-height: 1em; */
-/*     padding: 1em; */
-/* } */
-/* #main_views { */
-/*     background-color: #97c08c; */
-/*     min-height: 1em; */
-/*     padding: 1em; */
-/* } */
-
 #bottom {
-    background-color: #35eee6;
-    min-height: 1em;
-    padding: 0.5em;
-    border-radius: 0px 0px 10px 10px;
-    overflow: hidden;
+	border-radius: 0px 0px 10px 10px;
+	overflow: hidden;
+	position: relative;
+	height: 3em;
+	padding: 1em;
+	color: white;
+	border-top: 1px solid black;
 }
-
 #wsClient_count_output{
 }
-#main_views_left { display:inline-block; vertical-align:top; }
-#main_views_right{ display:inline-block; vertical-align:top; }
-#main_views_output{
-    width: 550px;
-    height: 200px;
-    font-family: monospace;
-    white-space: pre;
+#main_views_left {
+	display: inline-block;
+	vertical-align: top;
 }
-
+#main_views_right{
+	display: inline-block;
+	vertical-align: top;
+}
+#main_views_output{
+	width: 450px;
+	height: 200px;
+	font-family: monospace;
+	white-space: pre;
+}
 .nav{
-    min-height: 0.5em;
-    padding: 0.25em;
-    background-color: rgb(255 255 255 / 50%);
-    border-bottom: 1px solid black;
+	min-height: 0.5em;
+	padding: 0.25em;
+	border-bottom: 1px solid black;
 }
 .nav_tab {
-    border: 1px solid black;
-    display: inline-block;
-    vertical-align: top;
-    padding: 5px;
-    border-radius: 5px;
-    background-color: blanchedalmond;
-    cursor:pointer;
+	border: 1px solid black;
+	display: inline-block;
+	vertical-align: top;
+	padding: 5px;
+	border-radius: 5px;
+	background-color: blanchedalmond;
+	cursor: pointer;
 }
 .nav_tab.active {
-    background-color: yellow;
+	background-color: yellow;
 }
 .nav_tab:hover {
-    background-color: yellow;
+	background-color: yellow;
 }
 .nav_tab:active {
-    background-color: yellow;
+	background-color: yellow;
 }
-
 .view {
-    display: none;
-    min-height: 350px;
-    /* padding: 0.5em; */
-    background-color: rgb(255 255 255 / 30%);
-    /* height: 400px; */
-    padding: 0.25em;
+	display: none;
+	min-height: 350px;
+	padding: 0.25em;
 }
 .view.active {
-    display: block;
+	display: block;
 }
-
 div#commandEditor_sectionGroupDiv {
-    background-color: rgb(255 255 255 / 30%);
-    border-bottom: 1px dotted black;
-    min-height: 0.5em;
-    /* padding: 0.5em; */
+	border-bottom: 1px dotted black;
+	min-height: 0.5em;
 }
-
 .table1{
-    border: 1px solid black;
-    margin-left: 2em;
-    border-collapse: collapse;
+	border: 1px solid black;
+	margin-left: 2em;
+	border-collapse: collapse;
 }
 .table1 tr{
-    border-bottom: 1px solid black;
+	border-bottom: 1px solid black;
 }
 .table1 th{
-    text-align:left;
-    border-right:1px solid black;
+	text-align: left;
+	border-right: 1px solid black;
 }
-.table1 th,
-.table1 td{
-    padding:0.25em
+.table1 th,.table1 td{
+	padding: 0.25em
 }
-
 table#commandEditor_table {
-    border: 1px solid black;
-    margin-left: 2em;
-    border-collapse: collapse;
+	border: 1px solid black;
+	margin-left: 2em;
+	border-collapse: collapse;
 }
 table#commandEditor_table tr{
-    border-bottom: 1px solid black;
+	border-bottom: 1px solid black;
 }
 table#commandEditor_table th{
-    text-align:left;
-    border-right:1px solid black;
+	text-align: left;
+	border-right: 1px solid black;
 }
-table#commandEditor_table th,
-table#commandEditor_table td{
-    padding:0.25em
+table#commandEditor_table th,table#commandEditor_table td{
+	padding: 0.25em
 }
-
-#top_status2{
-    background-color: rgb(0 92 128 / 25%);
-    position: absolute;
-    height: 100%;
-    padding: 0.12em;
-    top: 0px;
-    right: 340px;
-    width: 350px;
-    /* line-height: 1.25em; */
-    padding: 1em;
+#bottom_status2{
+	background-color: rgb(47 43 214 / 12%);
+	position: absolute;
+	height: 100%;
+	top: 0px;
+	right: 195px;
+	width: 330px;
+	border-radius: 10px;
 }
-#top_status2_uuid{
-    font-family: monospace;
-    font-size: 16px;
-    line-height: 24px;
-    font-weight: bold;
-    color: white;
+#bottom_status2_connectionDetails{
+	font-family: monospace;
+	font-weight: bold;
+	color: white;
+	font-size: 12px;
+	line-height: 10px;
+	padding: 0.125em;
 }
-
 .views {
-    /* padding: 0.25em; */
+}
+div#main_container {
+	background-color: rgb(60 158 192);
+	background-color: #ffefd5;
+	height: 100%;
 }

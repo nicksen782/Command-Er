@@ -363,6 +363,11 @@ let _MOD = {
                 ws.send( JSON.stringify( { "mode":"GET_DB_AS_JSON", "data":obj } ) );
             },
 
+            CONNECTIVITY_STATUS_UPDATE: async function(ws, data){
+                // console.log(`mode: ${data.mode}, data:`, data.data);
+                ws.send(JSON.stringify({"mode":"CONNECTIVITY_STATUS_UPDATE", "data":_MOD.ws_utilities.getGlobalClientCounts(ws.CONFIG.uuid) }));
+            },
+
             SECTIONS_LIST:      async function(ws, data){
                 // console.log(`mode: ${data.mode}, data:`, data.data);
                 let resp = await _MOD.queries.SECTIONS_LIST();
@@ -497,6 +502,70 @@ let _MOD = {
                 console.log("Invalid subscription eventType provided:", eventType);
             }
         },
+
+        getGlobalClientCounts: function(localUuid){
+            // Hold each ws connection.
+            let wsClients = {
+                local:{
+                    controls: [],
+                    terms   : [],
+                },
+                global:{
+                    controls: [],
+                    terms   : [],
+                }
+            };
+            
+            // Separate ws connections into controls and terms.
+            _MOD.ws.clients.forEach(function each(ws) {
+                if (ws.readyState === _MOD.ws_readyStates.OPEN) {
+                    // Is this local? 
+                    if(ws.CONFIG.uuid==localUuid){
+                        if(ws.CONFIG.isTerm == false){ wsClients.local.controls.push(ws); }
+                        else{ wsClients.local.terms.push(ws); }
+                    }
+
+                    // Always add to global.
+                    if(ws.CONFIG.isTerm == false){ wsClients.global.controls.push(ws); }
+                    else{ wsClients.global.terms.push(ws); }
+                }
+            });
+
+            return {
+                local:{
+                    controls: wsClients.local.controls.length,
+                    terms   : wsClients.local.terms.length,
+                },
+                global:{
+                    controls: wsClients.global.controls.length,
+                    terms   : wsClients.global.terms.length,
+                }
+            };
+            // Create the count payload. 
+            // let objText = JSON.stringify({
+            //     "mode":"CONNECTIVITY_STATUS_UPDATE",
+            //     "data":{
+            //         local:{
+            //             controls: wsClients.local.controls.length,
+            //             terms   : wsClients.local.terms.length,
+            //         },
+            //         global:{
+            //             controls: wsClients.global.controls.length,
+            //             terms   : wsClients.global.terms.length,
+            //         }
+            //     },
+            // });
+
+            // Sent the count payload to the requested control. 
+            // if(wsClients.local.controls.length){
+            //     if(wsClients.local.controls.length != 1){
+            //         console.log("ERROR: A client UUID should only have 1 control. This many were found:", wsClients.local.controls.length);
+            //         return; 
+            //     }
+            //     wsClients.local.controls[0].send(objText);
+            // }
+        },
+
     },
     ws_events:{
         el_message: function(ws, event){
@@ -557,6 +626,7 @@ let _MOD = {
         },
     },
     initWss: function(){
+        // Run this for each new websocket connection. 
         _MOD.ws.on("connection", function connection(clientWs, res){
             // What type of connection is this? 
             
@@ -576,6 +646,7 @@ let _MOD = {
                 // _MOD.ws_utilities.addSubscription(clientWs, "STATS2");
 
                 // Save this data to the clientWs for future use.
+                clientWs.CONFIG.uuid   = clientWs.id; 
                 clientWs.CONFIG.isTerm = false; 
 
                 console.log("Node WebSockets Server: CONNECT:", clientWs.id);
@@ -630,6 +701,9 @@ let _MOD = {
                 }
             }
         });
+
+        // Timed function to send CONNECTIVITY_STATUS_UPDATE.
+        // setInterval(()=> _MOD.ws_utilities.getGlobalClientCounts(null) , 5000);
     },
 
     queries: {

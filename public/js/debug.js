@@ -27,6 +27,10 @@ let debug = {
         if(!ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
         ws_control.activeWs.send( "PROCESS_EXIT" );
     },
+    wsClient_connectivity_status_update: function(){
+        if(!ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
+        ws_control.connectivity_status_update.requestUpdate();
+    },
     
     // TESTS1
     tests1: {
@@ -66,11 +70,15 @@ let debug = {
             },
         },
         init: function(){
-            // Set the parent object of all the first-level objects within this object. 
-            this.nav.parent      = this;
+            return new Promise(async (resolve,reject)=>{
+                // Set the parent object of all the first-level objects within this object. 
+                this.nav.parent      = this;
 
-            // Init the nav.
-            this.nav.init();
+                // Init the nav.
+                this.nav.init();
+
+                resolve();
+            });
         },
     },
 
@@ -469,6 +477,47 @@ let debug = {
                 // Requesting the removal should automatically display the command at the previous selectedIndex unless it was 0.
                 // In that case, select 0.
             },
+            commandSelectPopulates: function(commandRec){
+                // Need to repopulate the sectionName and groupName selects.
+                this.editor_table.sectionName.options.length = 0;
+                this.editor_table.groupName.options.length = 0;
+
+                let frag_sections = document.createDocumentFragment();
+                let option1;
+
+                // commandRec
+                for(let i=0; i<commands.sections.length; i+=1){
+                    let rec = commands.sections[i];
+
+                    // Show all sections. 
+                    //
+                }
+                for(let i=0; i<commands.groups.length; i+=1){
+                    let rec = commands.groups[i];
+
+                    // Show only the groups for this section. 
+                    if(rec.sId != commandRec.sId){ continue; }
+                }
+
+                // this.editor_table.sectionName
+                // this.editor_table.groupName  
+
+                // for(let i=0; i<commands.commands.length; i+=1){
+                //     let rec = commands.commands[i];
+                //     if(rec.gId != gId){ continue; }
+                //     count +=1;
+
+                //     option = document.createElement("option");
+                //     option.value = `${rec.cId}`;
+                //     // option.innerText = `${rec.title}`;
+                //     option.innerText = `${rec.title} (cId: ${rec.cId})`;
+                //     option.setAttribute("order", `${rec.order}`);
+                //     frag.append(option);
+                // }
+                // this.DOM.commandEditor["command_select"].options[0].innerText = `...Commands (${count})`;
+                // this.DOM.commandEditor["command_select"].options.length = 1;  
+                // this.DOM.commandEditor["command_select"].append(frag);
+            },
             display: async function(cId){
                 let rec = commands.commands.find(d=>d.cId == cId);
 
@@ -482,6 +531,8 @@ let debug = {
                 let t_f_enter     = this.editor_table.f_enter;
                 let t_f_hidden    = this.editor_table.f_hidden;
                 let t_order       = this.editor_table.order;
+
+                this.commandSelectPopulates(rec);
 
                 t_ids        .innerText = `sId: ${rec.sId}, gId: ${rec.gId}, cId: ${rec.cId}`;
                 t_sectionName.value     = rec.sId;
@@ -539,52 +590,56 @@ let debug = {
         },
 
         init: function(){
-            // Set the parent object of all the first-level objects within this object. 
-            this.nav.parent      = this;
-            this.selects.parent  = this;
-            this.sections.parent = this;
-            this.groups.parent   = this;
-            this.commands.parent = this;
+            return new Promise(async (resolve,reject)=>{
+                // Set the parent object of all the first-level objects within this object. 
+                this.nav.parent      = this;
+                this.selects.parent  = this;
+                this.sections.parent = this;
+                this.groups.parent   = this;
+                this.commands.parent = this;
 
-            // Cache the section editor table DOM.
-            this.sections.editor_table.table = document.getElementById("sectionEditor_table");
-            this.sections.editor_table.id    = document.getElementById("sectionEditor_table_id");
-            this.sections.editor_table.name  = document.getElementById("sectionEditor_table_name");
-            this.sections.editor_table.order = document.getElementById("sectionEditor_table_order");
+                // Cache the section editor table DOM.
+                this.sections.editor_table.table = document.getElementById("sectionEditor_table");
+                this.sections.editor_table.id    = document.getElementById("sectionEditor_table_id");
+                this.sections.editor_table.name  = document.getElementById("sectionEditor_table_name");
+                this.sections.editor_table.order = document.getElementById("sectionEditor_table_order");
 
-            // Cache the section editor action buttons. 
-            this.sections.actions.add    = document.getElementById("sectionEditor_table_add");
-            this.sections.actions.reset  = document.getElementById("sectionEditor_table_reset");
-            this.sections.actions.remove = document.getElementById("sectionEditor_table_remove");
-            this.sections.actions.update = document.getElementById("sectionEditor_table_update");
+                // Cache the section editor action buttons. 
+                this.sections.actions.add    = document.getElementById("sectionEditor_table_add");
+                this.sections.actions.reset  = document.getElementById("sectionEditor_table_reset");
+                this.sections.actions.remove = document.getElementById("sectionEditor_table_remove");
+                this.sections.actions.update = document.getElementById("sectionEditor_table_update");
 
 
-            // Cache the group editor table DOM.
-            this.groups.editor_table.table = document.getElementById("groupEditor_table");
-            this.groups.editor_table.id    = document.getElementById("groupEditor_table_id");
-            this.groups.editor_table.name  = document.getElementById("groupEditor_table_name");
-            this.groups.editor_table.order = document.getElementById("groupEditor_table_order");
+                // Cache the group editor table DOM.
+                this.groups.editor_table.table = document.getElementById("groupEditor_table");
+                this.groups.editor_table.id    = document.getElementById("groupEditor_table_id");
+                this.groups.editor_table.name  = document.getElementById("groupEditor_table_name");
+                this.groups.editor_table.order = document.getElementById("groupEditor_table_order");
 
-            // Cache the group editor action buttons. 
-            this.groups.actions.add    = document.getElementById("groupEditor_table_add");
-            this.groups.actions.reset  = document.getElementById("groupEditor_table_reset");
-            this.groups.actions.remove = document.getElementById("groupEditor_table_remove");
-            this.groups.actions.update = document.getElementById("groupEditor_table_update");
+                // Cache the group editor action buttons. 
+                this.groups.actions.add    = document.getElementById("groupEditor_table_add");
+                this.groups.actions.reset  = document.getElementById("groupEditor_table_reset");
+                this.groups.actions.remove = document.getElementById("groupEditor_table_remove");
+                this.groups.actions.update = document.getElementById("groupEditor_table_update");
 
-            // Section editor.
-            // this.section.init();
+                // Section editor.
+                // this.section.init();
 
-            // Group editor.
-            // this.groups.init();
+                // Group editor.
+                // this.groups.init();
 
-            // Command editor.
-            this.commands.init();
+                // Command editor.
+                this.commands.init();
 
-            // Init the nav.
-            this.nav.init();
-            
-            // Init the selects.
-            this.selects.init();
+                // Init the nav.
+                this.nav.init();
+                
+                // Init the selects.
+                this.selects.init();
+
+                resolve();
+            });
         },
     },
 
@@ -596,52 +651,72 @@ let debug = {
     // GET_DB_AS_JSON
 };
 let init = async function(){
-    // Set the initial state of the Websocket connection.
-    ws_control.status.setStatusColor('disconnected');
+    return new Promise(async (resolve,reject)=>{
+        // Get the configs.
+        config = await http.send("get_configs", {}, 5000 );
+        // console.log(config);
 
-    // Get the configs.
-    config = await http.send("get_configs", {}, 5000 );
-    console.log(config);
+        // Get the DB.
+        commands = await http.send("/GET_DB_AS_JSON", {}, 5000 );
+        // console.log(commands);
 
-    // Get the DB.
-    commands = await http.send("/GET_DB_AS_JSON", {}, 5000 );
-    console.log(commands);
+        // WS Auto-reconnect.
+        let ws_autoReconnect = document.getElementById("ws_autoReconnect");
+        ws_autoReconnect.addEventListener("click", function(){
+            ws_control.autoReconnect = this.checked;
+            if(!ws_control.autoReconnect){ console.log("*"); clearTimeout(ws_control.autoReconnect_id); }
+        }, false);
+        ws_autoReconnect.checked = ws_control.autoReconnect;
+        ws_autoReconnect.dispatchEvent(new Event("click"));
+        
+        // WS Connect.
+        let ws_connect    = document.getElementById("ws_connect");
+        ws_connect.addEventListener("click", ()=>{ ws_control.ws_utilities.initWss(); }, false);
+        
+        // WS Disconnect.
+        let ws_disconnect = document.getElementById("ws_disconnect");
+        ws_disconnect.addEventListener("click", ()=>{ 
+            if(!ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); }
+            ws_control.skipAutoReconnect = true;
+            ws_control.ws_utilities.wsCloseAll(); 
+        }, false);
 
-    // WS Auto-reconnect.
-    let ws_autoReconnect = document.getElementById("ws_autoReconnect");
-    ws_autoReconnect.addEventListener("click", function(){
-        ws_control.autoReconnect = this.checked;
-        if(!ws_control.autoReconnect){ console.log("*"); clearTimeout(ws_control.autoReconnect_id); }
-    }, false);
-    ws_autoReconnect.checked = ws_control.autoReconnect;
-    ws_autoReconnect.dispatchEvent(new Event("click"));
-    
-    // WS Connect.
-    let ws_connect    = document.getElementById("ws_connect");
-    ws_connect.addEventListener("click", ()=>{ ws_control.ws_utilities.initWss(); }, false);
-    
-    // WS Disconnect.
-    let ws_disconnect = document.getElementById("ws_disconnect");
-    ws_disconnect.addEventListener("click", ()=>{ 
-        if(!ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); }
-        ws_control.skipAutoReconnect = true;
-        ws_control.ws_utilities.wsCloseAll(); 
-    }, false);
+        // WS Disconnect2. (test)
+        let ws_disconnect2 = document.getElementById("ws_disconnect2");
+        ws_disconnect2.addEventListener("click", ()=>{ 
+            if(!ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); }
+            ws_control.ws_utilities.wsCloseAll(); 
+        }, false);
 
-    // WS Disconnect2. (test)
-    let ws_disconnect2 = document.getElementById("ws_disconnect2");
-    ws_disconnect2.addEventListener("click", ()=>{ 
-        if(!ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); }
-        ws_control.ws_utilities.wsCloseAll(); 
-    }, false);
+        // Inits
+        // console.log("await ws_control.status.init();");
+        await ws_control.status.init();
+        
+        // Set the initial state of the Websocket connection.
+        ws_control.status.setStatusColor('disconnected');
 
-    debug.editor.init();
-    debug.tests1.init();
+        // console.log("await debug.tests1.init();");
+        await debug.tests1.init();
+        
+        // console.log("await debug.editor.init();");
+        await debug.editor.init();
+        
+        // console.log("ws_control.connectivity_status_update.init();");
+        ws_control.connectivity_status_update.init();
+        
+        // console.log("debug init is done.");
+
+        resolve();
+    });
 };
 
 window.onload = async function(){
     window.onload = null;
     appView = "debug";
-    init();
+    await init();
+
+    // Force a short wait.
+    await new Promise(async (res,rej)=>{ setTimeout(function(){ res(); }, ws_control.forcedDelay_ms); });
+
     ws_control.ws_utilities.initWss();
 };

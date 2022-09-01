@@ -12,6 +12,10 @@
 	<link rel="stylesheet" href="css/shared.css">
 	<link rel="stylesheet" href="css/debug.css">
 	<script src="js/shared.js" defer></script>
+	<script src="js/m_http.js" defer></script>
+	<script src="js/m_websocket_control.js" defer></script>
+	<script src="js/m_editor.js" defer></script>
+	<script src="js/m_terminals.js" defer></script>
 	<script src="js/debug.js" defer></script>
 </head>
 
@@ -49,11 +53,11 @@
 						<tr>
 							<td>Change status color:</td>
 							<td>
-								<button onclick="ws_control.status.setStatusColor('pinging');">Pinging</button>
-								<button onclick="ws_control.status.setStatusColor('connecting');">Connecting</button>
-								<button onclick="ws_control.status.setStatusColor('connected');">Connected</button>
-								<button onclick="ws_control.status.setStatusColor('disconnecting');">Disconnecting</button>
-								<button onclick="ws_control.status.setStatusColor('disconnected');">Disconnected</button>
+								<button onclick="_APP.ws_control.status.setStatusColor('pinging');">Pinging</button>
+								<button onclick="_APP.ws_control.status.setStatusColor('connecting');">Connecting</button>
+								<button onclick="_APP.ws_control.status.setStatusColor('connected');">Connected</button>
+								<button onclick="_APP.ws_control.status.setStatusColor('disconnecting');">Disconnecting</button>
+								<button onclick="_APP.ws_control.status.setStatusColor('disconnected');">Disconnected</button>
 							</td>
 						</tr>
 						<tr>

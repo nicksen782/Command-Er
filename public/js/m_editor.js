@@ -56,8 +56,7 @@ _APP.editor = {
                 count +=1;
                 option = document.createElement("option");
                 option.value = `${rec.sId}`;
-                // option.innerText = `${rec.name}`;
-                option.innerText = `${rec.name} (sId: ${rec.sId})`;
+                option.innerText = `(${("S:"+rec.sId)}) ${rec.name}`;
                 option.setAttribute("order", `${rec.order}`);
                 frag.append(option);
             }
@@ -77,7 +76,7 @@ _APP.editor = {
                 option = document.createElement("option");
                 option.value = `${rec.gId}`;
                 // option.innerText = `${rec.name}`;
-                option.innerText = `${rec.name} (gId: ${rec.gId})`;
+                option.innerText = `(${("G:"+rec.gId)}) ${rec.name}`;
                 option.setAttribute("order", `${rec.order}`);
                 frag.append(option);
             }
@@ -97,7 +96,7 @@ _APP.editor = {
                 option = document.createElement("option");
                 option.value = `${rec.cId}`;
                 // option.innerText = `${rec.title}`;
-                option.innerText = `${rec.title} (cId: ${rec.cId})`;
+                option.innerText = `(${("C:"+rec.cId)}) ${rec.title}`;
                 option.setAttribute("order", `${rec.order}`);
                 frag.append(option);
             }
@@ -301,14 +300,15 @@ _APP.editor = {
     commands: {
         parent: null,
         editor_table:{
-            table    : null,
-            ids      : null,
-            title    : null,
-            cmd      : null,
-            f_ctrlc  : null,
-            f_enter  : null,
-            f_hidden : null,
-            order    : null,
+            table       : null,
+            ids         : null,
+            sectionGroup: null,
+            title       : null,
+            cmd         : null,
+            f_ctrlc     : null,
+            f_enter     : null,
+            f_hidden    : null,
+            order       : null,
         },
         actions: {
             add    : null,
@@ -318,8 +318,9 @@ _APP.editor = {
         },
         clearEditorTable          : function(){
             this.editor_table.ids         .innerText = ``;
-            this.editor_table.sectionName .value     = "";
-            this.editor_table.groupName   .value     = "";
+            this.editor_table.sectionGroup.value     = "";
+            this.editor_table.sectionGroup.setAttribute("sId", "");
+            this.editor_table.sectionGroup.setAttribute("gId", "");
             this.editor_table.title       .value     = "";
             this.editor_table.cmd         .value     = "";
             this.editor_table.f_ctrlc     .checked   = false;
@@ -349,20 +350,17 @@ _APP.editor = {
             // Updates require Websockets. 
             if(!_APP.ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
             
-            let original_rec = _APP.commands.commands.find(d=>d.cId == cId);
-            console.log("UPDATE", original_rec, cId);
-            
+            // Need to get a handle on the actual selected option for sectionGroup.
+            let sectionGroup_option = this.editor_table.sectionGroup.options[this.editor_table.sectionGroup.options.selectedIndex];
+
             let obj = {
                 // Needed to update the record. 
                 cId:cId,
-                // sId:original_rec.sId,
-                // gId:original_rec.gId,
-
+                
                 // Data that the record will be updated with.
                 updated: {
-                    // cId      : Number(cId),
-                    sId      : Number(original_rec.sId), // TODO
-                    gId      : Number(original_rec.gId), // TODO
+                    sId      : Number(sectionGroup_option.getAttribute("sId")), 
+                    gId      : Number(sectionGroup_option.getAttribute("gId")), 
                     title    : this.editor_table.title.value,
                     cmd      : this.editor_table.cmd.value,
                     f_ctrlc  : this.editor_table.f_ctrlc .checked ? true : false,
@@ -373,6 +371,7 @@ _APP.editor = {
             };
             
             // Request the server to update the command. 
+            // console.log(obj);
             _APP.ws_control.activeWs.send( JSON.stringify( { mode:"UPDATE_ONE_COMMAND", data: obj } ) );
         },
         add   : async function(){
@@ -395,52 +394,47 @@ _APP.editor = {
         },
         commandSelectPopulates: function(commandRec){
             // Need to repopulate the sectionName and groupName selects.
-            this.editor_table.sectionName.options.length = 0;
-            this.editor_table.groupName.options.length = 0;
+            this.editor_table.sectionGroup.options.length = 0;
 
-            let frag_sections = document.createDocumentFragment();
-            let option1;
+            let frag_sectionGroup = document.createDocumentFragment();
+            let option;
 
-            // commandRec
+            // Determine the longest section name for padding.
+            let longest = 0; 
             for(let i=0; i<_APP.commands.sections.length; i+=1){
                 let rec = _APP.commands.sections[i];
-
-                // Show all sections. 
-                //
+                if(rec.name.length > longest){ longest = rec.name.length; }
             }
+
+            // Create an entry for each group and include it's section name and both the sId and the gId.
+            let entries = 1;
             for(let i=0; i<_APP.commands.groups.length; i+=1){
                 let rec = _APP.commands.groups[i];
+                
+                // Get the names. 
+                let sectionName = _APP.commands.sections.find(d=>d.sId==rec.sId).name;
+                let groupName   = rec.name;
 
-                // Show only the groups for this section. 
-                if(rec.sId != commandRec.sId){ continue; }
+                // Create the option. 
+                option = document.createElement("option");
+                option.value = entries.toString(); // FAKE VALUE... lookup only. Do NOT send.
+                entries += 1;
+                option.innerText = `${commandRec.gId==rec.gId?"*":""}(${("S:"+rec.sId)}) ${sectionName.padEnd(longest, decodeURI("%C2%A0"))}: (${("G:"+rec.gId)}) ${groupName}`;
+                option.setAttribute("sId", `${rec.sId}`);
+                option.setAttribute("gId", `${rec.gId}`);
+                frag_sectionGroup.append(option);
             }
 
-            // this.editor_table.sectionName
-            // this.editor_table.groupName  
-
-            // for(let i=0; i<_APP.commands.commands.length; i+=1){
-            //     let rec = _APP.commands.commands[i];
-            //     if(rec.gId != gId){ continue; }
-            //     count +=1;
-
-            //     option = document.createElement("option");
-            //     option.value = `${rec.cId}`;
-            //     // option.innerText = `${rec.title}`;
-            //     option.innerText = `${rec.title} (cId: ${rec.cId})`;
-            //     option.setAttribute("order", `${rec.order}`);
-            //     frag.append(option);
-            // }
-            // this.DOM.commandEditor["command_select"].options[0].innerText = `...Commands (${count})`;
-            // this.DOM.commandEditor["command_select"].options.length = 1;  
-            // this.DOM.commandEditor["command_select"].append(frag);
+            // Append the fragments. 
+            this.editor_table.sectionGroup.append(frag_sectionGroup);
         },
         display: async function(cId){
             let rec = _APP.commands.commands.find(d=>d.cId == cId);
 
             // let t_table       = this.editor_table.table;
             let t_ids         = this.editor_table.ids;
-            let t_sectionName = this.editor_table.sectionName;
-            let t_groupName   = this.editor_table.groupName;
+            let t_sectionGroup   = this.editor_table.sectionGroup;
+
             let t_title       = this.editor_table.title;
             let t_cmd         = this.editor_table.cmd;
             let t_f_ctrlc     = this.editor_table.f_ctrlc;
@@ -450,9 +444,24 @@ _APP.editor = {
 
             this.commandSelectPopulates(rec);
 
+            t_sectionGroup.setAttribute("sId", rec.sId);
+            t_sectionGroup.setAttribute("gId", rec.gId);
+            let foundIt = false;
+            for(let i=0; i<t_sectionGroup.options.length; i+=1){
+                let this_sId = Number(t_sectionGroup.options[i].getAttribute("sId"));
+                let this_gId = Number(t_sectionGroup.options[i].getAttribute("gId"));
+                if(this_sId == rec.sId && this_gId == rec.gId){
+                    foundIt = true;
+                    t_sectionGroup.selectedIndex = i;
+                    break; 
+                }
+            }
+            if(!foundIt){
+                console.log("Could not find the matching sId and gId of this command");
+                return; 
+            }
+            
             t_ids        .innerText = `sId: ${rec.sId}, gId: ${rec.gId}, cId: ${rec.cId}`;
-            t_sectionName.value     = rec.sId;
-            t_groupName  .value     = rec.gId;
             t_title      .value     = rec.title;
             t_cmd        .value     = rec.cmd;
             t_f_ctrlc    .checked   = rec.f_ctrlc  ? true : false;
@@ -471,8 +480,7 @@ _APP.editor = {
             // Cache the command editor table DOM.
             this.editor_table.table       = document.getElementById("commandEditor_table");
             this.editor_table.ids         = document.getElementById("commandEditor_table_ids");
-            this.editor_table.sectionName = document.getElementById("commandEditor_table_sectionName");
-            this.editor_table.groupName   = document.getElementById("commandEditor_table_groupName");
+            this.editor_table.sectionGroup= document.getElementById("commandEditor_table_sectionGroup");
             this.editor_table.title       = document.getElementById("commandEditor_table_title");
             this.editor_table.cmd         = document.getElementById("commandEditor_table_cmd");
             this.editor_table.f_ctrlc     = document.getElementById("commandEditor_table_f_ctrlc");
@@ -485,6 +493,9 @@ _APP.editor = {
             this.actions.reset  = document.getElementById("commandEditor_table_reset");
             this.actions.remove = document.getElementById("commandEditor_table_remove");
             this.actions.update = document.getElementById("commandEditor_table_update");
+
+            // Event listeners for section/group changes for one command.
+            // this.commandSelectPopulates(rec);
 
             // Event listeners for actions. 
             this.actions.add    .addEventListener("click", ()=> { 

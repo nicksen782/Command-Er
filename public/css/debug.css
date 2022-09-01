@@ -3,6 +3,10 @@ body{
 	width: 900px;
 	margin: auto;
 	margin-top: 5px;
+	transition: opacity 1s;
+}
+body.darken {
+    opacity: 0.15;
 }
 #container {
 	background-color: #264757;
@@ -216,4 +220,17 @@ div#main_container {
 	background-color: rgb(60 158 192);
 	background-color: #ffefd5;
 	height: 100%;
+}
+
+
+select#commandEditor_section_select {
+    min-width: 340px;
+}
+
+select#commandEditor_group_select {
+    min-width: 340px;
+}
+
+select#commandEditor_command_select {
+    min-width: 340px;
 }

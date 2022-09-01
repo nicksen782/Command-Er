@@ -149,11 +149,23 @@ let init = async function(){
 
 window.onload = async function(){
     window.onload = null;
+
+    // Set the appView.
     _APP.appView = "debug";
+
+    // Run init.
     await init();
 
-    // Force a short wait.
-    await new Promise(async (res,rej)=>{ setTimeout(function(){ res(); }, _APP.ws_control.forcedDelay_ms); });
+    // Show initial connectivity status.
+    _APP.ws_control.connectivity_status_update.display();
 
+    // Remove the darken class.
+    document.body.classList.remove("darken");
+    
+    // Force a short wait.
+    // await new Promise(async (res,rej)=>{ setTimeout(function(){ res(); }, _APP.ws_control.forcedDelay_ms * 4); });
+    await new Promise(async (res,rej)=>{ setTimeout(function(){ res(); }, 1000); });
+
+    // Start the web socket connection. 
     _APP.ws_control.ws_utilities.initWss();
 };

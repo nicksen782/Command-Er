@@ -68,10 +68,11 @@ _APP.ws_control = {
                     _APP.ws_control.connectivity_status_update.display();
                 }
                 catch(e){
-                    _APP.ws_control.connectivity_status_update.data.local.controls  = "??";
-                    _APP.ws_control.connectivity_status_update.data.local.terms     = "??";
-                    _APP.ws_control.connectivity_status_update.data.global.controls = "??";
-                    _APP.ws_control.connectivity_status_update.data.global.terms    = "??";
+                    _APP.ws_control.connectivity_status_update.data.uuid            = 0;
+                    _APP.ws_control.connectivity_status_update.data.local.controls  = 0;
+                    _APP.ws_control.connectivity_status_update.data.local.terms     = 0;
+                    _APP.ws_control.connectivity_status_update.data.global.controls = 0;
+                    _APP.ws_control.connectivity_status_update.data.global.terms    = 0;
                     _APP.ws_control.connectivity_status_update.display();
                 }
             },
@@ -360,18 +361,18 @@ _APP.ws_control = {
             // console.log("Web WebSockets Client: CLOSE:", event); 
 
             if(_APP.appView == "debug"){
-                // document.getElementById("bottom_status2_connectionDetails").innerText = "";
-                _APP.ws_control.connectivity_status_update.data.local.controls  = "??";
-                _APP.ws_control.connectivity_status_update.data.local.terms     = "??";
-                _APP.ws_control.connectivity_status_update.data.global.controls = "??";
-                _APP.ws_control.connectivity_status_update.data.global.terms    = "??";
+                _APP.ws_control.connectivity_status_update.data.uuid            = 0;
+                _APP.ws_control.connectivity_status_update.data.local.controls  = 0;
+                _APP.ws_control.connectivity_status_update.data.local.terms     = 0;
+                _APP.ws_control.connectivity_status_update.data.global.controls = 0;
+                _APP.ws_control.connectivity_status_update.data.global.terms    = 0;
                 _APP.ws_control.connectivity_status_update.display();
             }
 
             // Yellow icon.
             _APP.ws_control.status.setStatusColor("disconnecting");
 
-            _APP.ws_control.connectivity_status_update.data.uuid = null;
+            _APP.ws_control.connectivity_status_update.data.uuid = 0;
             _APP.ws_control.activeWs = null;
 
             // Remove connected, add disconnected.
@@ -413,11 +414,11 @@ _APP.ws_control = {
             console.log("Web WebSockets Client: ERROR:", event); 
             
             if(_APP.appView == "debug"){
-                // document.getElementById("bottom_status2_connectionDetails").innerText = "";
-                _APP.ws_control.connectivity_status_update.data.local.controls  = "??";
-                _APP.ws_control.connectivity_status_update.data.local.terms     = "??";
-                _APP.ws_control.connectivity_status_update.data.global.controls = "??";
-                _APP.ws_control.connectivity_status_update.data.global.terms    = "??";
+                _APP.ws_control.connectivity_status_update.data.uuid            = 0;
+                _APP.ws_control.connectivity_status_update.data.local.controls  = 0;
+                _APP.ws_control.connectivity_status_update.data.local.terms     = 0;
+                _APP.ws_control.connectivity_status_update.data.global.controls = 0;
+                _APP.ws_control.connectivity_status_update.data.global.terms    = 0;
                 _APP.ws_control.connectivity_status_update.display();
             }
 
@@ -540,14 +541,14 @@ _APP.ws_control = {
         inited:false,
         intervalId:null,
         data: {
-            uuid: null,
+            uuid: 0,
             local:{
-                controls: "??",
-                terms: "??",
+                controls: 0,
+                terms: 0,
             },
             global:{
-                controls: "??",
-                terms: "??",
+                controls: 0,
+                terms: 0,
             },
         },
         elems: {
@@ -561,24 +562,32 @@ _APP.ws_control = {
             if(typeof this.elems["local"]  == "string"){ this.elems["local"]  = document.getElementById(this.elems["local"]);  }
             if(typeof this.elems["global"] == "string"){ this.elems["global"] = document.getElementById(this.elems["global"]); }
 
-            if(!_APP.ws_control.activeWs){
-                this.elems["uuid"].innerText = "<Not connected>";
-                this.elems["local"].innerText = "<Not connected>";
-                this.elems["global"].innerText = "<Not connected>";
-                return;
+            // if(!_APP.ws_control.activeWs){
+            //     this.elems["uuid"].innerText = "<Not Connected>";
+            //     this.elems["local"].innerText = "<Not Connected>";
+            //     this.elems["global"].innerText = "<Not Connected>";
+            //     return;
+            // }
+            // return;
+
+            if(this.data.uuid !== 0){
+                // Update UUID.
+                this.elems["uuid"].innerText = this.data.uuid.toUpperCase();
+                
+                // Update LOCAL.
+                this.elems["local"].innerText = `Controls: ${this.data.local.controls}, Terminals: ${this.data.local.terms}`;
+                
+                // Update GLOBAL.
+                this.elems["global"].innerText = `Controls: ${this.data.global.controls}, Terminals: ${this.data.global.terms}`;
             }
-
-            // Update UUID.
-            this.elems["uuid"].innerText = this.data.uuid.toUpperCase();
-
-            // Update LOCAL.
-            this.elems["local"].innerText = `Controls: ${this.data.local.controls}, Terminals: ${this.data.local.terms}`;
-
-            // Update GLOBAL.
-            this.elems["global"].innerText = `Controls: ${this.data.global.controls}, Terminals: ${this.data.global.terms}`;
+            else{
+                this.elems["uuid"].innerText   = "<Not Connected>";
+                this.elems["local"].innerText  = "<Not Connected>";
+                this.elems["global"].innerText = "<Not Connected>";
+            }
         },
         requestUpdate: function(){
-            if(!_APP.ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
+            if(!_APP.ws_control.ws_utilities.isWsConnected()){ return; }
             _APP.ws_control.activeWs.send( "CONNECTIVITY_STATUS_UPDATE" );
         },
         clearInterval: function(){

@@ -93,13 +93,14 @@ _APP.editor = {
             this.DOM.commandEditor["group_select"].append(frag);
         },
         populate_commands: function(gId){
+            console.log("populate_commands:", gId);
             let frag = document.createDocumentFragment();
             let option;
             let count = 0;
             for(let i=0; i<this.parent.parent.commands.commands.length; i+=1){
                 let rec = this.parent.parent.commands.commands[i];
                 if(rec.gId != gId){ continue; }
-                count +=1;
+                count += 1;
 
                 option = document.createElement("option");
                 option.value = `${rec.cId}`;
@@ -133,12 +134,21 @@ _APP.editor = {
 
         // CHANGES.
         sectionChange:function(sId){
-            if(!sId){ return; }
+            if(!sId){ 
+                this.parent.sections.clearEditorTable();
+                this.parent.groups.clearEditorTable();
+                this.parent.commands.clearEditorTable();
+                this.populate_groups(null);
+                this.populate_commands(null);
+                return; 
+            }
             // Clear/reset group select.
             this.DOM.commandEditor["group_select"].length = 1;
             this.DOM.commandEditor["group_select"].selectedIndex = 0;
             
             // Clear/reset command select.
+            // this.DOM.commandEditor["command_select"].options[0].innerText = `...Commands (${count})`;
+            this.DOM.commandEditor["command_select"].options[0].innerText = `...Commands`;
             this.DOM.commandEditor["command_select"].length = 1;
             this.DOM.commandEditor["command_select"].selectedIndex = 0;
 
@@ -155,7 +165,12 @@ _APP.editor = {
             this.populate_groups(sId);
         },
         groupChange:function(gId){
-            if(!gId){ return; }
+            if(!gId){ 
+                this.parent.groups.clearEditorTable();
+                this.parent.commands.clearEditorTable();
+                this.populate_commands(null);
+                return; 
+            }
             // Clear/reset command select.
             this.DOM.commandEditor["command_select"].length = 1;
             this.DOM.commandEditor["command_select"].selectedIndex = 0;
@@ -175,7 +190,10 @@ _APP.editor = {
             this.populate_commands(gId);
         },
         commandChange:function(cId){
-            if(!cId){ return; }
+            if(!cId){ 
+                this.parent.commands.clearEditorTable();
+                return; 
+            }
             // Display command.
             this.populate_command(cId);
         },

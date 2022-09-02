@@ -281,6 +281,7 @@ let _MOD = {
             // TODO:
             UPDATE_ONE_GROUP: async function(ws, data){
                 console.log(`mode: ${data.mode}, data:`, data.data);
+                
                 let obj = {
                     gId   : data.gId  ,
                     sId   : data.sId  ,
@@ -290,10 +291,12 @@ let _MOD = {
                 let resp = await _MOD.queries.UPDATE_ONE_GROUP(obj);
                 ws.send( JSON.stringify( { "mode":"UPDATE_ONE_GROUP", "data":resp } ) );
             },
-            // TODO:
+
+            // COMMAND UPDATE/ADD/REMOVE.
             UPDATE_ONE_COMMAND: async function(ws, data){
                 // console.log(`mode: ${data.mode}, data:`, data.data);
                 
+                // Break-out the data.
                 let obj = {
                     "cId"     : data.data.cId,
                     "sId"     : data.data.updated.sId,
@@ -306,7 +309,10 @@ let _MOD = {
                     "order"   : data.data.updated.order,
                 };
 
+                // Update the command in the database. 
                 let resp = await _MOD.queries.UPDATE_ONE_COMMAND(obj);
+
+                // Send back the status of the request and the updated command.
                 ws.send( JSON.stringify( { 
                     "mode":"UPDATE_ONE_COMMAND", 
                     "data":{
@@ -315,13 +321,56 @@ let _MOD = {
                     } 
                 } ) );
             },
+            ADD_ONE_COMMAND: async function(ws, data){
+                // console.log(`mode: ${data.mode}, data:`, data.data);
+                
+                // Break-out the data.
+                let obj = {
+                    "cId"     : data.data.added.cId,
+                    "sId"     : data.data.added.sId,
+                    "gId"     : data.data.added.gId,
+                    "title"   : data.data.added.title,
+                    "cmd"     : data.data.added.cmd,
+                    "f_ctrlc" : data.data.added.f_ctrlc,
+                    "f_enter" : data.data.added.f_enter,
+                    "f_hidden": data.data.added.f_hidden,
+                    "order"   : data.data.added.order,
+                };
 
-            // STATS1: async function(ws, data){
-            //     console.log(`mode: ${data.mode}, data:`, data.data);
-            // },
-            // STATS2: async function(ws, data){
-            //     console.log(`mode: ${data.mode}, data:`, data.data);
-            // },
+                // Add the command to the database. 
+                let resp = await _MOD.queries.ADD_ONE_COMMAND(obj);
+
+                // Send back the status of the request and the new record. 
+                ws.send( JSON.stringify( { 
+                    "mode":"ADD_ONE_COMMAND", 
+                    "data":{
+                        newRec : await _MOD.queries.GET_ONE_CMD(obj.sId, obj.gId, resp.lastID), 
+                        _err: resp.err ? resp.err : false
+                    } 
+                } ) );
+            },
+            REMOVE_ONE_COMMAND: async function(ws, data){
+                // console.log(`mode: ${data.mode}, data:`, data.data);
+                
+                // Break-out the data.
+                let obj = {
+                    "cId"     : data.data.removed.cId,
+                    "sId"     : data.data.removed.sId,
+                    "gId"     : data.data.removed.gId,
+                };
+
+                // Remove the command from the database. 
+                let resp = await _MOD.queries.REMOVE_ONE_COMMAND(obj);
+
+                // Send back the status of the request.
+                ws.send( JSON.stringify( { 
+                    "mode":"REMOVE_ONE_COMMAND", 
+                    "data":{
+                        removedRec : obj, 
+                        _err: resp.err ? resp.err : false
+                    } 
+                } ) );
+            },
         },
         TEXT:{
             PING: async function(ws, data){
@@ -369,6 +418,7 @@ let _MOD = {
                 ws.send(JSON.stringify({"mode":"CONNECTIVITY_STATUS_UPDATE", "data":_MOD.ws_utilities.getGlobalClientCounts(ws.CONFIG.uuid) }));
             },
 
+            // DEBUG
             SECTIONS_LIST:      async function(ws, data){
                 // console.log(`mode: ${data.mode}, data:`, data.data);
                 let resp = await _MOD.queries.SECTIONS_LIST();
@@ -754,7 +804,8 @@ let _MOD = {
             })
         },
 
-        // VIA WS: SELECTS
+        // VIA WS: SELECTS (DEBUG)
+
         SECTIONS_LIST : function(){
             return new Promise(async function(resolve,reject){
                 let q1 = {
@@ -830,7 +881,58 @@ let _MOD = {
             });
         },
 
+        // VIA ws: ADD
+
+        ADD_ONE_COMMAND: function(data){
+            return new Promise(async function(resolve,reject){
+                if(!data){ reject("Missing data."); return; }
+                let q = {
+                    "sql" : `
+                        INSERT INTO 'commands' ( 'cId', 'sId', 'gId', 'title', 'cmd', 'f_ctrlc', 'f_enter', 'f_hidden', 'order' )
+                        VALUES ( :cId, :sId, :gId, :title, :cmd, :f_ctrlc, :f_enter, :f_hidden, (SELECT MAX("order") + 1 FROM 'commands') )
+                        ;`.replace(/\t/g, " ").replace(/  +/g, "  "), 
+                    "params" : {
+                        ":cId"     : null,
+                        ":sId"     : data.sId,
+                        ":gId"     : data.gId,
+                        ":title"   : data.title,
+                        ":cmd"     : data.cmd,
+                        ":f_ctrlc" : data.f_ctrlc,
+                        ":f_enter" : data.f_enter,
+                        ":f_hidden": data.f_hidden,
+                    },
+                    "type": "INSERT",
+                };
+                let results = await _APP.m_db.query(q.sql, q.params, q.type); if(results.err){ console.log(results); reject(); return; }
+                resolve(results);
+            });
+        },
+        REMOVE_ONE_COMMAND: function(data){
+            return new Promise(async function(resolve,reject){
+                if(!data){ reject("Missing data."); return; }
+                let q = {
+                    "sql" : `
+                        DELETE FROM 'commands'
+                        WHERE 
+                            cId = :cId
+                            AND gId = :gId
+                            AND sId = :sId
+                        ;`.replace(/\t/g, " ").replace(/  +/g, "  "), 
+                    "params" : {
+                        ":cId"     : data.cId,
+                        ":sId"     : data.sId,
+                        ":gId"     : data.gId,
+                    },
+                    "type": "DELETE",
+                };
+                let results = await _APP.m_db.query(q.sql, q.params, q.type); if(results.err){ console.log(results); reject(); return; }
+                resolve(results);
+            });
+        },
+
         // VIA WS: UPDATES
+
+        // TODO
         UPDATE_ONE_SECTION: function(data){
             return new Promise(function(resolve, reject){
                 return new Promise(async function(resolve,reject){
@@ -857,6 +959,7 @@ let _MOD = {
                 });
             });
         },
+        // TODO
         UPDATE_ONE_GROUP: function(data){
             return new Promise(async function(resolve,reject){
                 if(!data){ reject("Missing data."); return; }

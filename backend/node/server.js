@@ -63,6 +63,7 @@ let setErrorHandlers = function(){
 
     process.on('beforeExit', code => {
         // Can make asynchronous calls
+        console.log("\n");
         console.log("\nHANDLER: beforeExit");
         cleanUp("beforeExit");
         // setTimeout(() => {
@@ -73,12 +74,14 @@ let setErrorHandlers = function(){
 
     process.on('exit', code => {
         // Only synchronous calls
+        console.log("\n");
         console.log("\nHANDLER: exit");
         cleanUp("exit");
         console.log(`  Process exited with code: ${code}`);
     })
 
     process.on('SIGTERM', signal => {
+        console.log("\n");
         console.log("\nHANDLER: SIGTERM");
         cleanUp("SIGTERM");
         console.log(`  Process ${process.pid} received a SIGTERM signal`);
@@ -86,6 +89,7 @@ let setErrorHandlers = function(){
     })
 
     process.on('SIGINT', signal => {
+        console.log("\n");
         console.log("\nHANDLER: SIGINT");
         cleanUp("SIGINT");
         console.log(`  Process ${process.pid} has been interrupted`)
@@ -93,6 +97,7 @@ let setErrorHandlers = function(){
     })
 
     process.on('uncaughtException', err => {
+        console.log("\n");
         console.log("\nHANDLER: uncaughtException");
         cleanUp("uncaughtException");
         console.log(`  Uncaught Exception:`, err);
@@ -100,6 +105,7 @@ let setErrorHandlers = function(){
     })
     
     process.on('unhandledRejection', (reason, promise) => {
+        console.log("\n");
         console.log("\nHANDLER: unhandledRejection");
         cleanUp("unhandledRejection");
         console.log('  Unhandled rejection at ', promise, `reason: `, reason);

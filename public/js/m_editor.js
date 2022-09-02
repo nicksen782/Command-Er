@@ -38,10 +38,10 @@ _APP.editor = {
             // this.showOneView( this.tabs[0] );
 
             // Show the Group Editor tab and view. 
-            this.showOneView( this.tabs[1] );
+            // this.showOneView( this.tabs[1] );
 
             // Show the Command Editor tab and view. 
-            // this.showOneView( this.tabs[2] );
+            this.showOneView( this.tabs[2] );
         },
     },
     selects: {
@@ -93,7 +93,7 @@ _APP.editor = {
             this.DOM.commandEditor["group_select"].append(frag);
         },
         populate_commands: function(gId){
-            console.log("populate_commands:", gId);
+            // console.log("populate_commands:", gId);
             let frag = document.createDocumentFragment();
             let option;
             let count = 0;
@@ -479,10 +479,12 @@ _APP.editor = {
             this.actions.remove.classList.remove("disabled");
             this.actions.update.classList.remove("disabled");
         },
-        update: async function(cId){
+        update: async function(){
             // Updates require Websockets. 
             if(!this.parent.parent.ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
             
+            let cId = Number(this.parent.selects.DOM.commandEditor.command_select.value);
+
             // Need to get a handle on the actual selected option for sectionGroup.
             let sectionGroup_option = this.editor_table.sectionGroup.options[this.editor_table.sectionGroup.options.selectedIndex];
 
@@ -511,7 +513,26 @@ _APP.editor = {
             // Updates require Websockets. 
             if(!this.parent.parent.ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
 
-            // Ignore existing loaded command. Make a blank command other than having a matching sId and gId and new cId.
+            // Ignore existing loaded command. Make a blank command other than having a matching sId and gId.
+            let obj = {
+                // Data for the new command.
+                added: {
+                    cId:null,
+                    sId      : Number(this.parent.selects.DOM.commandEditor["section_select"].value), 
+                    gId      : Number(this.parent.selects.DOM.commandEditor["group_select"].value), 
+                    title    : "NEW - CHANGE ME",
+                    cmd      : "",
+                    f_ctrlc  : false,
+                    f_enter  : true,
+                    f_hidden : false,
+                    order    : 0,
+                },
+            };
+            
+            // Request the server to update the command. 
+            // console.log(obj);
+            this.parent.parent.ws_control.activeWs.send( JSON.stringify( { mode:"ADD_ONE_COMMAND", data: obj } ) );
+
             // Requesting the add should automatically display the new command.
             // After that, use the normal update function.
         },
@@ -519,12 +540,31 @@ _APP.editor = {
             // Updates require Websockets. 
             if(!this.parent.parent.ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
 
+            let obj = {
+                // Needed to update the record. 
+                
+                // Data that the record will be updated with.
+                removed: {
+                    cId : Number(this.parent.selects.DOM.commandEditor["command_select"].value), 
+                    sId : Number(this.parent.selects.DOM.commandEditor["section_select"].value), 
+                    gId : Number(this.parent.selects.DOM.commandEditor["group_select"].value), 
+                },
+            };
+
+            let commandTitle = this.parent.selects.DOM.commandEditor["command_select"].options[this.parent.selects.DOM.commandEditor["command_select"].selectedIndex].innerText;
+            let sectionName  = this.parent.selects.DOM.commandEditor["section_select"].options[this.parent.selects.DOM.commandEditor["section_select"].selectedIndex].innerText;
+            let groupName    = this.parent.selects.DOM.commandEditor["group_select"].options[this.parent.selects.DOM.commandEditor["group_select"].selectedIndex].innerText;
+            
             // Confirm.
-            // 
+            if( !confirm(
+                `Are you sure that you want to remove the command:\n` +
+                ` sectionName : ${sectionName}\n` +
+                ` groupName   : ${groupName}\n` + 
+                ` commandTitle: ${commandTitle}`
+            ) ){ return; }
 
             // Request the server to remove the command.
-            // Requesting the removal should automatically display the command at the previous selectedIndex unless it was 0.
-            // In that case, select 0.
+            this.parent.parent.ws_control.activeWs.send( JSON.stringify( { mode:"REMOVE_ONE_COMMAND", data: obj } ) );
         },
         commandSelectPopulates: function(commandRec){
             // Need to repopulate the sectionName and groupName selects.
@@ -631,12 +671,9 @@ _APP.editor = {
             this.actions.remove = document.getElementById("commandEditor_table_remove");
             this.actions.update = document.getElementById("commandEditor_table_update");
 
-            // Event listeners for section/group changes for one command.
-            // this.commandSelectPopulates(rec);
-
             // Event listeners for actions. 
             this.actions.add    .addEventListener("click", ()=> { 
-                console.log(this.add, "add - NOT READY YET"); 
+                this.add();
             }, false);
 
             this.actions.reset  .addEventListener("click", ()=> {
@@ -644,11 +681,11 @@ _APP.editor = {
             }, false);
 
             this.actions.remove .addEventListener("click", ()=> { 
-                console.log(this.remove, "remove - NOT READY YET"); 
+                this.remove();
             }, false);
 
             this.actions.update .addEventListener("click", ()=> { 
-                this.update( Number(this.parent.selects.DOM.commandEditor.command_select.value) );
+                this.update();
             }, false);
         },
     },

@@ -305,7 +305,34 @@ let _APP = {
         _APP.timeIt(`sysData`, "s", __filename); 
         let sysData = _APP.getSysData();
         for(let key in sysData){
-            let line1 = `${key.toUpperCase()}`.padEnd(12, " ") +": "+ `${JSON.stringify(sysData[key],null,0)}`;
+            let line1;
+            if( key=="cpus" && Array.isArray(sysData[key]) ){
+                let cpusLines = "";
+                let tabSpacer = "\t\t\t\t";
+                for(let cpusLine_i=0; cpusLine_i<sysData[key].length; cpusLine_i+=1){
+                    cpusLines += ``+
+                        `${cpusLine_i!=0?tabSpacer:""}`+
+                        `${sysData[key][cpusLine_i].model}, `+
+                        `( ${sysData[key][cpusLine_i].speed} )`+
+                        `\n`;
+                }
+                line1 = `${key.toUpperCase()}`.padEnd(12, " ") +": "+ `${cpusLines}`;
+            }
+            else if(key=="network"){
+                let networkLines = "";
+                let tabSpacer = "\t\t\t\t";
+                for(let netLine_i=0; netLine_i<sysData[key].length; netLine_i+=1){
+                    networkLines += ``+
+                        `${netLine_i!=0?tabSpacer:""}`+
+                        `${sysData[key][netLine_i].cidr.toString().padEnd(16, " ")}, `+
+                        `( ${sysData[key][netLine_i].iface} )`+
+                        `\n`;
+                }
+                line1 = `${key.toUpperCase()}`.padEnd(12, " ") +": "+ `${networkLines}`;
+            }
+            else{
+                line1 = `${key.toUpperCase()}`.padEnd(12, " ") +": "+ `${JSON.stringify(sysData[key],null,0)}`;
+            }
             _APP.consolelog(line1, 2);
         }
         _APP.timeIt(`sysData`, "e", __filename); 
@@ -321,14 +348,28 @@ let _APP = {
             type      : os.type(),
             release   : os.release(),
             arch      : os.arch(),
+            // cpus      : os.cpus().map( d=> { return {model: d.model, speed: d.speed }; } ) ,
             cpus      : os.cpus().map( d=> { return {model: d.model, speed: d.speed }; } ).length ,
-            endianness: os.endianness(),
+            endianness: (()=>{
+                let endianness = os.endianness();
+                switch(endianness){
+                    case "LE": return `${endianness} (Little Endian)`  ; break;
+                    case "BE": return `${endianness} (Big Endian)`  ; break;
+                    default  : return endianness; break;
+                }
+                
+            })(),
             memory    : { freemem: os.freemem().toLocaleString(), totalmem: os.totalmem().toLocaleString() },
+            userInfo  : (()=>{
+                let data = os.userInfo();
+                return {"username": data.username, "homedir": data.homedir, "shell": data.shell} ;
+            })(),
+            cwd       : process.cwd(),
+            tmpdir    : os.tmpdir(),
             network   : (()=>{
                 let data = os.networkInterfaces();
                 let resp = [];
                 for(let key in data){
-                    // console.log("**", key);
                     for(let key2 in data[key]){
                         let rec = data[key][key2];
                         if(!rec.internal && rec.family == "IPv4"){ resp.push({"iface": key, "cidr": rec.cidr}); }
@@ -336,12 +377,6 @@ let _APP = {
                 }
                 return resp;
             })(), 
-            userInfo  : (()=>{
-                let data = os.userInfo();
-                return {"username": data.username, "homedir": data.homedir, "shell": data.shell} ;
-            })(),
-            cwd       : process.cwd(),
-            tmpdir    : os.tmpdir(),
         };
     },
 };

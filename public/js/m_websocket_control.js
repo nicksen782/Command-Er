@@ -149,7 +149,7 @@ _APP.ws_control = {
                 document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
             }
         },
-        // TODO
+        // 
         UPDATE_ONE_COMMAND: function(data){
             if(this.parent.parent.appView == "debug"){
                 // Server will send updated command record.
@@ -163,6 +163,37 @@ _APP.ws_control = {
 
                 // Load the recently edited command.
                 this.parent.parent.editor.selects.populateSelectsBy_cId(data.data.updatedRec.cId);
+            }
+        },
+        // 
+        ADD_ONE_COMMAND: function(data){
+            if(this.parent.parent.appView == "debug"){
+                // Server will send updated command record.
+                console.log("ADD_ONE_COMMAND:", data);
+                
+                // Add the new record to the commands list. 
+                this.parent.parent.commands.commands.push(data.data.newRec);
+
+                // Load the recently edited command.
+                this.parent.parent.editor.selects.populateSelectsBy_cId(data.data.newRec.cId);
+            }
+        },
+        REMOVE_ONE_COMMAND: function(data){
+            if(this.parent.parent.appView == "debug"){
+                // Server will send updated command record.
+                console.log("REMOVE_ONE_COMMAND:", data);
+                
+                // Find the existing record's index by cId.
+                let index = this.parent.parent.editor.commands.findCommandIndexBy_cId(data.data.removedRec.cId);
+                
+                // Remove the command from the commands list.
+                this.parent.parent.commands.commands.splice(index, 1);
+
+                // Clear the command editor table. 
+                this.parent.parent.editor.commands.clearEditorTable();
+
+                // Repopulate the commands select. 
+                this.parent.parent.editor.selects.populate_commands(data.data.removedRec.gId);
             }
         },
     },

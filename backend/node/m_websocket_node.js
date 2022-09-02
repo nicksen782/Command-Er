@@ -20,7 +20,7 @@ let _MOD = {
                 // Save reference to the parent module.
                 _APP = parent;
         
-                _APP.consolelog("Node WebSockets Server", 2);
+                _APP.consolelog("WebSockets Server", 2);
                 if(_APP.m_config.config.toggles.isActive_nodeWsServer){
                     _APP.consolelog("Create Server", 4);
                     _MOD.createWebSocketsServer();
@@ -757,7 +757,7 @@ let _MOD = {
             }
         },
         el_close  : function(ws, event){ 
-            console.log("Node WebSockets Server: CLOSE  :", ws.id ); 
+            console.log("WebSockets Server: CLOSE  :", ws.CONFIG.type.padEnd(7, " "), ws.CONFIG.uuid);
             ws.close(); 
 
             // TODO: Remove all terminal ws connections that have the matching UUID.
@@ -772,7 +772,7 @@ let _MOD = {
             }, 1000);
         },
         el_error  : function(ws, event){ 
-            console.log("Node WebSockets Server: ERROR  :", event); 
+            console.log("WebSockets Server: ERROR  :", ws.CONFIG.type.padEnd(7, " "), ws.CONFIG.uuid, event);
             ws.close(); 
 
             // Make sure this ws connection is removed after a short delay. 
@@ -786,40 +786,41 @@ let _MOD = {
     },
     initWss: function(){
         // Run this for each new websocket connection. 
-        _MOD.ws.on("connection", function connection(clientWs, res){
+        _MOD.ws.on("connection", function connection(ws, res){
             // What type of connection is this? 
             
             // CONTROL
             if( res.url == "/CONTROL"){
                 // GENERATE A UNIQUE ID FOR THIS CONNECTION. 
-                clientWs.id = _MOD.ws_utilities.uuidv4();
+                ws.id = _MOD.ws_utilities.uuidv4();
 
                 // Add the config object to this ws object. 
-                clientWs.CONFIG = {};
+                ws.CONFIG = {};
                 
                 // ADD THE SUBSCRIPTIONS ARRAY TO THIS CONNECTION. 
-                clientWs.subscriptions = [];
+                ws.subscriptions = [];
 
                 // AUTO-ADD SOME SUBSCRIPTIONS. 
-                // _MOD.ws_utilities.addSubscription(clientWs, "STATS1");
-                // _MOD.ws_utilities.addSubscription(clientWs, "STATS2");
+                // _MOD.ws_utilities.addSubscription(ws, "STATS1");
+                // _MOD.ws_utilities.addSubscription(ws, "STATS2");
 
-                // Save this data to the clientWs for future use.
-                clientWs.CONFIG.uuid   = clientWs.id; 
-                clientWs.CONFIG.isTerm = false; 
+                // Save this data to the ws for future use.
+                ws.CONFIG.uuid   = ws.id; 
+                ws.CONFIG.type   = "CONTROL"; 
+                ws.CONFIG.isTerm = false; 
 
-                console.log("Node WebSockets Server: CONNECT:", clientWs.id);
+                console.log("WebSockets Server: CONNECT:", ws.CONFIG.type.padEnd(7, " "), ws.CONFIG.uuid);
 
                 // SEND THE UUID.
-                clientWs.send(JSON.stringify( {"mode":"NEWCONNECTION", data:clientWs.id } ));
+                ws.send(JSON.stringify( {"mode":"NEWCONNECTION", data:ws.id } ));
                 
                 // SEND THE NEW CONNECTION MESSAGE.
-                clientWs.send(JSON.stringify( {"mode":"WELCOMEMESSAGE", data:`WELCOME TO COMMAND-ER (CONTROL).`} ));
+                ws.send(JSON.stringify( {"mode":"WELCOMEMESSAGE", data:`WELCOME TO COMMAND-ER (CONTROL).`} ));
 
                 // ADD EVENT LISTENERS.
-                clientWs.addEventListener('message', (event)=>_MOD.ws_events.el_message(clientWs, event) );
-                clientWs.addEventListener('close'  , (event)=>_MOD.ws_events.el_close  (clientWs, event) );
-                clientWs.addEventListener('error'  , (event)=>_MOD.ws_events.el_error  (clientWs, event) );
+                ws.addEventListener('message', (event)=>_MOD.ws_events.el_message(ws, event) );
+                ws.addEventListener('close'  , (event)=>_MOD.ws_events.el_close  (ws, event) );
+                ws.addEventListener('error'  , (event)=>_MOD.ws_events.el_error  (ws, event) );
             }
 
             // TERMINAL
@@ -837,26 +838,29 @@ let _MOD = {
                     if(!params.type  ){ console.log("ERROR: Missing type.");   return; }
 
                     // Add the config object to this ws object. 
-                    clientWs.CONFIG = {};
+                    ws.CONFIG = {};
                 
                     // ADD THE SUBSCRIPTIONS ARRAY TO THIS CONNECTION. 
-                    // _MOD.ws_utilities.addSubscription(clientWs, "STATS1");
-                    // _MOD.ws_utilities.addSubscription(clientWs, "STATS2");
+                    // _MOD.ws_utilities.addSubscription(ws, "STATS1");
+                    // _MOD.ws_utilities.addSubscription(ws, "STATS2");
 
                     // AUTO-ADD SOME SUBSCRIPTIONS. 
-                    // _MOD.ws_utilities.addSubscription(clientWs, "TEST");
+                    // _MOD.ws_utilities.addSubscription(ws, "TEST");
 
-                    // Save this data to the clientWs for future use.
-                    clientWs.CONFIG.isTerm    =  true; 
-                    clientWs.CONFIG.uuid      =  params.uuid; 
-                    clientWs.CONFIG.termId    =  params.termId; 
-                    clientWs.CONFIG.type      =  params.type; 
-                    clientWs.CONFIG.tty       =  null; 
-                    clientWs.CONFIG.isClosing =  false; 
+                    // Save this data to the ws for future use.
+                    ws.CONFIG.isTerm    =  true; 
+                    ws.CONFIG.uuid      =  params.uuid; 
+                    ws.CONFIG.termId    =  params.termId; 
+                    ws.CONFIG.type      =  params.type; 
+                    ws.CONFIG.tty       =  null; 
+                    ws.CONFIG.pid       =  null; 
+                    ws.CONFIG.isClosing =  false; 
+                    ws.CONFIG.isClosed  =  false; 
 
                     // Start the terminal. 
-                    console.log(`OPEN  : term, uuid: ${uuid}, termId: ${termId}`);
-                    _APP._m_terminals.startRemoteTty(clientWs, res);
+                    // console.log(`OPEN  : term, uuid: ${ws.CONFIG.uuid}, termId: ${ws.CONFIG.termId}`);
+                    console.log("WebSockets Server: OPEN   :", ws.CONFIG.type.padEnd(7, " "), ws.CONFIG.uuid, ws.CONFIG.termId);
+                    _APP.m_terminals.startRemoteTty(ws, res);
                 }
             }
         });

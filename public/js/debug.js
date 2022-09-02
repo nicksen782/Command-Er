@@ -119,7 +119,11 @@ let init = async function(){
         // Init the other modules.
         await debug.tests1.init(_APP);
         await _APP.editor.init(_APP);
-        await _APP.terminals.init(_APP);
+        
+        // Start the web socket connection. 
+        _APP.ws_control.ws_utilities.initWss();
+
+        // await _APP.terminals.init(_APP);
         
         // Set the initial status.
         _APP.ws_control.status.setStatusColor('disconnected');
@@ -161,9 +165,6 @@ let init = async function(){
         // Force a short wait.
         await new Promise(async (res,rej)=>{ setTimeout(function(){ res(); }, 1000); });
         
-        // Start the web socket connection. 
-        _APP.ws_control.ws_utilities.initWss();
-
         // console.log("debug init is done.");
 
         resolve();

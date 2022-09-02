@@ -10,11 +10,18 @@
 	<link rel="icon" type="image/x-icon" href="favicon.ico">
 
 	<link rel="stylesheet" href="css/shared.css">
+	<link rel="stylesheet" href="libs/xterm/css/xterm.css">
+	<link rel="stylesheet" href="css/terminals.css">
 	<link rel="stylesheet" href="css/debug.css">
 	<script src="js/shared.js" defer></script>
 	<script src="js/m_http.js" defer></script>
 	<script src="js/m_websocket_control.js" defer></script>
 	<script src="js/m_editor.js" defer></script>
+
+	<script src="libs/xterm/lib/xterm.js" defer></script>
+	<script src="libs/xterm-addon-fit/lib/xterm-addon-fit.js" defer></script>
+	<script src="libs/xterm-addon-attach/lib/xterm-addon-attach.js" defer></script>
+
 	<script src="js/m_terminals.js" defer></script>
 	<script src="js/debug.js" defer></script>
 </head>
@@ -289,9 +296,10 @@
 					<div id="top_nav_view_terms" group="top_nav" class="view">
 						<div id="terms_list">
 							terms_list
+							<button onclick="_APP.terminals.init(_APP);">init terminal</button>
 						</div>
 						<div id="terms_windows">
-							terms_windows
+							<div id="term_container"></div>
 						</div>
 					</div>
 				</div>

@@ -13,6 +13,7 @@ _APP.editor = {
             this.tabs.forEach(d=>{ d.classList.remove("active"); })
             this.views.forEach(d=>{ d.classList.remove("active"); })
         },
+
         showOneView: function(tabElem){
             // Deactivate all tabs and views. 
             this.hideAllViews();
@@ -24,6 +25,7 @@ _APP.editor = {
             tabElem.classList.add("active");
             viewElem.classList.add("active");
         },
+
         init : function(){
             // Save the tabs and views. 
             this.tabs =   document.querySelectorAll(`.nav_tab[group='editor']`);
@@ -81,6 +83,7 @@ _APP.editor = {
             // Append the new options. 
             this.DOM.commandEditor["section_select"].append(frag);
         },
+
         populate_groups: function(sId){
             let frag = document.createDocumentFragment();
             let option;
@@ -105,6 +108,7 @@ _APP.editor = {
             // Append the new options. 
             this.DOM.commandEditor["group_select"].append(frag);
         },
+
         populate_commands: function(gId){
             // console.log("populate_commands:", gId);
             let frag = document.createDocumentFragment();
@@ -159,9 +163,15 @@ _APP.editor = {
             // console.log("sectionChange: sId:", sId);
             if(!sId){ 
                 console.log("sectionChange: No sId. Will clear this editor.");
+
+                this.parent.sections.disableEditorTableActions();
+                this.parent.groups.disableEditorTableActions();
+                this.parent.commands.disableEditorTableActions();
+
                 this.parent.sections.clearEditorTable();
                 this.parent.groups.clearEditorTable();
                 this.parent.commands.clearEditorTable();
+
                 this.populate_sections(null);
                 this.populate_groups(null);
                 this.populate_commands(null);
@@ -182,21 +192,29 @@ _APP.editor = {
             this.parent.groups.clearEditorTable();
             this.parent.commands.clearEditorTable();
             
+            // Enable the editor table actions. 
+            this.parent.sections.enableEditorTableActions();
+            // this.parent.groups.enableEditorTableActions();
+            // this.parent.commands.enableEditorTableActions();
+            
             // Disable the editor table actions. 
             // this.parent.sections.disableEditorTableActions();
-            // this.parent.groups.disableEditorTableActions();
-            // this.parent.commands.disableEditorTableActions();
+            this.parent.groups.disableEditorTableActions();
+            this.parent.commands.disableEditorTableActions();
 
             // Populate.
             this.parent.sections.display(sId);
             this.populate_groups(sId);
         },
+
         groupChange:function(gId){
             // console.log("groupChange: gId:", gId);
             if(!gId){ 
                 console.log("groupChange: No gId. Will clear this editor.");
                 this.parent.groups.clearEditorTable();
+                this.parent.groups.disableEditorTableActions();
                 this.parent.commands.clearEditorTable();
+                this.parent.commands.disableEditorTableActions();
                 this.populate_commands(null);
                 return; 
             }
@@ -206,12 +224,19 @@ _APP.editor = {
             this.DOM.commandEditor["command_select"].selectedIndex = 0;
             
             // Clear the editor tables.
+            // this.parent.sections.clearEditorTable();
             this.parent.groups.clearEditorTable();
             this.parent.commands.clearEditorTable();
 
-            // Disable the editor table actions. 
+            // Enable the editor table actions. 
+            // this.parent.sections.enableEditorTableActions();
+            this.parent.groups.enableEditorTableActions();
             // this.parent.commands.enableEditorTableActions();
-            // this.parent.commands.disableEditorTableActions();
+            
+            // Disable the editor table actions. 
+            // this.parent.sections.disableEditorTableActions();
+            // this.parent.groups.disableEditorTableActions();
+            this.parent.commands.disableEditorTableActions();
 
             // Populate the group edit table.
             this.parent.groups.display(gId);
@@ -219,13 +244,30 @@ _APP.editor = {
             // Populate.
             this.populate_commands(gId);
         },
+
         commandChange:function(cId){
             // console.log("commandChange: cId:", cId);
             if(!cId){ 
                 console.log("commandChange: No cId. Will clear this editor.");
                 this.parent.commands.clearEditorTable();
+                this.parent.commands.disableEditorTableActions();
                 return; 
             }
+
+            // Clear the editor tables.
+            // this.parent.sections.clearEditorTable();
+            // this.parent.groups.clearEditorTable();
+            this.parent.commands.clearEditorTable();
+
+            // Enable the editor table actions. 
+            // this.parent.sections.enableEditorTableActions();
+            // this.parent.groups.enableEditorTableActions();
+            this.parent.commands.enableEditorTableActions();
+            
+            // Disable the editor table actions. 
+            // this.parent.sections.disableEditorTableActions();
+            // this.parent.groups.disableEditorTableActions();
+            // this.parent.commands.disableEditorTableActions();
 
             // Display command.
             this.populate_command(cId);
@@ -272,7 +314,7 @@ _APP.editor = {
             this.populate_sections();
 
             // Select the first options from each select.
-            this.selectDefault();
+            // this.selectDefault();
         },
     },
 
@@ -292,29 +334,33 @@ _APP.editor = {
             remove : null,
             update : null,
         },
+
         clearEditorTable          : function(){
             this.editor_table.id   .innerText = ``;
             this.editor_table.name .value     = ``;
             this.editor_table.order.value     = ``;
         },
-        // TODO
+
         disableEditorTableActions : function(){
-            return true; 
-            console.log("disableEditorTableActions");
+            // return true; 
+            // console.log("disableEditorTableActions");
+            this.editor_table.table.classList.add("disabled");
             this.actions.add   .classList.add("disabled");
             this.actions.reset .classList.add("disabled");
             this.actions.remove.classList.add("disabled");
             this.actions.update.classList.add("disabled");
         },
-        // TODO
+
         enableEditorTableActions : function(){
-            return true; 
-            console.log("enableEditorTableActions");
+            // return true; 
+            // console.log("enableEditorTableActions");
+            this.editor_table.table.classList.remove("disabled");
             this.actions.add   .classList.remove("disabled");
             this.actions.reset .classList.remove("disabled");
             this.actions.remove.classList.remove("disabled");
             this.actions.update.classList.remove("disabled");
         },
+
         update: async function(){
             // Updates require Websockets. 
             if(!this.parent.parent.ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
@@ -332,6 +378,7 @@ _APP.editor = {
             // Request the server to update the group. 
             this.parent.parent.ws_control.activeWs.send( JSON.stringify( { mode:"UPDATE_ONE_SECTION", data: obj } ) );
         },
+
         add   : async function(){
             // Updates require Websockets. 
             if(!this.parent.parent.ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
@@ -346,6 +393,7 @@ _APP.editor = {
             // Request the server to add the group. 
             this.parent.parent.ws_control.activeWs.send( JSON.stringify( { mode:"ADD_ONE_SECTION", data: obj } ) );
         },
+
         remove: async function(){
             // Updates require Websockets. 
             if(!this.parent.parent.ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
@@ -382,6 +430,7 @@ _APP.editor = {
             // Request the server to remove the command.
             this.parent.parent.ws_control.activeWs.send( JSON.stringify( { mode:"REMOVE_ONE_SECTION", data: obj } ) );
         },
+
         display: async function(sId){
             let rec = this.parent.parent.commands.sections.find(d=>d.sId == sId);
             this.editor_table.id   .innerText = `sId: ${rec.sId}`;
@@ -454,20 +503,20 @@ _APP.editor = {
             this.editor_table.order.value     = ``;
         },
 
-        // TODO
         disableEditorTableActions : function(){
-            return true; 
-            console.log("disableEditorTableActions");
+            // return true; 
+            // console.log("disableEditorTableActions");
+            this.editor_table.table.classList.add("disabled");
             this.actions.add   .classList.add("disabled");
             this.actions.reset .classList.add("disabled");
             this.actions.remove.classList.add("disabled");
             this.actions.update.classList.add("disabled");
         },
 
-        // TODO
         enableEditorTableActions : function(){
-            return true; 
-            console.log("enableEditorTableActions");
+            // return true; 
+            // console.log("enableEditorTableActions");
+            this.editor_table.table.classList.remove("disabled");
             this.actions.add   .classList.remove("disabled");
             this.actions.reset .classList.remove("disabled");
             this.actions.remove.classList.remove("disabled");
@@ -553,6 +602,7 @@ _APP.editor = {
             // Request the server to remove the command.
             this.parent.parent.ws_control.activeWs.send( JSON.stringify( { mode:"REMOVE_ONE_GROUP", data: obj } ) );
         },
+
         display: async function(gId){
             let rec = this.parent.parent.commands.groups.find(d=>d.gId == gId);
             // this.editor_table.section
@@ -653,20 +703,20 @@ _APP.editor = {
             this.editor_table.order       .value     = "";
         },
 
-        // TODO
         disableEditorTableActions : function(){
-            return true; 
-            console.log("disableEditorTableActions");
+            // return true; 
+            // console.log("disableEditorTableActions");
+            this.editor_table.table.classList.add("disabled");
             this.actions.add   .classList.add("disabled");
             this.actions.reset .classList.add("disabled");
             this.actions.remove.classList.add("disabled");
             this.actions.update.classList.add("disabled");
         },
 
-        // TODO
         enableEditorTableActions : function(){
-            return true; 
-            console.log("enableEditorTableActions");
+            // return true; 
+            // console.log("enableEditorTableActions");
+            this.editor_table.table.classList.remove("disabled");
             this.actions.add   .classList.remove("disabled");
             this.actions.reset .classList.remove("disabled");
             this.actions.remove.classList.remove("disabled");
@@ -920,6 +970,11 @@ _APP.editor = {
 
             // Init the selects.
             this.selects.init();
+
+            // Disable all table actions.
+            this.sections.disableEditorTableActions();
+            this.groups.disableEditorTableActions();
+            this.commands.disableEditorTableActions();
 
             resolve();
         });

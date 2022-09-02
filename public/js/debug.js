@@ -34,7 +34,7 @@ let debug = {
     
     remove_disabled_fromAll: function(){
         let disabledElems = document.querySelectorAll(".disabled");
-        console.log(disabledElems);
+        // console.log(disabledElems);
         for(let i=0; i<disabledElems.length; i+=1){
             disabledElems[i].classList.remove("disabled");
         }
@@ -75,8 +75,14 @@ let debug = {
                 // Add event listeners to the tabs.
                 this.tabs.forEach( (tab) => tab.addEventListener("click", () => this.showOneView(tab), false) ); 
         
+                // Show the Tests1 tab and view. 
+                // this.showOneView( this.tabs[0] );
+
                 // Show the Command Editor tab and view. 
-                this.showOneView( this.tabs[1] );
+                // this.showOneView( this.tabs[1] );
+
+                // Show the Terminals tab and view. 
+                this.showOneView( this.tabs[2] );
             },
         },
         init: function(parent){

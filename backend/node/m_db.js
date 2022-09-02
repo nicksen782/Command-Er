@@ -23,7 +23,7 @@ let _MOD = {
 
                 // Add routes.
                 _APP.consolelog("addRoutes", 2);
-                _APP.addRoutes(_APP.app, _APP.express);
+                _MOD.addRoutes(_APP.app, _APP.express);
 
                 // Set the moduleLoaded flag.
                 _MOD.moduleLoaded = true;

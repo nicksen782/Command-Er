@@ -144,17 +144,88 @@ _APP.ws_control = {
 
         // SECTIONS 
 
-        // TODO
         UPDATE_ONE_SECTION: function(data){
             if(this.parent.parent.appView == "debug"){
-                console.log("UPDATE_ONE_SECTION:", data);
-                document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
+                // console.log("UPDATE_ONE_SECTION:", data);
+
+                // Replace the existing section record.
+                let index = this.parent.parent.editor.sections.findSectionIndexBy_sId(data.data.updatedRec.sId);
+                this.parent.parent.commands.sections[index] = data.data.updatedRec;
+
+                // Replace the updated group records.
+                for(let i=0; i<data.data.updatedGrps.length; i+=1){
+                    // Find the existing record's index by gId.
+                    let index = this.parent.parent.editor.groups.findGroupIndexBy_gId(data.data.updatedGrps[i].gId);
+    
+                    // Update the old record with the updated record. 
+                    this.parent.parent.commands.groups[index] = data.data.updatedGrps[i];
+                }
+
+                // Replace the updated command records.
+                for(let i=0; i<data.data.updatedCmds.length; i+=1){
+                    // Find the existing record's index by cId.
+                    let index = this.parent.parent.editor.commands.findCommandIndexBy_cId(data.data.updatedCmds[i].cId);
+    
+                    // Update the old record with the updated record. 
+                    this.parent.parent.commands.commands[index] = data.data.updatedCmds[i];
+                }
+
+                // Save the previous select values. 
+                let loaded_sId = Number(this.parent.parent.editor.selects.DOM.commandEditor["section_select"].value);
+                let loaded_gId = Number(this.parent.parent.editor.selects.DOM.commandEditor["group_select"].value);
+                let loaded_cId = Number(this.parent.parent.editor.selects.DOM.commandEditor["command_select"].value);
+
+                // Populate sections, reload the section.
+                this.parent.parent.editor.selects.populate_sections();
+                this.parent.parent.editor.selects.DOM.commandEditor["section_select"].value = loaded_sId;
+                this.parent.parent.editor.selects.sectionChange(loaded_sId);
+                
+                // Select the previous group and run groupChange.
+                this.parent.parent.editor.selects.populate_groups(loaded_sId);
+                this.parent.parent.editor.selects.DOM.commandEditor["group_select"]  .value = loaded_gId;
+                this.parent.parent.editor.selects.groupChange(loaded_gId); 
+                
+                // Select the previous command and run commandChange. 
+                this.parent.parent.editor.selects.populate_commands(loaded_gId);
+                this.parent.parent.editor.selects.DOM.commandEditor["command_select"].value = loaded_cId;
+                this.parent.parent.editor.selects.commandChange(loaded_cId); 
+            }
+        },
+        ADD_ONE_SECTION:function(data){
+            if(this.parent.parent.appView == "debug"){
+                // Server will send updated command record.
+                console.log("ADD_ONE_SECTION:", data, this.parent.parent.commands.sections);
+                
+                // Add the new record to the sections list. 
+                this.parent.parent.commands.sections.push(data.data.newRec);
+
+                // Repopulate the sections. 
+                this.parent.parent.editor.selects.populate_sections();
+
+                // Set the section to be the new section and trigger the change event. This will reset the other selects too.
+                this.parent.parent.editor.selects.DOM.commandEditor["section_select"].value = Number(data.data.newRec.sId);
+                this.parent.parent.editor.selects.DOM.commandEditor["section_select"].dispatchEvent(new Event("change")); 
+            }
+        },
+        REMOVE_ONE_SECTION:function(data){
+            if(this.parent.parent.appView == "debug"){
+                // Server will send updated command record.
+                console.log("REMOVE_ONE_SECTION:", data);
+                
+                // Find the existing record's index by gId.
+                let index = this.parent.parent.editor.sections.findSectionIndexBy_sId(data.data.removedRec.sId);
+                
+                // Remove the group from the groups list.
+                this.parent.parent.commands.sections.splice(index, 1);
+
+                // Repopulate the sections select, populate groups, clear commands. 
+                this.parent.parent.editor.selects.sectionChange();
             }
         },
 
+
         // GROUPS
 
-        // 
         UPDATE_ONE_GROUP: function(data){
             if(this.parent.parent.appView == "debug"){
                 // Server will send updated group record and updated command records.
@@ -176,7 +247,7 @@ _APP.ws_control = {
                 }
 
                 // Save the loaded cId before it gets cleared.
-                let loaded_cId = this.parent.parent.editor.selects.DOM.commandEditor["command_select"].value;
+                let loaded_cId = Number(this.parent.parent.editor.selects.DOM.commandEditor["command_select"].value);
                 
                 // Repopulate the group select.
                 this.parent.parent.editor.selects.populate_groups( data.data.updatedRec.sId );
@@ -190,8 +261,6 @@ _APP.ws_control = {
                 this.parent.parent.editor.selects.DOM.commandEditor["command_select"].dispatchEvent(new Event("change")); 
             }
         },
-
-        // 
         ADD_ONE_GROUP:function(data){
             if(this.parent.parent.appView == "debug"){
                 // Server will send updated command record.
@@ -212,8 +281,6 @@ _APP.ws_control = {
                 this.parent.parent.editor.selects.DOM.commandEditor["command_select"].dispatchEvent(new Event("change")); 
             }
         },
-
-        // TODO
         REMOVE_ONE_GROUP: function(data){
             if(this.parent.parent.appView == "debug"){
                 // Server will send updated command record.
@@ -231,7 +298,6 @@ _APP.ws_control = {
         },
 
         // COMMANDS
-        // 
         UPDATE_ONE_COMMAND: function(data){
             if(this.parent.parent.appView == "debug"){
                 // Server will send updated command record.
@@ -247,7 +313,6 @@ _APP.ws_control = {
                 this.parent.parent.editor.selects.populateSelectsBy_cId(data.data.updatedRec.cId);
             }
         },
-        // 
         ADD_ONE_COMMAND: function(data){
             if(this.parent.parent.appView == "debug"){
                 // Server will send updated command record.

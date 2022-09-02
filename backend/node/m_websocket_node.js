@@ -56,18 +56,27 @@ let _MOD = {
         _APP.addToRouteList({ path: "GET_SUBSCRIPTIONS"         , method: "ws", args: [], file: __filename, desc: "(JSON): Get list of active subscriptions." });
         _APP.addToRouteList({ path: "GET_ONE_CMD"               , method: "ws", args: [], file: __filename, desc: "(JSON): GET_ONE_CMD." });
         _APP.addToRouteList({ path: "TYPE_CMD_TO_TERM"          , method: "ws", args: [], file: __filename, desc: "(JSON): TYPE_CMD_TO_TERM." });
-        _APP.addToRouteList({ path: "UPDATE_ONE_SECTION"        , method: "ws", args: [], file: __filename, desc: "(JSON): UPDATE_ONE_SECTION." });
-        _APP.addToRouteList({ path: "UPDATE_ONE_GROUP"          , method: "ws", args: [], file: __filename, desc: "(JSON): UPDATE_ONE_GROUP." });
-        _APP.addToRouteList({ path: "UPDATE_ONE_COMMAND"        , method: "ws", args: [], file: __filename, desc: "(JSON): UPDATE_ONE_COMMAND." });
+        
+        // EDITOR: SECTION/GROUP/COMMAND
+        _APP.addToRouteList({ path: "UPDATE_ONE_SECTION" , method: "ws", args: [], file: __filename, desc: "(JSON): UPDATE_ONE_SECTION." });
+        _APP.addToRouteList({ path: "ADD_ONE_SECTION"    , method: "ws", args: [], file: __filename, desc: "(JSON): ADD_ONE_SECTION." });
+        _APP.addToRouteList({ path: "REMOVE_ONE_SECTION" , method: "ws", args: [], file: __filename, desc: "(JSON): REMOVE_ONE_SECTION." });
+        _APP.addToRouteList({ path: "UPDATE_ONE_GROUP"   , method: "ws", args: [], file: __filename, desc: "(JSON): UPDATE_ONE_GROUP." });
+        _APP.addToRouteList({ path: "ADD_ONE_GROUP"      , method: "ws", args: [], file: __filename, desc: "(JSON): ADD_ONE_GROUP." });
+        _APP.addToRouteList({ path: "REMOVE_ONE_GROUP"   , method: "ws", args: [], file: __filename, desc: "(JSON): REMOVE_ONE_GROUP." });
+        _APP.addToRouteList({ path: "UPDATE_ONE_COMMAND" , method: "ws", args: [], file: __filename, desc: "(JSON): UPDATE_ONE_COMMAND." });
+        _APP.addToRouteList({ path: "ADD_ONE_COMMAND"    , method: "ws", args: [], file: __filename, desc: "(JSON): ADD_ONE_COMMAND." });
+        _APP.addToRouteList({ path: "REMOVE_ONE_COMMAND" , method: "ws", args: [], file: __filename, desc: "(JSON): REMOVE_ONE_COMMAND." });
+        
         _APP.addToRouteList({ path: "PING"                      , method: "ws", args: [], file: __filename, desc: "(TEXT): PING." });
         _APP.addToRouteList({ path: "PROCESS_EXIT"              , method: "ws", args: [], file: __filename, desc: "(TEXT): PROCESS_EXIT." });
         _APP.addToRouteList({ path: "CLIENT_COUNT"              , method: "ws", args: [], file: __filename, desc: "(TEXT): CLIENT_COUNT." });
-        _APP.addToRouteList({ path: "SECTIONS_LIST"             , method: "ws", args: [], file: __filename, desc: "(TEXT): SECTIONS_LIST." });
         _APP.addToRouteList({ path: "CONNECTIVITY_STATUS_UPDATE", method: "ws", args: [], file: __filename, desc: "(TEXT): CONNECTIVITY_STATUS_UPDATE." });
+        _APP.addToRouteList({ path: "SECTIONS_LIST"             , method: "ws", args: [], file: __filename, desc: "(TEXT): SECTIONS_LIST." });
         _APP.addToRouteList({ path: "GROUPS_LIST"               , method: "ws", args: [], file: __filename, desc: "(TEXT): GROUPS_LIST." });
         _APP.addToRouteList({ path: "COMMANDS_LIST"             , method: "ws", args: [], file: __filename, desc: "(TEXT): COMMANDS_LIST." });
         _APP.addToRouteList({ path: "GET_DB_AS_JSON"            , method: "ws", args: [], file: __filename, desc: "(TEXT): GET_DB_AS_JSON." });
-        
+
         // ********************************************
         // HTTP routes. (Command-Er or Command-Er MINI.
         // ********************************************
@@ -257,7 +266,7 @@ let _MOD = {
                 ws.send(JSON.stringify({"mode":"GET_SUBSCRIPTIONS", "data":ws.subscriptions}));
             },
 
-            // TODO
+            // DEBUG
             GET_ONE_CMD: async function(ws, data){
                 // console.log(`mode: ${data.mode}, data:`, data.data);
                 let resp = await _MOD.queries.GET_ONE_CMD(data.data.sId, data.data.gId, data.data.cId);
@@ -270,25 +279,79 @@ let _MOD = {
             
             // SECTION UPDATE/ADD/REMOVE
 
-            // TODO:
             UPDATE_ONE_SECTION: async function(ws, data){
-                console.log(`mode: ${data.mode}, data:`, data.data);
+                // console.log(`mode: ${data.mode}, data:`, data.data);
+                
+                // Break-out the data.
                 let obj = {
-                    sId   : data.sId  ,
-                    name  : data.name ,
-                    order : data.order,
+                    sId   : data.data.sId  ,
+                    name  : data.data.updated.name ,
+                    order : data.data.updated.order,
                 };
+                
+                // Update the group in the database. 
                 let resp = await _MOD.queries.UPDATE_ONE_SECTION(obj);
-                ws.send( JSON.stringify( { "mode":"UPDATE_ONE_SECTION", "data":resp } ) );
+                
+                // Get updated commands related to this group.
+                let updatedGrps = await _MOD.queries.GET_GROUPS_IN_SECTION(obj.sId);
+                
+                // Get updated commands related to this group.
+                let updatedCmds = await _MOD.queries.GET_CMDS_IN_SECTION(obj.sId);
+                
+                // Send back the status of the request and the updated group and related commands.
+                ws.send( JSON.stringify( { 
+                    "mode":"UPDATE_ONE_SECTION", 
+                    "data":{
+                        updatedRec : await _MOD.queries.GET_ONE_SECTION(obj.sId), 
+                        updatedGrps: updatedGrps,
+                        updatedCmds: updatedCmds,
+                        _err: resp.err ? resp.err : false
+                    } 
+                } ) );
             },
-            // TODO:
-            ADD_ONE_SECTION: async function(ws, data){},
-            // TODO:
-            REMOVE_ONE_SECTION: async function(ws, data){},
+            ADD_ONE_SECTION: async function(ws, data){
+                // console.log(`mode: ${data.mode}, data:`, data.data);
+                
+                // Break-out the data.
+                let obj = {
+                    "name"    : data.data.added.name,
+                };
+
+                // Add the command to the database. 
+                let resp = await _MOD.queries.ADD_ONE_SECTION(obj);
+
+                // Send back the status of the request and the new record. 
+                ws.send( JSON.stringify( { 
+                    "mode":"ADD_ONE_SECTION", 
+                    "data":{
+                        newRec : await _MOD.queries.GET_ONE_SECTION(resp.lastID), 
+                        _err: resp.err ? resp.err : false
+                    } 
+                } ) );
+            },
+            REMOVE_ONE_SECTION: async function(ws, data){
+                // console.log(`mode: ${data.mode}, data:`, data.data);
+                
+                // Break-out the data.
+                let obj = {
+                    "sId"     : data.data.removed.sId,
+                };
+
+                // Remove the section from the database. 
+                let resp = await _MOD.queries.REMOVE_ONE_SECTION(obj);
+
+                // Send back the status of the request.
+                ws.send( JSON.stringify( { 
+                    "mode":"REMOVE_ONE_SECTION", 
+                    "data":{
+                        removedRec : obj, 
+                        _err: resp.err ? resp.err : false
+                    } 
+                } ) );
+            },
 
             // GROUP UPDATE/ADD/REMOVE
 
-            // 
             UPDATE_ONE_GROUP: async function(ws, data){
                 // console.log(`mode: ${data.mode}, data:`, data.data);
                 
@@ -316,8 +379,6 @@ let _MOD = {
                     } 
                 } ) );
             },
-
-            //.
             ADD_ONE_GROUP: async function(ws, data){
                 // console.log(`mode: ${data.mode}, data:`, data.data);
                 
@@ -340,8 +401,6 @@ let _MOD = {
                     } 
                 } ) );
             },
-
-            //
             REMOVE_ONE_GROUP: async function(ws, data){
                 // console.log(`mode: ${data.mode}, data:`, data.data);
                 
@@ -664,29 +723,6 @@ let _MOD = {
                     terms   : wsClients.global.terms.length,
                 }
             };
-            // Create the count payload. 
-            // let objText = JSON.stringify({
-            //     "mode":"CONNECTIVITY_STATUS_UPDATE",
-            //     "data":{
-            //         local:{
-            //             controls: wsClients.local.controls.length,
-            //             terms   : wsClients.local.terms.length,
-            //         },
-            //         global:{
-            //             controls: wsClients.global.controls.length,
-            //             terms   : wsClients.global.terms.length,
-            //         }
-            //     },
-            // });
-
-            // Sent the count payload to the requested control. 
-            // if(wsClients.local.controls.length){
-            //     if(wsClients.local.controls.length != 1){
-            //         console.log("ERROR: A client UUID should only have 1 control. This many were found:", wsClients.local.controls.length);
-            //         return; 
-            //     }
-            //     wsClients.local.controls[0].send(objText);
-            // }
         },
 
     },
@@ -831,6 +867,37 @@ let _MOD = {
 
     queries: {
         // VIA INTERNAL: SELECTS
+
+        GET_ONE_SECTION:function(sId){
+            return new Promise(async function(resolve,reject){
+                let q1 = {
+                    "sql" : `
+                        SELECT
+                            sections.'sId', 
+                            sections.name,
+                            sections.'order'
+                        FROM sections
+                        WHERE sId = :sId
+                        -- ORDER BY sections.name ASC
+                        ORDER BY sections.sId ASC
+                        ;`.replace(/\t/g, " ").replace(/  +/g, "  "), 
+                        "params" : { 
+                            ":sId": sId 
+                        },
+                    "type": "SELECT",
+                };
+                let results1 = await _APP.m_db.query(q1.sql, q1.params, q1.type); if(results1.err){ console.log(results1); reject(); return; }
+                
+                // There should only be one record.
+                if(results1.rows.length){ 
+                    results1 = results1.rows[0];
+                    resolve(results1);
+                }
+                else{
+                    reject(`GET_ONE_SECTION: NO RESULTS:" gId: ${sId}"`);
+                }
+            });
+        },
         GET_ONE_GROUP: function(gId){
             return new Promise(async function(resolve,reject){
                 let q2 = {
@@ -864,41 +931,6 @@ let _MOD = {
                     reject(`GET_ONE_GROUP: NO RESULTS:" gId: ${gId}"`);
                 }
             });
-        },
-        GET_CMDS_IN_GROUP: function(gId){
-            return new Promise(async function(resolve,reject){
-                let q3 = {
-                    "sql" : `
-                        SELECT
-                            commands.'cId', 
-                            commands.'sId', 
-                            commands.'gId', 
-                            sections.name AS sectionName,
-                            groups.name   AS groupName,
-                            commands.'title', 
-                            commands.'cmd', 
-                            commands.'f_ctrlc', 
-                            commands.'f_enter', 
-                            commands.'f_hidden',
-                            commands.'order'
-                        FROM commands
-                        LEFT JOIN sections ON sections.sId = commands.sId
-                        LEFT JOIN groups   ON groups.gId   = commands.gId
-                        WHERE 
-                            commands.gId = :gId
-                        ;`.replace(/\t/g, " ").replace(/  +/g, "  "), 
-                    "params" : {
-                        ":gId": gId,
-                    },
-                    "type": "SELECT",
-                };
-    
-                let results3 = await _APP.m_db.query(q3.sql, q3.params, q3.type); if(results3.err){ console.log(results3); reject(); return; }
-    
-                // There may not be records.
-                results3 = results3.rows;
-                resolve(results3);
-            })
         },
         GET_ONE_CMD: function(sId, gId, cId){
             return new Promise(async function(resolve,reject){
@@ -944,9 +976,6 @@ let _MOD = {
                 }
             })
         },
-
-        // VIA WS: SELECTS (DEBUG)
-
         SECTIONS_LIST : function(){
             return new Promise(async function(resolve,reject){
                 let q1 = {
@@ -1021,9 +1050,76 @@ let _MOD = {
                 resolve(results3);
             });
         },
+        GET_GROUPS_IN_SECTION:function(sId){
+            return new Promise(async function(resolve,reject){
+                let grps = await _MOD.queries.GROUPS_LIST();
+                grps = grps.filter(d=>d.sId==sId);
+                resolve(grps);
+            });
+        },
+        GET_CMDS_IN_SECTION:function(sId){
+            return new Promise(async function(resolve,reject){
+                let cmds = await _MOD.queries.COMMANDS_LIST();
+                cmds = cmds.filter(d=>d.sId==sId);
+                resolve(cmds);
+            });
+        },
+        GET_CMDS_IN_GROUP: function(gId){
+            return new Promise(async function(resolve,reject){
+                let q3 = {
+                    "sql" : `
+                        SELECT
+                            commands.'cId', 
+                            commands.'sId', 
+                            commands.'gId', 
+                            sections.name AS sectionName,
+                            groups.name   AS groupName,
+                            commands.'title', 
+                            commands.'cmd', 
+                            commands.'f_ctrlc', 
+                            commands.'f_enter', 
+                            commands.'f_hidden',
+                            commands.'order'
+                        FROM commands
+                        LEFT JOIN sections ON sections.sId = commands.sId
+                        LEFT JOIN groups   ON groups.gId   = commands.gId
+                        WHERE 
+                            commands.gId = :gId
+                        ;`.replace(/\t/g, " ").replace(/  +/g, "  "), 
+                    "params" : {
+                        ":gId": gId,
+                    },
+                    "type": "SELECT",
+                };
+    
+                let results3 = await _APP.m_db.query(q3.sql, q3.params, q3.type); if(results3.err){ console.log(results3); reject(); return; }
+    
+                // There may not be records.
+                results3 = results3.rows;
+                resolve(results3);
+            })
+        },
 
         // VIA ws: ADD
 
+        ADD_ONE_SECTION: function(data){
+            return new Promise(async function(resolve,reject){
+                if(!data){ reject("Missing data."); return; }
+                let q = {
+                    "sql" : `
+                        INSERT INTO 'sections' ( 'sId', 'name', 'order' )
+                        VALUES ( :sId, :name, (SELECT MAX("order") + 1 FROM 'sections') )
+                        ;`.replace(/\t/g, " ").replace(/  +/g, "  "), 
+                    "params" : {
+                        ":sId"  : null,
+                        ":name" : data.name,
+                    },
+                    "type": "INSERT",
+                };
+                let results = await _APP.m_db.query(q.sql, q.params, q.type); if(results.err){ console.log(results); reject(); return; }
+                resolve(results);
+            });
+        },
         ADD_ONE_COMMAND: function(data){
             return new Promise(async function(resolve,reject){
                 if(!data){ reject("Missing data."); return; }
@@ -1067,6 +1163,27 @@ let _MOD = {
                 resolve(results);
             });
         },
+        
+        // VIA ws: REMOVE
+        
+        REMOVE_ONE_SECTION: function(data){
+            return new Promise(async function(resolve,reject){
+                if(!data){ reject("Missing data."); return; }
+                let q = {
+                    "sql" : `
+                        DELETE FROM 'sections'
+                        WHERE 
+                            sId = :sId
+                        ;`.replace(/\t/g, " ").replace(/  +/g, "  "), 
+                    "params" : {
+                        ":sId"     : data.sId,
+                    },
+                    "type": "DELETE",
+                };
+                let results = await _APP.m_db.query(q.sql, q.params, q.type); if(results.err){ console.log(results); reject(); return; }
+                resolve(results);
+            });
+        },
         REMOVE_ONE_GROUP: function(data){
             return new Promise(async function(resolve,reject){
                 if(!data){ reject("Missing data."); return; }
@@ -1085,9 +1202,6 @@ let _MOD = {
                 resolve(results);
             });
         },
-
-        // VIA ws: REMOVE
-
         REMOVE_ONE_COMMAND: function(data){
             return new Promise(async function(resolve,reject){
                 if(!data){ reject("Missing data."); return; }
@@ -1113,34 +1227,30 @@ let _MOD = {
 
         // VIA WS: UPDATES
 
-        // TODO
         UPDATE_ONE_SECTION: function(data){
-            return new Promise(function(resolve, reject){
-                return new Promise(async function(resolve,reject){
-                    if(!data){ reject("Missing data."); return; }
-        
-                    let q = {
-                        "sql" : `
-                            UPDATE 'sections'
-                            SET
-                                "name"  = :name,
-                                "order" = :order
-                            WHERE 
-                                "sId" = :sId 
-                            ;`.replace(/\t/g, " ").replace(/  +/g, "  "), 
-                        "params" : {
-                            ":sId"   : data.sId,
-                            ":name"  : data.name,
-                            ":order" : data.order,
-                        },
-                        "type": "UPDATE",
-                    };
-                    let results = await _APP.m_db.query(q.sql, q.params, q.type); if(results.err){ console.log(results); reject(); return; }
-                    resolve();
-                });
+            return new Promise(async function(resolve,reject){
+                if(!data){ reject("Missing data."); return; }
+    
+                let q = {
+                    "sql" : `
+                        UPDATE 'sections'
+                        SET
+                            "name"  = :name,
+                            "order" = :order
+                        WHERE 
+                            "sId" = :sId 
+                        ;`.replace(/\t/g, " ").replace(/  +/g, "  "), 
+                    "params" : {
+                        ":sId"   : data.sId,
+                        ":name"  : data.name,
+                        ":order" : data.order,
+                    },
+                    "type": "UPDATE",
+                };
+                let results = await _APP.m_db.query(q.sql, q.params, q.type); if(results.err){ console.log(results); reject(); return; }
+                resolve(results);
             });
         },
-        // TODO
         UPDATE_ONE_GROUP: function(data){
             return new Promise(async function(resolve,reject){
                 if(!data){ reject("Missing data."); return; }

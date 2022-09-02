@@ -32,6 +32,14 @@ let debug = {
         _APP.ws_control.connectivity_status_update.requestUpdate();
     },
     
+    remove_disabled_fromAll: function(){
+        let disabledElems = document.querySelectorAll(".disabled");
+        console.log(disabledElems);
+        for(let i=0; i<disabledElems.length; i+=1){
+            disabledElems[i].classList.remove("disabled");
+        }
+    },
+
     // TESTS1
     tests1: {
         parent: null,

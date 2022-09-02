@@ -39,10 +39,10 @@ _APP.editor = {
             // this.showOneView( this.tabs[0] );
 
             // Show the Group Editor tab and view. 
-            // this.showOneView( this.tabs[1] );
+            this.showOneView( this.tabs[1] );
 
             // Show the Command Editor tab and view. 
-            this.showOneView( this.tabs[2] );
+            // this.showOneView( this.tabs[2] );
         },
     },
 
@@ -369,12 +369,14 @@ _APP.editor = {
             remove : null,
             update : null,
         },
+
         clearEditorTable          : function(){
             this.editor_table.id   .innerText = ``;
             this.editor_table.section.value   = "";
             this.editor_table.name .value     = ``;
             this.editor_table.order.value     = ``;
         },
+
         // TODO
         disableEditorTableActions : function(){
             return true; 
@@ -384,6 +386,7 @@ _APP.editor = {
             this.actions.remove.classList.add("disabled");
             this.actions.update.classList.add("disabled");
         },
+
         // TODO
         enableEditorTableActions : function(){
             return true; 
@@ -393,6 +396,8 @@ _APP.editor = {
             this.actions.remove.classList.remove("disabled");
             this.actions.update.classList.remove("disabled");
         },
+
+        //
         update: async function(){
             // Updates require Websockets. 
             if(!this.parent.parent.ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
@@ -411,8 +416,66 @@ _APP.editor = {
             // Request the server to update the group. 
             this.parent.parent.ws_control.activeWs.send( JSON.stringify( { mode:"UPDATE_ONE_GROUP", data: obj } ) );
         },
-        add   : async function(){},
-        remove: async function(){},
+
+        // 
+        add   : async function(){
+            // Updates require Websockets. 
+            if(!this.parent.parent.ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
+
+            let obj = {
+                // Data for the new group.
+                added: {
+                    sId   : Number(this.parent.selects.DOM.commandEditor["section_select"].value), 
+                    gId   : null, 
+                    name  : "NEW - CHANGE ME",
+                },
+            };
+
+            // Request the server to add the group. 
+            this.parent.parent.ws_control.activeWs.send( JSON.stringify( { mode:"ADD_ONE_GROUP", data: obj } ) );
+        },
+        
+        // TODO
+        remove: async function(){
+            // Updates require Websockets. 
+            if(!this.parent.parent.ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
+
+            // Get the selected gId.
+            let gId = this.parent.selects.DOM.commandEditor["group_select"].value;
+
+            // Search for commands that are associated with this gId.
+            let cmds = this.parent.parent.commands.commands.filter(d=>d.gId == gId);
+            if(cmds.length){
+                alert(
+                    `ERROR: ${cmds.length} command(s) are associated to this group.\n\n` +
+                    `You must either move those commands to other groups or delete those commands ` + 
+                    `before removing this group.`
+                );
+                return;
+            }
+
+             // Break-out the names/title for the removal confirmation. 
+             let sectionName  = this.parent.selects.DOM.commandEditor["section_select"].options[this.parent.selects.DOM.commandEditor["section_select"].selectedIndex].innerText;
+             let groupName    = this.parent.selects.DOM.commandEditor["group_select"].options[this.parent.selects.DOM.commandEditor["group_select"].selectedIndex].innerText;
+             
+             // Confirm.
+             if( !confirm(
+                 `Are you sure that you want to remove the group:\n` +
+                 ` sectionName : ${sectionName}\n` +
+                 ` groupName   : ${groupName} ?`
+             ) ){ return; }
+
+             let obj = {
+                // Ids of the record that will be removed.
+                removed: {
+                    sId : Number(this.parent.selects.DOM.commandEditor["section_select"].value), 
+                    gId : Number(this.parent.selects.DOM.commandEditor["group_select"].value), 
+                },
+            };
+
+            // Request the server to remove the command.
+            this.parent.parent.ws_control.activeWs.send( JSON.stringify( { mode:"REMOVE_ONE_GROUP", data: obj } ) );
+        },
         display: async function(gId){
             let rec = this.parent.parent.commands.groups.find(d=>d.gId == gId);
             // this.editor_table.section
@@ -463,21 +526,10 @@ _APP.editor = {
             this.createSectionSelectOptions();
             
             // Event listeners for actions. 
-            this.actions.add    .addEventListener("click", ()=> { 
-                this.add();
-            }, false);
-            
-            this.actions.reset  .addEventListener("click", ()=> {
-                this.display( Number(this.parent.selects.DOM.commandEditor.group_select.value) );
-            }, false);
-
-            this.actions.remove .addEventListener("click", ()=> { 
-                this.remove();
-            }, false);
-            
-            this.actions.update .addEventListener("click", ()=> { 
-                this.update();
-            }, false);
+            this.actions.add    .addEventListener("click", ()=> { this.add(); }, false);
+            this.actions.reset  .addEventListener("click", ()=> { this.display( Number(this.parent.selects.DOM.commandEditor.group_select.value) ); }, false);
+            this.actions.remove .addEventListener("click", ()=> { this.remove(); }, false);
+            this.actions.update .addEventListener("click", ()=> { this.update(); }, false);
         },
     },
     
@@ -625,7 +677,7 @@ _APP.editor = {
                 `Are you sure that you want to remove the command:\n` +
                 ` sectionName : ${sectionName}\n` +
                 ` groupName   : ${groupName}\n` + 
-                ` commandTitle: ${commandTitle}`
+                ` commandTitle: ${commandTitle} ?`
             ) ){ return; }
 
             // Request the server to remove the command.

@@ -160,7 +160,7 @@ _APP.ws_control = {
                 // Server will send updated group record and updated command records.
                 // console.log("UPDATE_ONE_GROUP:", data);
                 
-                // Find the existing record's index by cId.
+                // Find the existing record's index by gId.
                 let index = this.parent.parent.editor.groups.findGroupIndexBy_gId(data.data.updatedRec.gId);
     
                 // Update the old record with the updated record. 
@@ -191,11 +191,44 @@ _APP.ws_control = {
             }
         },
 
-        // TODO
-        // ADD_ONE_GROUP: function(data){},
+        // 
+        ADD_ONE_GROUP:function(data){
+            if(this.parent.parent.appView == "debug"){
+                // Server will send updated command record.
+                console.log("ADD_ONE_GROUP:", data);
+                
+                // Add the new record to the commands list. 
+                this.parent.parent.commands.groups.push(data.data.newRec);
+
+                // Repopulate the group select.
+                this.parent.parent.editor.selects.populate_groups( data.data.newRec.sId );
+
+                // Reload the group.
+                this.parent.parent.editor.selects.DOM.commandEditor["group_select"].value = data.data.newRec.gId;
+                this.parent.parent.editor.selects.DOM.commandEditor["group_select"].dispatchEvent(new Event("change")); 
+                
+                // Reload the command editor nothing.
+                this.parent.parent.editor.selects.DOM.commandEditor["command_select"].value = "";
+                this.parent.parent.editor.selects.DOM.commandEditor["command_select"].dispatchEvent(new Event("change")); 
+            }
+        },
 
         // TODO
-        // REMOVE_ONE_GROUP: function(data){},
+        REMOVE_ONE_GROUP: function(data){
+            if(this.parent.parent.appView == "debug"){
+                // Server will send updated command record.
+                console.log("REMOVE_ONE_GROUP:", data);
+                
+                // Find the existing record's index by gId.
+                let index = this.parent.parent.editor.groups.findGroupIndexBy_gId(data.data.removedRec.gId);
+                
+                // Remove the group from the groups list.
+                this.parent.parent.commands.groups.splice(index, 1);
+
+                // Repopulate the sections select, populate groups, clear commands. 
+                this.parent.parent.editor.selects.sectionChange( Number(this.parent.parent.editor.selects.DOM.commandEditor["section_select"].value) );
+            }
+        },
 
         // COMMANDS
         // 

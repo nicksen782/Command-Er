@@ -267,6 +267,9 @@ let _MOD = {
             TYPE_CMD_TO_TERM: async function(ws, data){
                 console.log(`mode: ${data.mode}, data:`, data.data);
             },
+            
+            // SECTION UPDATE/ADD/REMOVE
+
             // TODO:
             UPDATE_ONE_SECTION: async function(ws, data){
                 console.log(`mode: ${data.mode}, data:`, data.data);
@@ -279,6 +282,13 @@ let _MOD = {
                 ws.send( JSON.stringify( { "mode":"UPDATE_ONE_SECTION", "data":resp } ) );
             },
             // TODO:
+            ADD_ONE_SECTION: async function(ws, data){},
+            // TODO:
+            REMOVE_ONE_SECTION: async function(ws, data){},
+
+            // GROUP UPDATE/ADD/REMOVE
+
+            // 
             UPDATE_ONE_GROUP: async function(ws, data){
                 // console.log(`mode: ${data.mode}, data:`, data.data);
                 
@@ -307,7 +317,54 @@ let _MOD = {
                 } ) );
             },
 
+            //.
+            ADD_ONE_GROUP: async function(ws, data){
+                // console.log(`mode: ${data.mode}, data:`, data.data);
+                
+                // Break-out the data.
+                let obj = {
+                    "sId"     : data.data.added.sId,
+                    "gId"     : data.data.added.gId,
+                    "name"    : data.data.added.name,
+                };
+
+                // Add the command to the database. 
+                let resp = await _MOD.queries.ADD_ONE_GROUP(obj);
+
+                // Send back the status of the request and the new record. 
+                ws.send( JSON.stringify( { 
+                    "mode":"ADD_ONE_GROUP", 
+                    "data":{
+                        newRec : await _MOD.queries.GET_ONE_GROUP(resp.lastID), 
+                        _err: resp.err ? resp.err : false
+                    } 
+                } ) );
+            },
+
+            //
+            REMOVE_ONE_GROUP: async function(ws, data){
+                // console.log(`mode: ${data.mode}, data:`, data.data);
+                
+                // Break-out the data.
+                let obj = {
+                    "gId"     : data.data.removed.gId,
+                };
+
+                // Remove the command from the database. 
+                let resp = await _MOD.queries.REMOVE_ONE_GROUP(obj);
+
+                // Send back the status of the request.
+                ws.send( JSON.stringify( { 
+                    "mode":"REMOVE_ONE_GROUP", 
+                    "data":{
+                        removedRec : obj, 
+                        _err: resp.err ? resp.err : false
+                    } 
+                } ) );
+            },
+
             // COMMAND UPDATE/ADD/REMOVE.
+
             UPDATE_ONE_COMMAND: async function(ws, data){
                 // console.log(`mode: ${data.mode}, data:`, data.data);
                 
@@ -804,7 +861,7 @@ let _MOD = {
                     resolve(results2);
                 }
                 else{
-                    reject(`NO RESULTS:" gId: ${gId}"`);
+                    reject(`GET_ONE_GROUP: NO RESULTS:" gId: ${gId}"`);
                 }
             });
         },
@@ -838,14 +895,9 @@ let _MOD = {
     
                 let results3 = await _APP.m_db.query(q3.sql, q3.params, q3.type); if(results3.err){ console.log(results3); reject(); return; }
     
-                // There should only be one record.
-                if(results3.rows.length){ 
-                    results3 = results3.rows;
-                    resolve(results3);
-                }
-                else{
-                    reject(`NO RESULTS:" gId: ${gId}"`);
-                }
+                // There may not be records.
+                results3 = results3.rows;
+                resolve(results3);
             })
         },
         GET_ONE_CMD: function(sId, gId, cId){
@@ -888,7 +940,7 @@ let _MOD = {
                     resolve(results3);
                 }
                 else{
-                    reject(`NO RESULTS:" sId: ${sId}, gId: ${gId}, cId: ${cId}"`);
+                    reject(`GET_ONE_CMD: NO RESULTS:" sId: ${sId}, gId: ${gId}, cId: ${cId}"`);
                 }
             })
         },
@@ -996,6 +1048,46 @@ let _MOD = {
                 resolve(results);
             });
         },
+        ADD_ONE_GROUP: function(data){
+            return new Promise(async function(resolve,reject){
+                if(!data){ reject("Missing data."); return; }
+                let q = {
+                    "sql" : `
+                        INSERT INTO 'groups' ( 'gId', 'sId', 'name', 'order' )
+                        VALUES ( :gId, :sId, :name, (SELECT MAX("order") + 1 FROM 'groups') )
+                        ;`.replace(/\t/g, " ").replace(/  +/g, "  "), 
+                    "params" : {
+                        ":gId"  : null,
+                        ":sId"  : data.sId,
+                        ":name" : data.name,
+                    },
+                    "type": "INSERT",
+                };
+                let results = await _APP.m_db.query(q.sql, q.params, q.type); if(results.err){ console.log(results); reject(); return; }
+                resolve(results);
+            });
+        },
+        REMOVE_ONE_GROUP: function(data){
+            return new Promise(async function(resolve,reject){
+                if(!data){ reject("Missing data."); return; }
+                let q = {
+                    "sql" : `
+                        DELETE FROM 'groups'
+                        WHERE 
+                            gId = :gId
+                        ;`.replace(/\t/g, " ").replace(/  +/g, "  "), 
+                    "params" : {
+                        ":gId"     : data.gId,
+                    },
+                    "type": "DELETE",
+                };
+                let results = await _APP.m_db.query(q.sql, q.params, q.type); if(results.err){ console.log(results); reject(); return; }
+                resolve(results);
+            });
+        },
+
+        // VIA ws: REMOVE
+
         REMOVE_ONE_COMMAND: function(data){
             return new Promise(async function(resolve,reject){
                 if(!data){ reject("Missing data."); return; }

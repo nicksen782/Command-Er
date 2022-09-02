@@ -81,35 +81,39 @@
 							<table>
 								<tr>
 									<td>Get client count</td>
-									<td><button onclick="debug.wsClient_count();">SHOW</button></td>
+									<td><button class="disabled" onclick="debug.wsClient_count();">SHOW</button></td>
 								</tr>
 								<tr>
 									<td>Get DB as JSON</td>
-									<td><button onclick="debug.wsClient_getDbAsJSON();">SHOW</button></td>
+									<td><button class="disabled" onclick="debug.wsClient_getDbAsJSON();">SHOW</button></td>
 								</tr>
 								<tr>
 									<td>Get Sections list</td>
-									<td><button onclick="debug.wsClient_sectionsList();">SHOW</button></td>
+									<td><button class="disabled" onclick="debug.wsClient_sectionsList();">SHOW</button></td>
 								</tr>
 								<tr>
 									<td>Get Groups list</td>
-									<td><button onclick="debug.wsClient_groupsList();">SHOW</button></td>
+									<td><button class="disabled" onclick="debug.wsClient_groupsList();">SHOW</button></td>
 								</tr>
 								<tr>
 									<td>Get Commands list</td>
-									<td><button onclick="debug.wsClient_commandsList();">SHOW</button></td>
+									<td><button class="disabled" onclick="debug.wsClient_commandsList();">SHOW</button></td>
 								</tr>
 								<tr>
 									<td>Get One Command</td>
-									<td><button onclick="debug.wsClient_getOneCommand(1,1,3);">SHOW(1,1,3)</button></td>
+									<td><button class="disabled" onclick="debug.wsClient_getOneCommand(1,1,3);">SHOW(1,1,3)</button></td>
 								</tr>
 								<tr>
 									<td>Get One Command</td>
-									<td><button onclick="debug.wsClient_getOneCommand(2,3, 45);">SHOW(2,3,45)</button></td>
+									<td><button class="disabled" onclick="debug.wsClient_getOneCommand(2,3, 45);">SHOW(2,3,45)</button></td>
 								</tr>
 								<tr>
 									<td>CONNECTIVITY_STATUS_UPDATE</td>
-									<td><button onclick="debug.wsClient_connectivity_status_update();">REQUEST</button></td>
+									<td><button class="disabled" onclick="debug.wsClient_connectivity_status_update();">REQUEST</button></td>
+								</tr>
+								<tr>
+									<td>remove_disabled_fromAll</td>
+									<td><button onclick="debug.remove_disabled_fromAll();">Remove Disableds</button></td>
 								</tr>
 							</table>
 						</div>
@@ -166,14 +170,14 @@
 										<th>ACTIONS</th>   
 										<td>
 											<button id="sectionEditor_table_reset">Reset</button>
-											<button id="sectionEditor_table_remove">Remove</button>
-											<button id="sectionEditor_table_update">Update</button>
+											<button class="disabled" id="sectionEditor_table_remove">Remove</button>
+											<button class="disabled" id="sectionEditor_table_update">Update</button>
 										</td> 
 									</tr>
 									<tr> 
 										<th>ACTIONS</th>   
 										<td>
-											<button id="sectionEditor_table_add">Add New Section</button>
+											<button class="disabled" id="sectionEditor_table_add">Add New Section</button>
 										</td> 
 									</tr>
 								</table>

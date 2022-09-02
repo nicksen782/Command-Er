@@ -132,6 +132,8 @@
 									<tr>
 										<td>SECTION:</td>
 										<td><select id="commandEditor_section_select"><option value="">...Choose section</option></select></td>
+									</tr>
+									<tr>
 										<td>GROUP:</td>
 										<td><select id="commandEditor_group_select"><option value="">...Choose group</option></select></td>
 									</tr>
@@ -143,15 +145,11 @@
 							</div>
 
 							<div class="view" group="editor" id="commandEditor_view_section">
-								<table>
-									<tr>
-										<td>SECTION:</td>
-										<td><button id="sectionEditor_table_add">Add New Section</button></td>
-									</tr>
-								</table>
-								<br>
-
 								<table id="sectionEditor_table" class="table1">
+									<tr>
+										<th>TYPE:</th>
+										<td>SECTION</td>
+									</tr>
 									<tr> 
 										<th>ID:</th>         
 										<td><span  id="sectionEditor_table_id"></span></td> 
@@ -172,20 +170,22 @@
 											<button id="sectionEditor_table_update">Update</button>
 										</td> 
 									</tr>
+									<tr> 
+										<th>ACTIONS</th>   
+										<td>
+											<button id="sectionEditor_table_add">Add New Section</button>
+										</td> 
+									</tr>
 								</table>
 								<br>
 							</div>
 							
 							<div class="view" group="editor" id="commandEditor_view_group">
-								<table>
-									<tr>
-										<td>GROUP:</td>
-										<td><button id="groupEditor_table_add">Add New Group</button></td>
-									</tr>
-								</table>
-								<br>
-
 								<table id="groupEditor_table" class="table1">
+									<tr>
+										<th>TYPE:</th>
+										<td>GROUP</td>
+									</tr>
 									<tr> 
 										<th>ID:</th>         
 										<td><span  id="groupEditor_table_id"></span></td> 
@@ -210,20 +210,22 @@
 											<button id="groupEditor_table_update">Update</button>
 										</td> 
 									</tr>
+									<tr> 
+										<th>ACTIONS</th>   
+										<td>
+											<button id="groupEditor_table_add">Add New Group</button>
+										</td> 
+									</tr>
 								</table>
 								<br>
 							</div>
 							
 							<div class="view" group="editor" id="commandEditor_view_command">
-								<table>
-									<tr>
-										<td>COMMAND:</td>
-										<td><button id="commandEditor_table_add">Add New Command</button></td>
-									</tr>
-								</table>
-								<br>
-								
 								<table id="commandEditor_table" class="table1">
+									<tr>
+										<th>TYPE:</th>
+										<td>COMMAND</td>
+									</tr>
 									<tr> 
 										<th>IDs:</th>         
 										<td><span  id="commandEditor_table_ids"></span></td> 
@@ -266,7 +268,14 @@
 											<button id="commandEditor_table_update">Update</button>
 										</td> 
 									</tr>
+									<tr> 
+										<th>ACTIONS</th>   
+										<td>
+											<button id="commandEditor_table_add">Add New Command</button>
+										</td> 
+									</tr>
 								</table>
+								<br>
 							</div>
 
 						</div>

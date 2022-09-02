@@ -101,18 +101,24 @@ _APP.ws_control = {
                 // this.parent.parent.commands = data;
             }
         },
+
+        // DEBUG
         SECTIONS_LIST: function(data){
             if(this.parent.parent.appView == "debug"){
                 console.log("SECTIONS_LIST:", data);
                 document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
             }
         },
+        
+        // DEBUG
         GROUPS_LIST: function(data){
             if(this.parent.parent.appView == "debug"){
                 console.log("GROUPS_LIST:", data);
                 document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
             }
         },
+
+        // DEBUG
         COMMANDS_LIST: function(data){
             if(this.parent.parent.appView == "debug"){
                 console.log("COMMANDS_LIST:", data);
@@ -121,20 +127,23 @@ _APP.ws_control = {
         },
 
         
-        // 
+        // DEBUG
         GET_ONE_CMD: function(data){
             if(this.parent.parent.appView == "debug"){
                 console.log("GET_ONE_CMD:", data);
                 document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
             }
         },
-        // TODO
+        // DEBUG
         TYPE_CMD_TO_TERM: function(data){
             if(this.parent.parent.appView == "debug"){
                 console.log("TYPE_CMD_TO_TERM:", data);
                 document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
             }
         },
+
+        // SECTIONS 
+
         // TODO
         UPDATE_ONE_SECTION: function(data){
             if(this.parent.parent.appView == "debug"){
@@ -142,18 +151,58 @@ _APP.ws_control = {
                 document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
             }
         },
-        // TODO
+
+        // GROUPS
+
+        // 
         UPDATE_ONE_GROUP: function(data){
             if(this.parent.parent.appView == "debug"){
-                console.log("UPDATE_ONE_GROUP:", data);
-                document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
+                // Server will send updated group record and updated command records.
+                // console.log("UPDATE_ONE_GROUP:", data);
+                
+                // Find the existing record's index by cId.
+                let index = this.parent.parent.editor.groups.findGroupIndexBy_gId(data.data.updatedRec.gId);
+    
+                // Update the old record with the updated record. 
+                this.parent.parent.commands.groups[index] = data.data.updatedRec;
+
+                // Update all the commands in this group locally.
+                for(let i=0; i<data.data.updatedCmds.length; i+=1){
+                    // Find the existing record's index by cId.
+                    let index = this.parent.parent.editor.commands.findCommandIndexBy_cId(data.data.updatedCmds[i].cId);
+    
+                    // Update the old record with the updated record. 
+                    this.parent.parent.commands.commands[index] = data.data.updatedCmds[i];
+                }
+
+                // Save the loaded cId before it gets cleared.
+                let loaded_cId = this.parent.parent.editor.selects.DOM.commandEditor["command_select"].value;
+                
+                // Repopulate the group select.
+                this.parent.parent.editor.selects.populate_groups( data.data.updatedRec.sId );
+
+                // Reload the group.
+                this.parent.parent.editor.selects.DOM.commandEditor["group_select"].value = data.data.updatedRec.gId;
+                this.parent.parent.editor.selects.DOM.commandEditor["group_select"].dispatchEvent(new Event("change")); 
+                
+                // Reload the command editor with the current loaded command.
+                this.parent.parent.editor.selects.DOM.commandEditor["command_select"].value = loaded_cId;
+                this.parent.parent.editor.selects.DOM.commandEditor["command_select"].dispatchEvent(new Event("change")); 
             }
         },
+
+        // TODO
+        // ADD_ONE_GROUP: function(data){},
+
+        // TODO
+        // REMOVE_ONE_GROUP: function(data){},
+
+        // COMMANDS
         // 
         UPDATE_ONE_COMMAND: function(data){
             if(this.parent.parent.appView == "debug"){
                 // Server will send updated command record.
-                console.log("UPDATE_ONE_COMMAND:", data);
+                // console.log("UPDATE_ONE_COMMAND:", data);
                 
                 // Find the existing record's index by cId.
                 let index = this.parent.parent.editor.commands.findCommandIndexBy_cId(data.data.updatedRec.cId);

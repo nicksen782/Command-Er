@@ -280,16 +280,31 @@ let _MOD = {
             },
             // TODO:
             UPDATE_ONE_GROUP: async function(ws, data){
-                console.log(`mode: ${data.mode}, data:`, data.data);
+                // console.log(`mode: ${data.mode}, data:`, data.data);
                 
+                // Break-out the data.
                 let obj = {
-                    gId   : data.gId  ,
-                    sId   : data.sId  ,
-                    name  : data.name ,
-                    order : data.order,
+                    gId   : data.data.gId  ,
+                    sId   : data.data.updated.sId  ,
+                    name  : data.data.updated.name ,
+                    order : data.data.updated.order,
                 };
+
+                // Update the group in the database. 
                 let resp = await _MOD.queries.UPDATE_ONE_GROUP(obj);
-                ws.send( JSON.stringify( { "mode":"UPDATE_ONE_GROUP", "data":resp } ) );
+
+                // Get updated commands related to this group.
+                let updatedCmds = await _MOD.queries.GET_CMDS_IN_GROUP(obj.gId);
+                
+                // Send back the status of the request and the updated group and related commands.
+                ws.send( JSON.stringify( { 
+                    "mode":"UPDATE_ONE_GROUP", 
+                    "data":{
+                        updatedRec : await _MOD.queries.GET_ONE_GROUP(obj.gId), 
+                        updatedCmds: updatedCmds,
+                        _err: resp.err ? resp.err : false
+                    } 
+                } ) );
             },
 
             // COMMAND UPDATE/ADD/REMOVE.
@@ -759,6 +774,80 @@ let _MOD = {
 
     queries: {
         // VIA INTERNAL: SELECTS
+        GET_ONE_GROUP: function(gId){
+            return new Promise(async function(resolve,reject){
+                let q2 = {
+                    "sql" : `
+                        SELECT
+                            groups.'gId', 
+                            groups.'sId', 
+                            sections.name AS sectionName,
+                            groups.'gId', 
+                            groups.'name', 
+                            groups.'order'
+                        FROM groups
+                        LEFT JOIN sections ON sections.sId = groups.sId
+                        -- ORDER BY sections.name ASC
+                        WHERE gId = :gId
+                        ORDER BY sections.sId ASC
+                        ;`.replace(/\t/g, " ").replace(/  +/g, "  "), 
+                    "params" : { 
+                        ":gId": gId 
+                    },
+                    "type": "SELECT",
+                };
+                let results2 = await _APP.m_db.query(q2.sql, q2.params, q2.type); if(results2.err){ console.log(results2); reject(); return; }
+
+                // There should only be one record.
+                if(results2.rows.length){ 
+                    results2 = results2.rows[0];
+                    resolve(results2);
+                }
+                else{
+                    reject(`NO RESULTS:" gId: ${gId}"`);
+                }
+            });
+        },
+        GET_CMDS_IN_GROUP: function(gId){
+            return new Promise(async function(resolve,reject){
+                let q3 = {
+                    "sql" : `
+                        SELECT
+                            commands.'cId', 
+                            commands.'sId', 
+                            commands.'gId', 
+                            sections.name AS sectionName,
+                            groups.name   AS groupName,
+                            commands.'title', 
+                            commands.'cmd', 
+                            commands.'f_ctrlc', 
+                            commands.'f_enter', 
+                            commands.'f_hidden',
+                            commands.'order'
+                        FROM commands
+                        LEFT JOIN sections ON sections.sId = commands.sId
+                        LEFT JOIN groups   ON groups.gId   = commands.gId
+                        WHERE 
+                            commands.gId = :gId
+                        ;`.replace(/\t/g, " ").replace(/  +/g, "  "), 
+                    "params" : {
+                        ":gId": gId,
+                    },
+                    "type": "SELECT",
+                };
+    
+                let results3 = await _APP.m_db.query(q3.sql, q3.params, q3.type); if(results3.err){ console.log(results3); reject(); return; }
+    
+                // There should only be one record.
+                if(results3.rows.length){ 
+                    results3 = results3.rows;
+                    resolve(results3);
+                }
+                else{
+                    reject(`NO RESULTS:" gId: ${gId}"`);
+                }
+            })
+        },
         GET_ONE_CMD: function(sId, gId, cId){
             return new Promise(async function(resolve,reject){
                 let q3 = {

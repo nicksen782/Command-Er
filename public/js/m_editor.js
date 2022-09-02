@@ -2,6 +2,7 @@
 _APP.editor = {
     parent: null,
 
+    // Navigation tabs/views for the editor.
     nav: {
         parent: null,
         tabs:[],
@@ -44,6 +45,8 @@ _APP.editor = {
             this.showOneView( this.tabs[2] );
         },
     },
+
+    // Governs the select menus at the top for section/group/command.
     selects: {
         parent:null,
         DOM:{
@@ -54,22 +57,28 @@ _APP.editor = {
             commandEditor : {},
         },
 
-        // POPULATES.
+        // POPULATES. (creates options for a select menu.)
         populate_sections: function(){
             let frag = document.createDocumentFragment();
             let option;
             let count = 0;
             for(let i=0; i<this.parent.parent.commands.sections.length; i+=1){
                 let rec = this.parent.parent.commands.sections[i];
-                count +=1;
+                count += 1;
                 option = document.createElement("option");
                 option.value = `${rec.sId}`;
                 option.innerText = `(${("S:"+rec.sId)}) ${rec.name}`;
                 option.setAttribute("order", `${rec.order}`);
                 frag.append(option);
             }
+
+            // Change the text on the first option. 
             this.DOM.commandEditor["section_select"].options[0].innerText = `...Sections (${count})`;
+            
+            // Remove all options other than the first. 
             this.DOM.commandEditor["section_select"].options.length = 1;  
+            
+            // Append the new options. 
             this.DOM.commandEditor["section_select"].append(frag);
         },
         populate_groups: function(sId){
@@ -79,17 +88,21 @@ _APP.editor = {
             for(let i=0; i<this.parent.parent.commands.groups.length; i+=1){
                 let rec = this.parent.parent.commands.groups[i];
                 if(rec.sId != sId){ continue; }
-                count +=1;
-
+                count += 1;
                 option = document.createElement("option");
                 option.value = `${rec.gId}`;
-                // option.innerText = `${rec.name}`;
                 option.innerText = `(${("G:"+rec.gId)}) ${rec.name}`;
                 option.setAttribute("order", `${rec.order}`);
                 frag.append(option);
             }
+
+            // Change the text on the first option. 
             this.DOM.commandEditor["group_select"].options[0].innerText = `...Groups (${count})`;
+
+            // Remove all options other than the first. 
             this.DOM.commandEditor["group_select"].options.length = 1;  
+            
+            // Append the new options. 
             this.DOM.commandEditor["group_select"].append(frag);
         },
         populate_commands: function(gId){
@@ -101,22 +114,31 @@ _APP.editor = {
                 let rec = this.parent.parent.commands.commands[i];
                 if(rec.gId != gId){ continue; }
                 count += 1;
-
                 option = document.createElement("option");
                 option.value = `${rec.cId}`;
-                // option.innerText = `${rec.title}`;
                 option.innerText = `(${("C:"+rec.cId)}) ${rec.title}`;
                 option.setAttribute("order", `${rec.order}`);
                 frag.append(option);
             }
+
+            // Change the text on the first option. 
             this.DOM.commandEditor["command_select"].options[0].innerText = `...Commands (${count})`;
+
+            // Remove all options other than the first. 
             this.DOM.commandEditor["command_select"].options.length = 1;  
+
+            // Append the new options. 
             this.DOM.commandEditor["command_select"].append(frag);
         },
+
+        // Display a command in the command editor after selecting from the commands select menu.
         populate_command: function(cId){
             this.parent.commands.display(cId);
         },
+
+        // Populate/set section/group/command selects based on a specified cId.
         populateSelectsBy_cId: function(cId){
+            // Get the record by cId.
             let rec = this.parent.parent.commands.commands.find(d=>d.cId == cId);
 
             // Change the section select.
@@ -142,6 +164,7 @@ _APP.editor = {
                 this.populate_commands(null);
                 return; 
             }
+
             // Clear/reset group select.
             this.DOM.commandEditor["group_select"].length = 1;
             this.DOM.commandEditor["group_select"].selectedIndex = 0;
@@ -171,6 +194,7 @@ _APP.editor = {
                 this.populate_commands(null);
                 return; 
             }
+
             // Clear/reset command select.
             this.DOM.commandEditor["command_select"].length = 1;
             this.DOM.commandEditor["command_select"].selectedIndex = 0;
@@ -194,6 +218,7 @@ _APP.editor = {
                 this.parent.commands.clearEditorTable();
                 return; 
             }
+
             // Display command.
             this.populate_command(cId);
         },
@@ -243,7 +268,7 @@ _APP.editor = {
         },
     },
 
-    // TODO
+    // Section Editor
     sections: {
         parent: null,
         editor_table:{
@@ -327,7 +352,8 @@ _APP.editor = {
         },
 
     },
-    // TODO
+
+    // Group Editor
     groups: {
         parent: null,
         editor_table:{
@@ -367,7 +393,24 @@ _APP.editor = {
             this.actions.remove.classList.remove("disabled");
             this.actions.update.classList.remove("disabled");
         },
-        update: async function(){},
+        update: async function(){
+            // Updates require Websockets. 
+            if(!this.parent.parent.ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
+            let obj = {
+                // Needed to update the record. 
+                gId: Number(this.parent.selects.DOM.commandEditor["group_select"].value),
+                
+                // Data that the record will be updated with.
+                updated: {
+                    sId  : Number(this.editor_table.section.value), 
+                    name : this.editor_table.name .value,
+                    order: Number(this.editor_table.order.value),
+                },
+            };
+            
+            // Request the server to update the group. 
+            this.parent.parent.ws_control.activeWs.send( JSON.stringify( { mode:"UPDATE_ONE_GROUP", data: obj } ) );
+        },
         add   : async function(){},
         remove: async function(){},
         display: async function(gId){
@@ -380,6 +423,15 @@ _APP.editor = {
             this.editor_table.name .value     = rec.name;
             this.editor_table.order.value     = rec.order;
         },
+
+        //
+        findGroupIndexBy_gId: function(gId){
+            for(let i=0; i<this.parent.parent.commands.groups.length; i+=1){
+                if(this.parent.parent.commands.groups[i].gId == gId){ return i; }
+            }
+            return false;
+        },
+
         createSectionSelectOptions: function(){
             let frag = document.createDocumentFragment();
             let option;
@@ -412,26 +464,28 @@ _APP.editor = {
             
             // Event listeners for actions. 
             this.actions.add    .addEventListener("click", ()=> { 
-                console.log(this.add, "add - NOT READY YET"); 
+                this.add();
             }, false);
-
+            
             this.actions.reset  .addEventListener("click", ()=> {
-                console.log(this.remove, "reset - NOT READY YET"); 
-                // this.parent.selects.populate_command( Number(this.parent.selects.DOM.commandEditor.command_select.value) );
+                this.display( Number(this.parent.selects.DOM.commandEditor.group_select.value) );
             }, false);
 
             this.actions.remove .addEventListener("click", ()=> { 
-                console.log(this.remove, "remove - NOT READY YET"); 
+                this.remove();
             }, false);
-
+            
             this.actions.update .addEventListener("click", ()=> { 
-                console.log(this.remove, "update - NOT READY YET"); 
-                // this.update( Number(this.parent.selects.DOM.commandEditor.command_select.value) );
+                this.update();
             }, false);
         },
     },
+    
+    // Command Editor
     commands: {
         parent: null,
+
+        // Elements of the command editor table. 
         editor_table:{
             table       : null,
             ids         : null,
@@ -443,12 +497,16 @@ _APP.editor = {
             f_hidden    : null,
             order       : null,
         },
+
+        // Action elements of the command editor table.
         actions: {
             add    : null,
             reset  : null,
             remove : null,
             update : null,
         },
+
+        //
         clearEditorTable          : function(){
             this.editor_table.ids         .innerText = ``;
             this.editor_table.sectionGroup.value     = "";
@@ -461,6 +519,7 @@ _APP.editor = {
             this.editor_table.f_hidden    .checked   = false;
             this.editor_table.order       .value     = "";
         },
+
         // TODO
         disableEditorTableActions : function(){
             return true; 
@@ -470,6 +529,7 @@ _APP.editor = {
             this.actions.remove.classList.add("disabled");
             this.actions.update.classList.add("disabled");
         },
+
         // TODO
         enableEditorTableActions : function(){
             return true; 
@@ -479,6 +539,8 @@ _APP.editor = {
             this.actions.remove.classList.remove("disabled");
             this.actions.update.classList.remove("disabled");
         },
+
+        //
         update: async function(){
             // Updates require Websockets. 
             if(!this.parent.parent.ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
@@ -509,6 +571,8 @@ _APP.editor = {
             // console.log(obj);
             this.parent.parent.ws_control.activeWs.send( JSON.stringify( { mode:"UPDATE_ONE_COMMAND", data: obj } ) );
         },
+
+        //
         add   : async function(){
             // Updates require Websockets. 
             if(!this.parent.parent.ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
@@ -536,14 +600,14 @@ _APP.editor = {
             // Requesting the add should automatically display the new command.
             // After that, use the normal update function.
         },
+
+        //
         remove: async function(){
             // Updates require Websockets. 
             if(!this.parent.parent.ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
 
             let obj = {
-                // Needed to update the record. 
-                
-                // Data that the record will be updated with.
+                // Ids of the record that will be removed.
                 removed: {
                     cId : Number(this.parent.selects.DOM.commandEditor["command_select"].value), 
                     sId : Number(this.parent.selects.DOM.commandEditor["section_select"].value), 
@@ -551,6 +615,7 @@ _APP.editor = {
                 },
             };
 
+            // Break-out the names/title for the removal confirmation. 
             let commandTitle = this.parent.selects.DOM.commandEditor["command_select"].options[this.parent.selects.DOM.commandEditor["command_select"].selectedIndex].innerText;
             let sectionName  = this.parent.selects.DOM.commandEditor["section_select"].options[this.parent.selects.DOM.commandEditor["section_select"].selectedIndex].innerText;
             let groupName    = this.parent.selects.DOM.commandEditor["group_select"].options[this.parent.selects.DOM.commandEditor["group_select"].selectedIndex].innerText;
@@ -566,6 +631,8 @@ _APP.editor = {
             // Request the server to remove the command.
             this.parent.parent.ws_control.activeWs.send( JSON.stringify( { mode:"REMOVE_ONE_COMMAND", data: obj } ) );
         },
+
+        //
         commandSelectPopulates: function(commandRec){
             // Need to repopulate the sectionName and groupName selects.
             this.editor_table.sectionGroup.options.length = 0;
@@ -605,6 +672,8 @@ _APP.editor = {
             // Append the fragments. 
             this.editor_table.sectionGroup.append(frag_sectionGroup);
         },
+
+        //
         display: async function(cId){
             let rec = this.parent.parent.commands.commands.find(d=>d.cId == cId);
 
@@ -646,6 +715,8 @@ _APP.editor = {
             t_f_hidden   .checked   = rec.f_hidden ? true : false;
             t_order      .value     = rec.order;
         },
+
+        //
         findCommandIndexBy_cId: function(cId){
             for(let i=0; i<this.parent.parent.commands.commands.length; i+=1){
                 if(this.parent.parent.commands.commands[i].cId == cId){ return i; }
@@ -653,6 +724,7 @@ _APP.editor = {
             return false;
         },
         
+        //
         init: function(){
             // Cache the command editor table DOM.
             this.editor_table.table       = document.getElementById("commandEditor_table");
@@ -690,6 +762,7 @@ _APP.editor = {
         },
     },
 
+    // Full editor init.
     init: function(parent){
         return new Promise(async (resolve,reject)=>{
             // Set the parent object of all the first-level objects within this object. 
@@ -700,6 +773,9 @@ _APP.editor = {
             this.groups.parent   = this;
             this.commands.parent = this;
 
+            // Init the nav.
+            this.nav.init();
+
             // Section editor.
             this.sections.init();
 
@@ -709,9 +785,6 @@ _APP.editor = {
             // Command editor.
             this.commands.init();
 
-            // Init the nav.
-            this.nav.init();
-            
             // Init the selects.
             this.selects.init();
 

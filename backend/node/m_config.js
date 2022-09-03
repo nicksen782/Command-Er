@@ -9,6 +9,7 @@ let _MOD = {
 
     // File names:
     config_filename           : "public/shared/config.json",
+    configExample_filename    : "public/shared/config.json.example",
     
     // Data"
     config            : {},

@@ -58,6 +58,13 @@ _APP.ws_control = {
             if(this.parent.parent.appView == "debug"){
                 this.parent.activeWs.send( "CONNECTIVITY_STATUS_UPDATE" );
             }
+
+            // Open the first terminal.
+            let terms = this.parent.parent.terminals;
+            if(!terms.inited){
+                terms.init(this.parent.parent);
+                // terms.createNewTerminal(terms.nextTermId++, _APP.config.config.terms, 'TERM');
+            }
         },
         WELCOMEMESSAGE: function(data){
             console.log(`mode: ${data.mode}, data:`, data.data);
@@ -69,6 +76,7 @@ _APP.ws_control = {
                 this.parent.connectivity_status_update.data.local.terms     = data.data.local.terms;
                 this.parent.connectivity_status_update.data.global.controls = data.data.global.controls;
                 this.parent.connectivity_status_update.data.global.terms    = data.data.global.terms;
+                this.parent.connectivity_status_update.data.vpnStatus       = data.data.vpnCheck;
                 this.parent.connectivity_status_update.display();
             }
             catch(e){
@@ -77,6 +85,7 @@ _APP.ws_control = {
                 this.parent.connectivity_status_update.data.local.terms     = 0;
                 this.parent.connectivity_status_update.data.global.controls = 0;
                 this.parent.connectivity_status_update.data.global.terms    = 0;
+                this.parent.connectivity_status_update.data.vpnStatus       = null;
                 this.parent.connectivity_status_update.display();
             }
         },
@@ -550,6 +559,7 @@ _APP.ws_control = {
                 this.parent.connectivity_status_update.data.local.terms     = 0;
                 this.parent.connectivity_status_update.data.global.controls = 0;
                 this.parent.connectivity_status_update.data.global.terms    = 0;
+                this.parent.connectivity_status_update.data.vpnStatus       = null;
                 this.parent.connectivity_status_update.display();
             }
 
@@ -603,6 +613,7 @@ _APP.ws_control = {
                 this.parent.connectivity_status_update.data.local.terms     = 0;
                 this.parent.connectivity_status_update.data.global.controls = 0;
                 this.parent.connectivity_status_update.data.global.terms    = 0;
+                this.parent.connectivity_status_update.data.vpnStatus       = null;
                 this.parent.connectivity_status_update.display();
             }
 
@@ -734,25 +745,36 @@ _APP.ws_control = {
                 controls: 0,
                 terms: 0,
             },
+            vpnStatus: null
         },
         elems: {
             uuid  : "bottom_status2_connectionDetails_uuid",
             local : "bottom_status2_connectionDetails_local",
             global: "bottom_status2_connectionDetails_global",
+            vpnStatus    : "top_vpn_status",
+            vpn_indicator: "vpn_indicator",
         },
         display:function(){
             // DOM cache.
-            if(typeof this.elems["uuid"]   == "string"){ this.elems["uuid"]   = document.getElementById(this.elems["uuid"]);   }
-            if(typeof this.elems["local"]  == "string"){ this.elems["local"]  = document.getElementById(this.elems["local"]);  }
-            if(typeof this.elems["global"] == "string"){ this.elems["global"] = document.getElementById(this.elems["global"]); }
+            if(typeof this.elems["uuid"]      == "string"){ this.elems["uuid"]      = document.getElementById(this.elems["uuid"]);      }
+            if(typeof this.elems["local"]     == "string"){ this.elems["local"]     = document.getElementById(this.elems["local"]);     }
+            if(typeof this.elems["global"]    == "string"){ this.elems["global"]    = document.getElementById(this.elems["global"]);    }
+            if(typeof this.elems["vpnStatus"] == "string"){ this.elems["vpnStatus"] = document.getElementById(this.elems["vpnStatus"]); }
+            if(typeof this.elems["vpn_indicator"] == "string"){ this.elems["vpn_indicator"] = document.getElementById(this.elems["vpn_indicator"]); }
 
-            // if(!this.parent.activeWs){
-            //     this.elems["uuid"].innerText = "<Not Connected>";
-            //     this.elems["local"].innerText = "<Not Connected>";
-            //     this.elems["global"].innerText = "<Not Connected>";
-            //     return;
-            // }
-            // return;
+            if(this.parent.parent.config.config.connectionCheck.active){
+                // VPN setting is active so show this div. 
+                this.elems.vpnStatus.classList.add("active");
+                
+                if(this.data.vpnStatus == true){
+                    this.elems.vpn_indicator.classList.add("active");
+                    this.elems.vpn_indicator.innerText = "VPN:  ONLINE";
+                }
+                else{
+                    this.elems.vpn_indicator.classList.remove("active");
+                    this.elems.vpn_indicator.innerText = "VPN: OFFLINE";
+                }
+            }
 
             if(this.data.uuid !== 0){
                 // Update UUID.
@@ -781,7 +803,16 @@ _APP.ws_control = {
         },
         init: function(){
             return new Promise(async (resolve,reject)=>{
-                setInterval(()=> this.intervalId = this.requestUpdate(), 5000);
+                // Do maintenance tasks based on a timer. 
+                this.parent.parent.timedTasks.addTask(
+                    {
+                        name: "connectivity_status_update",
+                        delay_ms: 5000,
+                        lastRun: performance.now(),
+                        func: ()=>{ this.requestUpdate(); }
+                    }
+                );
+
                 this.inited = true; 
                 resolve();
             });

@@ -1,4 +1,95 @@
-/* #term_container{
-    width: 875px;
-    height: 450px;
-} */
+div#terms_list {
+    background-color: #ffefd5;
+    height: 2.5em;
+}
+
+div#terms_windows {
+    background-color: #ffefd5;
+    /* height: 445px; */
+}
+div.termTabElem{
+    font-family:monospace;
+}
+div.termTabElem.active{}
+
+div.termViewElem{
+    display:none;
+}
+div.termViewElem.active{
+    display:
+    block;
+    height: 550px;
+}
+div#terms_info{
+    display:none;
+}
+div#terms_info.active{
+    display:block;
+}
+
+#terminalClose {
+	background-color: crimson;
+	display: inline-block;
+	vertical-align: top;
+	border-radius: 0px;
+	border: 1px solid black;
+	font-family: monospace;
+	text-align: center;
+	line-height: 2em;
+	cursor: pointer;
+	/* padding: 5px; */
+	font-size: 1em;
+	font-weight: bold;
+	width: 2em;
+	height: 2em;
+	max-height: 2em;
+	max-width: 2em;
+	font-style: italic;
+}
+#terminalClose:hover {
+    opacity: 0.75;
+}
+#terminalRolodex_btn{
+    background-color: #3eb3ff;
+    height: 1.6em;
+    display: inline-block;
+    vertical-align: top;
+    border: 1px solid black;
+    line-height: 0.8em;
+    padding: 5px;
+    text-align: center;
+    width: 100%;
+    cursor:pointer;
+}
+#terminalRolodex_btn:hover{
+    /* background-color: #2b6f9b; */
+    /* background-color: #3eb3ff; */
+    /* background-color: #3ec4ff; */
+	opacity:0.75;
+}
+
+button#addTerm {
+    height: 2em;
+}
+
+button#addMini {
+    height: 2em;
+}
+
+select#terms_list_select {
+    height: 2em;
+    width: 150px;
+}
+
+#terms_list_table th, #terms_list_table td{
+	/* border:1px solid black; */
+}
+
+#terms_list_table td:nth-child(1){
+    width: 25%;
+}
+#terms_list_table td:nth-child(2){}
+#terms_list_table td:nth-child(3){
+    text-align: right;
+    width: 25%;
+}

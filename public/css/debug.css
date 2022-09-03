@@ -59,6 +59,39 @@ body.darken {
 .bottom_links:hover {
 	background-color: #fdff00;
 }
+#top_vpn_status{
+	background-color: rgb(101 135 149);
+	background-color: rgb(47 43 214 / 12%);
+	position: absolute;
+	top: 0px;
+	right: 160px;
+	width: 130px;
+	height: 45px;
+	color: white;
+	border-radius: 10px;
+	display: none;
+	font-family: monospace;
+	padding: 5px;
+	overflow: hidden;
+}
+#top_vpn_status.active{
+	display:block;
+}
+
+#vpn_indicator {
+	background-color: #a51430;
+	padding: 5px;
+	font-size: 16px;
+	border-radius: 10px;
+	border: 1px solid black;
+	height: 32px;
+	text-align: center;
+}
+
+#vpn_indicator.active {
+	background-color: #178817;
+}
+
 #top_status{
 	background-color: rgb(0 92 128 / 25%);
 	background-color: rgb(47 43 214 / 12%);
@@ -220,7 +253,7 @@ table#commandEditor_table th,table#commandEditor_table td{
 .views {
 }
 div#main_container {
-	background-color: rgb(60 158 192);
+	/* background-color: rgb(60 158 192); */
 	background-color: #ffefd5;
 	height: 100%;
 }

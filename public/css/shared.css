@@ -23,3 +23,6 @@ select, option{
 	pointer-events: none;
 	user-select: none;
 }
+.width100p{
+	width:100%;
+}

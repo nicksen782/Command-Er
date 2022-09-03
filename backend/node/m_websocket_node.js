@@ -2,6 +2,7 @@ const fs = require('fs');
 // const path = require('path');
 const os   = require('os');
 const WSServer = require('ws').WebSocketServer;
+const ping = require("ping");
 
 let _APP = null;
 
@@ -219,6 +220,14 @@ let _MOD = {
     // **********
     createWebSocketsServer: function(){
         _MOD.ws = new WSServer({ server: _APP.server }); 
+    },
+
+    pingCheck: function(host, timeoutMs) {
+        return new Promise(async function(resolve,reject){
+            let timeoutSec = Math.floor(timeoutMs / 1000);
+            let result = await ping.promise.probe(host, { timeout: timeoutSec, });
+            resolve(result.alive);
+        });
     },
 
     ws_statusCodes:{
@@ -546,7 +555,11 @@ let _MOD = {
 
             CONNECTIVITY_STATUS_UPDATE: async function(ws, data){
                 // console.log(`mode: ${data.mode}, data:`, data.data);
-                ws.send(JSON.stringify({"mode":"CONNECTIVITY_STATUS_UPDATE", "data":_MOD.ws_utilities.getGlobalClientCounts(ws.CONFIG.uuid) }));
+                let resp = _MOD.ws_utilities.getGlobalClientCounts(ws.CONFIG.uuid);
+                if(_APP.m_config.config.connectionCheck.active){
+                    resp.vpnCheck = await _MOD.pingCheck(_APP.m_config.config.connectionCheck.url, 1000);
+                }
+                ws.send(JSON.stringify({"mode":"CONNECTIVITY_STATUS_UPDATE", "data":resp }));
             },
 
             // DEBUG
@@ -864,9 +877,6 @@ let _MOD = {
                 }
             }
         });
-
-        // Timed function to send CONNECTIVITY_STATUS_UPDATE.
-        // setInterval(()=> _MOD.ws_utilities.getGlobalClientCounts(null) , 5000);
     },
 
     queries: {

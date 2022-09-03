@@ -28,6 +28,9 @@
 
 <body class="darken">
 	<div id="container">
+		<div id="top_vpn_status">
+			<div id="vpn_indicator"></div>
+		</div>
 		<div id="top_status">
 			<table>
 				<tr>
@@ -47,35 +50,6 @@
 
 		<div id="main" class="disconnected">
 			<div id="main_container">
-				<div id="main_connectivity">
-					<table>
-						<tr>
-							<td>WS Connect:</td>
-							<td>
-								<button id="ws_connect">Connect</button>
-								<button id="ws_disconnect">Disconnect (skipAutoReconnect)</button>
-								<button id="ws_disconnect2">Disconnect (with autoReconnect)</button>
-							</td>
-						</tr>
-						<tr>
-							<td>Change status color:</td>
-							<td>
-								<button onclick="_APP.ws_control.status.setStatusColor('pinging');">Pinging</button>
-								<button onclick="_APP.ws_control.status.setStatusColor('connecting');">Connecting</button>
-								<button onclick="_APP.ws_control.status.setStatusColor('connected');">Connected</button>
-								<button onclick="_APP.ws_control.status.setStatusColor('disconnecting');">Disconnecting</button>
-								<button onclick="_APP.ws_control.status.setStatusColor('disconnected');">Disconnected</button>
-							</td>
-						</tr>
-						<tr>
-							<td>Restart/Exit:</td>
-							<td>
-								<button onclick="debug.wsClient_restart();">process.exit()</button>
-							</td>
-						</tr>
-					</table>
-				</div>
-
 				<div class="nav">
 					<div class="nav_tab" group="top_nav" view="top_nav_view_tests1">Tests1</div>
 					<div class="nav_tab" group="top_nav" view="top_nav_view_editor">Editor</div>
@@ -84,6 +58,35 @@
 
 				<div class="views">
 					<div id="top_nav_view_tests1" group="top_nav" class="view">
+						<div id="main_connectivity">
+							<table>
+								<tr>
+									<td>WS Connect:</td>
+									<td>
+										<button id="ws_connect">Connect</button>
+										<button id="ws_disconnect">Disconnect (skipAutoReconnect)</button>
+										<button id="ws_disconnect2">Disconnect (with autoReconnect)</button>
+									</td>
+								</tr>
+								<tr>
+									<td>Change status color:</td>
+									<td>
+										<button onclick="_APP.ws_control.status.setStatusColor('pinging');">Pinging</button>
+										<button onclick="_APP.ws_control.status.setStatusColor('connecting');">Connecting</button>
+										<button onclick="_APP.ws_control.status.setStatusColor('connected');">Connected</button>
+										<button onclick="_APP.ws_control.status.setStatusColor('disconnecting');">Disconnecting</button>
+										<button onclick="_APP.ws_control.status.setStatusColor('disconnected');">Disconnected</button>
+									</td>
+								</tr>
+								<tr>
+									<td>Restart/Exit:</td>
+									<td>
+										<button onclick="debug.wsClient_restart();">process.exit()</button>
+									</td>
+								</tr>
+							</table>
+						</div>
+
 						<div id="main_views_left">
 							<table>
 								<tr>
@@ -295,11 +298,34 @@
 					<!-- TODO -->
 					<div id="top_nav_view_terms" group="top_nav" class="view">
 						<div id="terms_list">
-							terms_list
-							<button onclick="_APP.terminals.init(_APP);">init terminal</button>
+							<table id="terms_list_table" class="table2 width100p">
+								<tr>
+									<td>
+										<button class="disabled" id="addTerm" onclick="_APP.terminals.createNewTerminal(_APP.terminals.nextTermId, _APP.config.config.terms, 'TERM');">NEW TERM</button>
+										<button class="disabled" id="addMini" onclick="_APP.terminals.createNewTerminal(_APP.terminals.nextTermId, _APP.config.config.terms, 'MINI');">NEW MINI</button>
+									</td>
+
+									<td>
+										<span class="disabled" id="terminalRolodex_btn">Command Rolodex</span>
+									</td>
+									
+									<td>
+										<select class="disabled" id="terms_list_select"> <option value = "">Display info</option> </select>
+										<span id="terminalClose">X</span>
+									</td>
+								</tr>
+							</table>
 						</div>
 						<div id="terms_windows">
-							<div id="term_container"></div>
+							<div id="terms_info" class="active">
+								<br>
+								Click "NEW TERM" to open a normal terminal.
+								<br>
+								Click "NEW MINI" to open a normal terminal that can be used with Command-Er MINI.
+								<br>
+								The select menu to the right of the buttons allow you to switch to other open terminals. 
+								<br>
+							</div>
 						</div>
 					</div>
 				</div>

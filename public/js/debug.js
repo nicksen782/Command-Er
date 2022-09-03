@@ -123,6 +123,9 @@ let init = async function(){
         // Start the web socket connection. 
         _APP.ws_control.ws_utilities.initWss();
 
+        // Start the timed tasks.
+        _APP.timedTasks.init(_APP);
+
         // await _APP.terminals.init(_APP);
         
         // Set the initial status.

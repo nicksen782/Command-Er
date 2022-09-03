@@ -205,6 +205,15 @@ _APP.editor = {
             // Populate.
             this.parent.sections.display(sId);
             this.populate_groups(sId);
+
+            // Show the Section Editor tab and view. 
+            this.parent.nav.showOneView( this.parent.nav.tabs[0] );
+
+            // Show the Group Editor tab and view. 
+            // this.parent.nav.showOneView( this.parent.nav.tabs[1] );
+
+            // Show the Command Editor tab and view. 
+            // this.parent.nav.showOneView( this.parent.nav.tabs[2] );
         },
 
         groupChange:function(gId){
@@ -243,6 +252,15 @@ _APP.editor = {
 
             // Populate.
             this.populate_commands(gId);
+
+            // Show the Section Editor tab and view. 
+            // this.parent.nav.showOneView( this.parent.nav.tabs[0] );
+
+            // Show the Group Editor tab and view. 
+            this.parent.nav.showOneView( this.parent.nav.tabs[1] );
+
+            // Show the Command Editor tab and view. 
+            // this.parent.nav.showOneView( this.parent.nav.tabs[2] );
         },
 
         commandChange:function(cId){
@@ -271,6 +289,15 @@ _APP.editor = {
 
             // Display command.
             this.populate_command(cId);
+
+            // Show the Section Editor tab and view. 
+            // this.parent.nav.showOneView( this.parent.nav.tabs[0] );
+
+            // Show the Group Editor tab and view. 
+            // this.parent.nav.showOneView( this.parent.nav.tabs[1] );
+
+            // Show the Command Editor tab and view. 
+            this.parent.nav.showOneView( this.parent.nav.tabs[2] );
         },
 
         // DEFAULT SELECTIONS.

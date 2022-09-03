@@ -72,7 +72,11 @@ let _MOD = {
         // Create a new tty.
         let cp_ttyConf  = Object.assign({}, _APP.m_config.config.terms);
         cp_ttyConf.env = process.env;
-        let ttyShell = cp_ttyConf.shells["shellType"];
+        let ttyShell = cp_ttyConf.shells[ cp_ttyConf["shellType"] ];
+
+        // Set useConpty if on win32.
+        if( os.platform() == "win32" ){ cp_ttyConf["useConpty"] = true; }
+
         let tty      = Pty.spawn(ttyShell, [], cp_ttyConf );
     
         // Send data from the tty to the websocket. 

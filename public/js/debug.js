@@ -40,6 +40,47 @@ let debug = {
         }
     },
 
+    configUpdater: {
+        parent:null,
+        DOM: {
+            updateRemoteConfig_table    : "updateRemoteConfig_table",
+            updateRemoteConfig_textarea : "updateRemoteConfig_textarea",
+            updateRemoteConfig_reset    : "updateRemoteConfig_reset",
+            updateRemoteConfig_save     : "updateRemoteConfig_save",
+        },
+
+        reloadConfig: function(){
+            console.log("reloadConfig");
+            this.DOM.updateRemoteConfig_textarea.value = JSON.stringify(this.parent.config.config,null,1);
+        },
+        updateConfig: function(){
+            
+            // Make sure that the JSON is parsable.
+            try{ JSON.parse(this.DOM.updateRemoteConfig_textarea.value); }
+            catch(e){ console.log("The text is not valid JSON text."); return;  }
+
+            // Send the data.
+            _APP.ws_control.activeWs.send( JSON.stringify( { mode:"UPDATE_CONFIG", data: this.DOM.updateRemoteConfig_textarea.value } ) );
+        },
+        init: function(parent){
+            this.parent = parent;
+
+            // DOM.
+            for(let key in this.DOM){
+                if(typeof this.DOM[key] == "string"){
+                    this.DOM[key] = document.getElementById( this.DOM[key] );
+                }
+            }
+
+            // Event listeners.
+            this.DOM.updateRemoteConfig_reset.addEventListener("click", ()=>{ this.reloadConfig(); }, false);
+            this.DOM.updateRemoteConfig_save.addEventListener("click", ()=>{ this.updateConfig(); }, false);
+
+            // console.log(this.DOM);
+            this.reloadConfig();
+        },
+    },
+
     // TESTS1
     tests1: {
         parent: null,
@@ -78,11 +119,14 @@ let debug = {
                 // Show the Tests1 tab and view. 
                 // this.showOneView( this.tabs[0] );
 
-                // Show the Command Editor tab and view. 
+                // Show the configUpdater tab and view. 
                 // this.showOneView( this.tabs[1] );
-
+                
+                // Show the Command Editor tab and view. 
+                // this.showOneView( this.tabs[2] );
+                
                 // Show the Terminals tab and view. 
-                this.showOneView( this.tabs[2] );
+                this.showOneView( this.tabs[3] );
             },
         },
         init: function(parent){
@@ -106,6 +150,7 @@ let debug = {
     // UPDATE_ONE_COMMAND
     // GET_DB_AS_JSON
 };
+_APP.debug = debug;
 let init = async function(){
     return new Promise(async (resolve,reject)=>{
         // Init: http and websockets.
@@ -125,6 +170,8 @@ let init = async function(){
 
         // Start the timed tasks.
         _APP.timedTasks.init(_APP);
+
+        debug.configUpdater.init(_APP);
 
         // await _APP.terminals.init(_APP);
         

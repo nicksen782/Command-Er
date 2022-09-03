@@ -135,11 +135,7 @@ body.darken {
 	margin-bottom: 5px;
 	border-radius: 10px;
 }
-#main_connectivity{
-	min-height: 1em;
-	padding: 0.5em;
-	margin-bottom: 10px;
-}
+
 #bottom {
 	border-radius: 0px 0px 10px 10px;
 	overflow: hidden;
@@ -161,7 +157,7 @@ body.darken {
 }
 #main_views_output{
 	width: 450px;
-	height: 200px;
+	height: 420px;
 	font-family: monospace;
 	white-space: pre;
 }
@@ -215,24 +211,7 @@ div#commandEditor_sectionGroupDiv {
 .table1 th,.table1 td{
 	padding: 0.25em
 }
-table#commandEditor_table {
-	border: 1px solid black;
-	margin-left: 2em;
-	border-collapse: collapse;
-	width: calc(100% - 4em);
-}
-table#commandEditor_table th{ width:20%; }
-table#commandEditor_table td{ width:80% }
-table#commandEditor_table tr{
-	border-bottom: 1px solid black;
-}
-table#commandEditor_table th{
-	text-align: left;
-	border-right: 1px solid black;
-}
-table#commandEditor_table th,table#commandEditor_table td{
-	padding: 0.25em
-}
+
 #bottom_status2{
 	background-color: rgb(47 43 214 / 12%);
 	position: absolute;
@@ -282,3 +261,52 @@ input#commandEditor_table_title {
 input#commandEditor_table_cmd {
     width: 100%;
 }
+
+#updateRemoteConfig_div{
+    background-color: aliceblue;
+}
+#updateRemoteConfig_table{
+    width: 100%;
+}
+#updateRemoteConfig_textarea{
+    width: 100%;
+    height: 530px;
+}
+#updateRemoteConfig_reset{
+    width: 100%;
+}
+#updateRemoteConfig_save{
+    width: 100%;
+}
+
+table#sectionEditor_table,
+table#groupEditor_table,
+table#commandEditor_table {
+	border: 1px solid black;
+	margin-left: 2em;
+	border-collapse: collapse;
+	width: calc(100% - 4em);
+}
+
+table#sectionEditor_table th,
+table#groupEditor_table th,
+table#commandEditor_table th{ width:20%; }
+table#commandEditor_table td{ width:80% }
+table#commandEditor_table tr{
+	border-bottom: 1px solid black;
+}
+table#sectionEditor_table th,
+table#groupEditor_table th,
+table#commandEditor_table th{
+	text-align: left;
+	border-right: 1px solid black;
+}
+table#sectionEditor_table th,
+table#sectionEditor_table td,
+table#groupEditor_table th,
+table#groupEditor_table td,
+table#commandEditor_table th,
+table#commandEditor_table td{
+	padding: 0.25em
+}
+

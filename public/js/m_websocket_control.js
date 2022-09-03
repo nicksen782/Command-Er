@@ -135,6 +135,18 @@ _APP.ws_control = {
             }
         },
 
+        // DEBUG
+        UPDATE_CONFIG:function(data){
+            // console.log("UPDATE_CONFIG:", this.parent.parent.config.config);
+            // console.log("UPDATE_CONFIG:", data.data);
+            
+            // Save the updated data.
+            this.parent.parent.config.config = data.data;
+
+            if(this.parent.parent.appView == "debug"){
+                this.parent.parent.debug.configUpdater.DOM.updateRemoteConfig_textarea.value = JSON.stringify(data.data,null,1);
+            }
+        },
         
         // DEBUG
         GET_ONE_CMD: function(data){

@@ -285,7 +285,23 @@ let _MOD = {
             TYPE_CMD_TO_TERM: async function(ws, data){
                 console.log(`mode: ${data.mode}, data:`, data.data);
             },
-            
+            UPDATE_CONFIG: async function(ws, data){
+                // console.log(data);
+                // console.log(JSON.parse(data.data));
+                
+                // Write the updated config.json.
+                fs.writeFileSync(_APP.m_config.config_filename, data.data, {});
+
+                // Store the updated config.json.
+                _APP.m_config.config = JSON.parse(data.data);
+
+                 // Send back the updated config.json.
+                 ws.send( JSON.stringify( { 
+                    "mode":"UPDATE_CONFIG", 
+                    "data":_APP.m_config.config 
+                } ) );
+            },
+
             // SECTION UPDATE/ADD/REMOVE
 
             UPDATE_ONE_SECTION: async function(ws, data){

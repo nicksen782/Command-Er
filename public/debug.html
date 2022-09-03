@@ -51,15 +51,20 @@
 		<div id="main" class="disconnected">
 			<div id="main_container">
 				<div class="nav">
-					<div class="nav_tab" group="top_nav" view="top_nav_view_tests1">Tests1</div>
-					<div class="nav_tab" group="top_nav" view="top_nav_view_editor">Editor</div>
+					<div class="nav_tab" group="top_nav" view="top_nav_view_tests1">DEBUG</div>
+					<div class="nav_tab" group="top_nav" view="top_nav_view_configUpdater">config.json Updater</div>
+					<div class="nav_tab" group="top_nav" view="top_nav_view_editor">DB Editor</div>
 					<div class="nav_tab" group="top_nav" view="top_nav_view_terms">Terminals</div>
 				</div>
 
 				<div class="views">
 					<div id="top_nav_view_tests1" group="top_nav" class="view">
-						<div id="main_connectivity">
+						<!-- CONNECTITY AND SERVER COMMANDS -->
+						<div>
 							<table>
+								<tr>
+									<td colspan="2">CONNECTIVITY</td>
+								</tr>
 								<tr>
 									<td>WS Connect:</td>
 									<td>
@@ -78,6 +83,12 @@
 										<button onclick="_APP.ws_control.status.setStatusColor('disconnected');">Disconnected</button>
 									</td>
 								</tr>
+							</table>
+							<br>
+							<table>
+								<tr>
+									<td colspan="2">SERVER COMMANDS</td>
+								</tr>
 								<tr>
 									<td>Restart/Exit:</td>
 									<td>
@@ -85,10 +96,14 @@
 									</td>
 								</tr>
 							</table>
+							<br>
 						</div>
 
 						<div id="main_views_left">
 							<table>
+								<tr>
+									<td colspan="2">TESTS</td>
+								</tr>
 								<tr>
 									<td>Get client count</td>
 									<td><button class="disabled" onclick="debug.wsClient_count();">SHOW</button></td>
@@ -295,7 +310,6 @@
 						</div>
 					</div>
 					
-					<!-- TODO -->
 					<div id="top_nav_view_terms" group="top_nav" class="view">
 						<div id="terms_list">
 							<table id="terms_list_table" class="table2 width100p">
@@ -326,6 +340,31 @@
 								The select menu to the right of the buttons allow you to switch to other open terminals. 
 								<br>
 							</div>
+						</div>
+					</div>
+
+					<div id="top_nav_view_configUpdater" group="top_nav" class="view">
+						<div id="updateRemoteConfig_div">
+							<table id="updateRemoteConfig_table">
+								<tr>
+									<td colspan="2">
+										UPDATE CONFIG.JSON
+									</td>
+								</tr>
+								<tr>
+									<td colspan="2">
+										<textarea spellcheck="false" id="updateRemoteConfig_textarea"></textarea>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<button id="updateRemoteConfig_reset">Reset</button>
+									</td>
+									<td>
+										<button id="updateRemoteConfig_save">Save</button>
+									</td>
+								</tr>
+							</table>
 						</div>
 					</div>
 				</div>

@@ -11,7 +11,8 @@ public/shared/config.json
 
 # Database.
 backend/db/*
-backend/db/.gitkeep
+!backend/db/.gitkeep
+backend/Command-Er.db
 
 # Miscellaneous
 INFO.TXT

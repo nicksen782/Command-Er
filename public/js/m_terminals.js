@@ -111,8 +111,8 @@ _APP.terminals = {
                 funcs: {
                     parent : this,
                     obj : null,
-                    remove: function(){
-                        this.parent.removeTerminal(this.obj);
+                    removeTerm: function(fullRemoval=false){
+                        this.parent.removeTerminal(this.obj, fullRemoval);
                     },
                 },
             };
@@ -141,24 +141,45 @@ _APP.terminals = {
             this.DOM.terms_info.classList.add("active"); 
         }
     },
-    removeTerminal: function(obj){
-        // Remove the terminal select option.
+    removeTerminal: function(obj, fullRemoval=false){
+        // Get the select option of the terminal.
         let prevSelectedIndex = this.DOM.terms_list_select.selectedIndex;
         let option = this.DOM.terms_list_select.querySelector(`option[value='${obj.termId2}']`);
-        option.remove();
-        if(this.DOM.terms_list_select.options.length && prevSelectedIndex != 0){
-            this.DOM.terms_list_select.selectedIndex = prevSelectedIndex - 1;
-            let newTermId = this.DOM.terms_list_select.options[this.DOM.terms_list_select.selectedIndex].value;
-            this.switchTerminal(newTermId);
-        }
 
-        // Remove the terminal view. 
-        obj.elems.elem_view.remove();
+        // Add "(disconnected" text to the select option. 
+        option.innerText += " (disconnected)";
+        
+        // Add the disabled class to all canvases within the terminal view element. 
+        let canvases = obj.elems.elem_view.querySelectorAll("canvas");
+        canvases.forEach(d=>{
+            d.classList.add("disabled");
+        });
+        
+        // Close the ws connection of the terminal if ws is in the object. 
+        if(obj.ws){ obj.ws.close(); }
+
+        if(fullRemoval){
+            // Remove the terminal select option.
+            option.remove();
+            
+            if(this.DOM.terms_list_select.options.length && prevSelectedIndex != 0){
+                this.DOM.terms_list_select.selectedIndex = prevSelectedIndex - 1;
+                let newTermId = this.DOM.terms_list_select.options[this.DOM.terms_list_select.selectedIndex].value;
+                this.switchTerminal(newTermId);
+            }
+            
+            // Remove the terminal view. 
+            obj.elems.elem_view.remove();
+
+            // Remove all the dead terminals from the terms array.
+            // this.terms = this.terms.filter( function(d){ if(!d.REMOVEME){ return d; }; } );
+
+            // Remove this terminal from the list of terminals. 
+            this.terms = this.terms.filter( function(d){ if(d.termId2 != obj.termId2){ return d; }; } );
+        }
     },
     deactivatate_terminalViews: function(){
-        // let termTabElems  = this.DOM.terms_list.querySelectorAll(".termTabElem");
         let termViewElems = this.DOM.terms_windows.querySelectorAll(".termViewElem");
-        // for(let i=0; i<termTabElems .length; i+=1){ termTabElems[i] .classList.remove("active"); }
         for(let i=0; i<termViewElems.length; i+=1){ termViewElems[i].classList.remove("active"); }
 
         // Hide statistics view.
@@ -186,11 +207,21 @@ _APP.terminals = {
                     activeTermElem = activeTermElem[0];
                     let termId = Number(activeTermElem.getAttribute("termId"));
                     let activeTermObj = this.terms.find(d=>d.termId2 == termId);
-                    // console.log("termId        :", termId);
-                    // console.log("activeTermElem:", activeTermElem);
-                    console.log("activeTermObj :", activeTermObj);
-                    // console.log("this.terms    :", this.terms);
-                    activeTermObj.funcs.remove();
+
+                    // Term object still exists. Run it's removal method. 
+                    if(activeTermObj){
+                        activeTermObj.funcs.removeTerm(true);
+                    }
+
+                    // Term object does NOT exist. Remove it from view.
+                    else{
+                        console.log("doesn't exist.");
+
+                        this.removeTerminal({
+                            termId2:termId,
+                            activeTermElem:activeTermElem,
+                        });
+                    }
                 }
              }, false);
 
@@ -217,25 +248,27 @@ _APP.terminals = {
                                 }
                                 
                                 // Detect and remove closed websocket terms.
-                                if(this.terms[i].ws.readyState == 3){
-                                    console.log("Dead terminal", this.terms[i].termId);
+                                if(this.terms[i].ws.readyState == 3 && !this.terms[i].REMOVEME){
+                                    console.log("Found a dead terminal", this.terms[i].termId);
                                     this.terms[i].REMOVEME = true;
+                                    this.terms[i].ws.close();
                                     hasRemovals = true; 
                                 }
                             }
         
-                            // Remove dead terminals.
+                            // Partially remove dead terminals.
                             if(hasRemovals){
-                                // Determine what has been removed.
+                                // Determine what is to be removed.
                                 let toRemove = this.terms = this.terms.filter( function(d){ if(d.REMOVEME){ return d; }; } );
         
                                 // Run the removal functions for each term to remove. 
+                                // NOTE: Leaves the terminals visible until the user actually closes them. 
                                 for(let i=0; i<toRemove.length; i+=1){
-                                    toRemove[i].funcs.remove();
+                                    toRemove[i].funcs.removeTerm(false);
                                 }
         
                                 // Remove the dead terminals from the terms array.
-                                this.terms = this.terms.filter( function(d){ if(!d.REMOVEME){ return d; }; } );
+                                // this.terms = this.terms.filter( function(d){ if(!d.REMOVEME){ return d; }; } );
                             }
                         }
                     }

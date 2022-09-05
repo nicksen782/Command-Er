@@ -51,10 +51,10 @@
 		<div id="main" class="disconnected">
 			<div id="main_container">
 				<div class="nav">
-					<div class="nav_tab" group="top_nav" view="top_nav_view_tests1">DEBUG</div>
-					<div class="nav_tab" group="top_nav" view="top_nav_view_configUpdater">config.json Updater</div>
-					<div class="nav_tab" group="top_nav" view="top_nav_view_editor">DB Editor</div>
-					<div class="nav_tab" group="top_nav" view="top_nav_view_terms">Terminals</div>
+					<div class="nav_tab" id="top_nav_nav_tests1"        group="top_nav" view="top_nav_view_tests1">DEBUG</div>
+					<div class="nav_tab" id="top_nav_nav_configUpdater" group="top_nav" view="top_nav_view_configUpdater">config.json Updater</div>
+					<div class="nav_tab" id="top_nav_nav_editor"        group="top_nav" view="top_nav_view_editor">DB Editor</div>
+					<div class="nav_tab" id="top_nav_nav_terms"         group="top_nav" view="top_nav_view_terms">Terminals</div>
 				</div>
 
 				<div class="views">
@@ -320,7 +320,7 @@
 									</td>
 
 									<td>
-										<span class="disabled" id="terminalRolodex_btn">Command Rolodex</span>
+										<span class="disabled" id="terminalRolodex_btn">Click to open the Command Rolodex</span>
 									</td>
 									
 									<td>
@@ -330,6 +330,25 @@
 								</tr>
 							</table>
 						</div>
+
+						<!-- COMMAND ROLODEX -->
+						<div class="" id="terminalRolodex">
+							<table id="terminalRolodex_table1">
+								<tr>
+									<td><select id="terminalRolodex_section_select"><option value="">... Choose section</option></select></td>
+									<td><select id="terminalRolodex_group_select"><option value="">... Choose group</option></select></td>
+									<td><select id="terminalRolodex_command_select"><option value="">... Choose command</option></select></td>
+								</tr>
+							</table>
+							<table id="terminalRolodex_table2">
+								<tr>
+									<td><button id="terminalRolodex_command_edit">Edit</button></td>
+									<td><button id="terminalRolodex_command_send">Send</button></td>
+									<td><span id="terminalRolodex_command"></span></td>
+								</tr>
+							</table>
+						</div>
+
 						<div id="terms_windows">
 							<div id="terms_info" class="active">
 								<br>

@@ -13,7 +13,7 @@ _APP.ws_control = {
     autoReconnect_counter_max : 30,
     autoReconnect_id          : false,
     autoReconnect_ms          : 2000,
-    forcedDelay_ms            : 500,
+    forcedDelay_ms            : 100,
     connectivity_status_update_ms : 5000,
 
     // STATUS CODES

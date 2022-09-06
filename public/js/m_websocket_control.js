@@ -61,10 +61,7 @@ _APP.ws_control = {
 
             // Open the first terminal.
             let terms = this.parent.parent.terminals;
-            if(!terms.inited){
-                terms.init(this.parent.parent);
-                // terms.createNewTerminal(terms.nextTermId++, _APP.config.config.terms, 'TERM');
-            }
+            if(!terms.terms.length){ terms.createNewTerminal(terms.nextTermId++, _APP.config.config.terms, 'TERM'); }
         },
         WELCOMEMESSAGE: function(data){
             console.log(`mode: ${data.mode}, data:`, data.data);
@@ -96,44 +93,6 @@ _APP.ws_control = {
         UNSUBSCRIBE: function(data){
             console.log(`mode: ${data.mode}, data:`, data.data);
         },
-        CLIENT_COUNT: function(data){
-            if(this.parent.parent.appView == "debug"){
-                console.log("CLIENT_COUNT:", data);
-                document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
-            }
-        },
-
-        GET_DB_AS_JSON: function(data){
-            if(this.parent.parent.appView == "debug"){
-                console.log("GET_DB_AS_JSON:", data);
-                document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
-                // this.parent.parent.commands = data;
-            }
-        },
-
-        // DEBUG
-        SECTIONS_LIST: function(data){
-            if(this.parent.parent.appView == "debug"){
-                console.log("SECTIONS_LIST:", data);
-                document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
-            }
-        },
-        
-        // DEBUG
-        GROUPS_LIST: function(data){
-            if(this.parent.parent.appView == "debug"){
-                console.log("GROUPS_LIST:", data);
-                document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
-            }
-        },
-
-        // DEBUG
-        COMMANDS_LIST: function(data){
-            if(this.parent.parent.appView == "debug"){
-                console.log("COMMANDS_LIST:", data);
-                document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
-            }
-        },
 
         // DEBUG
         UPDATE_CONFIG:function(data){
@@ -144,25 +103,10 @@ _APP.ws_control = {
             this.parent.parent.config.config = data.data;
 
             if(this.parent.parent.appView == "debug"){
-                this.parent.parent.debug.configUpdater.DOM.updateRemoteConfig_textarea.value = JSON.stringify(data.data,null,1);
+                this.parent.parent.configUpdater.DOM.updateRemoteConfig_textarea.value = JSON.stringify(data.data,null,1);
             }
         },
         
-        // DEBUG
-        GET_ONE_CMD: function(data){
-            if(this.parent.parent.appView == "debug"){
-                console.log("GET_ONE_CMD:", data);
-                document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
-            }
-        },
-        // DEBUG
-        TYPE_CMD_TO_TERM: function(data){
-            if(this.parent.parent.appView == "debug"){
-                console.log("TYPE_CMD_TO_TERM:", data);
-                document.getElementById("main_views_output").innerHTML = JSON.stringify(data,null,1);
-            }
-        },
-
         // SECTIONS 
 
         UPDATE_ONE_SECTION: function(data){
@@ -192,23 +136,23 @@ _APP.ws_control = {
                 }
 
                 // Save the previous select values. 
-                let loaded_sId = Number(this.parent.parent.editor.selects.DOM.commandEditor["section_select"].value);
-                let loaded_gId = Number(this.parent.parent.editor.selects.DOM.commandEditor["group_select"].value);
-                let loaded_cId = Number(this.parent.parent.editor.selects.DOM.commandEditor["command_select"].value);
+                let loaded_sId = Number(this.parent.parent.editor.selects.DOM["section_select"].value);
+                let loaded_gId = Number(this.parent.parent.editor.selects.DOM["group_select"].value);
+                let loaded_cId = Number(this.parent.parent.editor.selects.DOM["command_select"].value);
 
                 // Populate sections, reload the section.
                 this.parent.parent.editor.selects.populate_sections();
-                this.parent.parent.editor.selects.DOM.commandEditor["section_select"].value = loaded_sId;
+                this.parent.parent.editor.selects.DOM["section_select"].value = loaded_sId;
                 this.parent.parent.editor.selects.sectionChange(loaded_sId);
                 
                 // Select the previous group and run groupChange.
                 this.parent.parent.editor.selects.populate_groups(loaded_sId);
-                this.parent.parent.editor.selects.DOM.commandEditor["group_select"]  .value = loaded_gId;
+                this.parent.parent.editor.selects.DOM["group_select"]  .value = loaded_gId;
                 this.parent.parent.editor.selects.groupChange(loaded_gId); 
                 
                 // Select the previous command and run commandChange. 
                 this.parent.parent.editor.selects.populate_commands(loaded_gId);
-                this.parent.parent.editor.selects.DOM.commandEditor["command_select"].value = loaded_cId;
+                this.parent.parent.editor.selects.DOM["command_select"].value = loaded_cId;
                 this.parent.parent.editor.selects.commandChange(loaded_cId); 
             }
         },
@@ -224,8 +168,8 @@ _APP.ws_control = {
                 this.parent.parent.editor.selects.populate_sections();
 
                 // Set the section to be the new section and trigger the change event. This will reset the other selects too.
-                this.parent.parent.editor.selects.DOM.commandEditor["section_select"].value = Number(data.data.newRec.sId);
-                this.parent.parent.editor.selects.DOM.commandEditor["section_select"].dispatchEvent(new Event("change")); 
+                this.parent.parent.editor.selects.DOM["section_select"].value = Number(data.data.newRec.sId);
+                this.parent.parent.editor.selects.DOM["section_select"].dispatchEvent(new Event("change")); 
             }
         },
         REMOVE_ONE_SECTION:function(data){
@@ -268,18 +212,18 @@ _APP.ws_control = {
                 }
 
                 // Save the loaded cId before it gets cleared.
-                let loaded_cId = Number(this.parent.parent.editor.selects.DOM.commandEditor["command_select"].value);
+                let loaded_cId = Number(this.parent.parent.editor.selects.DOM["command_select"].value);
                 
                 // Repopulate the group select.
                 this.parent.parent.editor.selects.populate_groups( data.data.updatedRec.sId );
 
                 // Reload the group.
-                this.parent.parent.editor.selects.DOM.commandEditor["group_select"].value = data.data.updatedRec.gId;
-                this.parent.parent.editor.selects.DOM.commandEditor["group_select"].dispatchEvent(new Event("change")); 
+                this.parent.parent.editor.selects.DOM["group_select"].value = data.data.updatedRec.gId;
+                this.parent.parent.editor.selects.DOM["group_select"].dispatchEvent(new Event("change")); 
                 
                 // Reload the command editor with the current loaded command.
-                this.parent.parent.editor.selects.DOM.commandEditor["command_select"].value = loaded_cId;
-                this.parent.parent.editor.selects.DOM.commandEditor["command_select"].dispatchEvent(new Event("change")); 
+                this.parent.parent.editor.selects.DOM["command_select"].value = loaded_cId;
+                this.parent.parent.editor.selects.DOM["command_select"].dispatchEvent(new Event("change")); 
             }
         },
         ADD_ONE_GROUP:function(data){
@@ -294,12 +238,12 @@ _APP.ws_control = {
                 this.parent.parent.editor.selects.populate_groups( data.data.newRec.sId );
 
                 // Reload the group.
-                this.parent.parent.editor.selects.DOM.commandEditor["group_select"].value = data.data.newRec.gId;
-                this.parent.parent.editor.selects.DOM.commandEditor["group_select"].dispatchEvent(new Event("change")); 
+                this.parent.parent.editor.selects.DOM["group_select"].value = data.data.newRec.gId;
+                this.parent.parent.editor.selects.DOM["group_select"].dispatchEvent(new Event("change")); 
                 
                 // Reload the command editor nothing.
-                this.parent.parent.editor.selects.DOM.commandEditor["command_select"].value = "";
-                this.parent.parent.editor.selects.DOM.commandEditor["command_select"].dispatchEvent(new Event("change")); 
+                this.parent.parent.editor.selects.DOM["command_select"].value = "";
+                this.parent.parent.editor.selects.DOM["command_select"].dispatchEvent(new Event("change")); 
             }
         },
         REMOVE_ONE_GROUP: function(data){
@@ -314,7 +258,7 @@ _APP.ws_control = {
                 this.parent.parent.commands.groups.splice(index, 1);
 
                 // Repopulate the sections select, populate groups, clear commands. 
-                this.parent.parent.editor.selects.sectionChange( Number(this.parent.parent.editor.selects.DOM.commandEditor["section_select"].value) );
+                this.parent.parent.editor.selects.sectionChange( Number(this.parent.parent.editor.selects.DOM["section_select"].value) );
             }
         },
 

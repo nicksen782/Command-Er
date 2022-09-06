@@ -147,20 +147,6 @@ body.darken {
 }
 #wsClient_count_output{
 }
-#main_views_left {
-	display: inline-block;
-	vertical-align: top;
-}
-#main_views_right{
-	display: inline-block;
-	vertical-align: top;
-}
-#main_views_output{
-	width: 450px;
-	height: 420px;
-	font-family: monospace;
-	white-space: pre;
-}
 .nav{
 	min-height: 0.5em;
 	padding: 0.25em;

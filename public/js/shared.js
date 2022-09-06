@@ -56,4 +56,11 @@ let _APP = {
             setInterval( ()=>{ this.func(); }, 1000 );
         },
     },
+
+    // Navigation and related code. (Set during main init.)
+    mainNav      : null,
+    configUpdater: null,
+    ws_control   : null, 
+    editor       : null, 
+    http         : null, 
 };

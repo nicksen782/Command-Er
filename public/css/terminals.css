@@ -136,7 +136,15 @@ div#terminalRolodex.active {
 #terminalRolodex_command{
     border: 1px solid black;
     width: 750px;
-    height: 1.2em;
+    min-height: 1.7em;
+    max-height: 1.7em;
+    height: 100%;
     display: inline-block;
-    vertical-align: text-bottom;
+    vertical-align: bottom;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    font-size: 12px;
+    font-family: monospace;
+    line-height: 1.7em;
 }

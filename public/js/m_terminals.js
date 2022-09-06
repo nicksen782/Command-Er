@@ -4,24 +4,7 @@
 _APP.terminals = {
     parent: null, 
     inited: false,
-    DOM: {
-        terms_list          : "terms_list",
-        terms_list_select   : "terms_list_select",
-        terms_windows       : "terms_windows",
-        terms_info          : "terms_info",
-        addTerm             : "addTerm",
-        addMini             : "addMini",
-        terminalClose       : "terminalClose",
-
-        // terminalRolodex_btn            : "terminalRolodex_btn",
-        // terminalRolodex                : "terminalRolodex",
-        // terminalRolodex_section_select : "terminalRolodex_section_select",
-        // terminalRolodex_group_select   : "terminalRolodex_group_select",
-        // terminalRolodex_command_select : "terminalRolodex_command_select",
-        // terminalRolodex_command        : "terminalRolodex_command",
-        // terminalRolodex_command_edit   : "terminalRolodex_command_edit",
-        // terminalRolodex_command_send   : "terminalRolodex_command_send",
-    },
+    DOM: {},
     terms: [],
     nextTermId: 1,
     
@@ -59,22 +42,13 @@ _APP.terminals = {
 
         var ws = new WebSocket(locUrl);
         ws.onopen = async (event)=> {
-            // console.log("OPEN", event);
-            // console.log("config:",_APP.config.config.terms);
-            
             const terminal    = new Terminal(config);
             const fitAddon    = new FitAddon.FitAddon();
             const attachAddon = new AttachAddon.AttachAddon(ws);
             terminal.loadAddon(fitAddon);
             terminal.loadAddon(attachAddon);
 
-            // Create the terminal tab.
-            // let elem_tab = document.createElement("div");
-            // elem_tab.classList.add("termTabElem");
-            // elem_tab.classList.add("active");
-            // elem_tab.innerText = prefix2 + newTermId.toString().padStart(3, "0");
-
-            // Create the terminal selectoption.
+            // Create the terminal select option.
             let elem_option = document.createElement("option");
             elem_option.innerText = prefix2 + newTermId.toString().padStart(3, "0");
             elem_option.value = newTermId;
@@ -90,7 +64,6 @@ _APP.terminals = {
             this.deactivatate_terminalViews();
 
             // Add the tab and the view elements (activated).
-            // this.DOM.terms_list.append(elem_tab);
             this.DOM.terms_list_select.append(elem_option);
             this.DOM.terms_list_select.value = newTermId;
             this.DOM.terms_windows.append(elem_view);
@@ -111,7 +84,6 @@ _APP.terminals = {
                     attachAddon: attachAddon,
                 },
                 elems: {
-                    // elem_tab   : elem_tab,
                     elem_option: elem_option,
                     elem_view  : elem_view,
                 },
@@ -153,14 +125,12 @@ _APP.terminals = {
         let prevSelectedIndex = this.DOM.terms_list_select.selectedIndex;
         let option = this.DOM.terms_list_select.querySelector(`option[value='${obj.termId2}']`);
 
-        // Add "(disconnected" text to the select option. 
+        // Add "(disconnected)" text to the select option. 
         option.innerText += " (disconnected)";
         
         // Add the disabled class to all canvases within the terminal view element. 
         let canvases = obj.elems.elem_view.querySelectorAll("canvas");
-        canvases.forEach(d=>{
-            d.classList.add("disabled");
-        });
+        canvases.forEach(d=>{ d.classList.add("disabled"); });
         
         // Close the ws connection of the terminal if ws is in the object. 
         if(obj.ws){ obj.ws.close(); }
@@ -169,6 +139,7 @@ _APP.terminals = {
             // Remove the terminal select option.
             option.remove();
             
+            // Switch to another terminal in the list.
             if(this.DOM.terms_list_select.options.length && prevSelectedIndex != 0){
                 this.DOM.terms_list_select.selectedIndex = prevSelectedIndex - 1;
                 let newTermId = this.DOM.terms_list_select.options[this.DOM.terms_list_select.selectedIndex].value;
@@ -177,9 +148,6 @@ _APP.terminals = {
             
             // Remove the terminal view. 
             obj.elems.elem_view.remove();
-
-            // Remove all the dead terminals from the terms array.
-            // this.terms = this.terms.filter( function(d){ if(!d.REMOVEME){ return d; }; } );
 
             // Remove this terminal from the list of terminals. 
             this.terms = this.terms.filter( function(d){ if(d.termId2 != obj.termId2){ return d; }; } );
@@ -217,19 +185,7 @@ _APP.terminals = {
 
     rolodex: {
         parent: null,
-        DOM: {
-            // Rolodex toggle button and display div:
-            terminalRolodex_btn            : "terminalRolodex_btn",
-            terminalRolodex                : "terminalRolodex",
-
-            // Rolodex selectors.
-            terminalRolodex_section_select : "terminalRolodex_section_select",
-            terminalRolodex_group_select   : "terminalRolodex_group_select",
-            terminalRolodex_command_select : "terminalRolodex_command_select",
-            terminalRolodex_command        : "terminalRolodex_command",
-            terminalRolodex_command_edit   : "terminalRolodex_command_edit",
-            terminalRolodex_command_send   : "terminalRolodex_command_send",
-        },
+        DOM: {},
 
         // Open/close the command rolodex.
         toggleTerminalRolodex     : function(){
@@ -281,6 +237,7 @@ _APP.terminals = {
             this.DOM.terminalRolodex_command_select.options.length = 1;
             this.DOM.terminalRolodex_command_select.value = "";
             this.DOM.terminalRolodex_command.innerText = "";
+            this.DOM.terminalRolodex_command.setAttribute("title", "");
         },
         populate_groups  : function(){
             // Get the currently selected sId.
@@ -310,6 +267,7 @@ _APP.terminals = {
             this.DOM.terminalRolodex_command_select.options.length = 1;
             this.DOM.terminalRolodex_command_select.value = "";
             this.DOM.terminalRolodex_command.innerText = "";
+            this.DOM.terminalRolodex_command.setAttribute("title", "");
         },
         populate_commands: function(){
             // Get the currently selected gId.
@@ -337,6 +295,7 @@ _APP.terminals = {
 
             // Clear the displayed command.
             this.DOM.terminalRolodex_command.innerText = "";
+            this.DOM.terminalRolodex_command.setAttribute("title", "");
         },
         populate_command: function(){
             // Get the currently selected cId.
@@ -344,6 +303,7 @@ _APP.terminals = {
             let rec = this.parent.parent.commands.commands.find(d=>d.cId==cId);
             if(!rec){ console.log("Command record not found:", cId); return; }
             this.DOM.terminalRolodex_command.innerText = rec.cmd;
+            this.DOM.terminalRolodex_command.setAttribute("title", rec.cmd);
         },
         populate_selects_for_specific_command: function(cId){
             let rec = this.parent.parent.commands.commands.find(d=>d.cId==cId);
@@ -379,11 +339,14 @@ _APP.terminals = {
             this.parent.parent.editor.selects.populateSelectsBy_cId(cId);
 
             // Display the DB editor view. 
-            document.getElementById("top_nav_nav_editor").click();
+            this.parent.parent.mainNav.nav.showOneView("editor");
         },
 
-        init:function(parent){
+        init:function(parent, configObj){
             this.parent = parent;
+
+            // Load from config.
+            for(let key in configObj.DOM){ this.DOM[key] = configObj.DOM[key]; }
 
             // DOM.
             for(let key in this.DOM){
@@ -412,10 +375,13 @@ _APP.terminals = {
         },
     },
 
-    init: function(parent){
+    init: function(parent, configObj){
         return new Promise(async (resolve,reject)=>{
             if(this.inited){ console.log("m_terminals has already been inited."); return; }
             this.parent = parent;
+
+            // Load from config.
+            for(let key in configObj.DOM){ this.DOM[key] = configObj.DOM[key]; }
 
             // DOM.
             for(let key in this.DOM){
@@ -451,7 +417,7 @@ _APP.terminals = {
             }, false);
 
             // Create the first terminal.
-            this.createNewTerminal(this.nextTermId, _APP.config.config.terms, "TERM");
+            // this.createNewTerminal(this.nextTermId, _APP.config.config.terms, "TERM");
 
             // Do maintenance tasks based on a timer. 
             this.parent.timedTasks.addTask(
@@ -498,7 +464,7 @@ _APP.terminals = {
             this.DOM.addMini.classList.remove("disabled");
             this.DOM.terms_list_select.classList.remove("disabled");
 
-            this.rolodex.init(this);
+            this.rolodex.init(this, configObj.rolodex);
             this.inited = true;
             resolve();
         });

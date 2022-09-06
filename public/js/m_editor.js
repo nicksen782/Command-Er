@@ -5,59 +5,57 @@ _APP.editor = {
     // Navigation tabs/views for the editor.
     nav: {
         parent: null,
-        tabs:[],
-        views:[],
+        defaultTabKey: null,
+        tabs:{},
+        views:{},
 
         hideAllViews: function(){
             // Deactivate all tabs and views. 
-            this.tabs.forEach(d=>{ d.classList.remove("active"); })
-            this.views.forEach(d=>{ d.classList.remove("active"); })
+            for(let key in this.tabs) { this.tabs[key].classList.remove("active"); }
+            for(let key in this.views){ this.views[key].classList.remove("active"); }
         },
 
-        showOneView: function(tabElem){
+        showOneView: function(tabKey){
             // Deactivate all tabs and views. 
             this.hideAllViews();
 
-            // Get the view.
-            let viewElem = document.getElementById( tabElem.getAttribute("view") ); 
+            // Get the tab and the view.
+            let tabElem  = this.tabs [ tabKey ];
+            let viewElem = this.views[ tabKey ];
 
             // Set the active class for this tab and view. 
-            tabElem.classList.add("active");
+            tabElem .classList.add("active");
             viewElem.classList.add("active");
         },
 
-        init : function(){
-            // Save the tabs and views. 
-            this.tabs =   document.querySelectorAll(`.nav_tab[group='editor']`);
-            this.views =  document.querySelectorAll(`.view[group='editor']`);
+        init : function(configObj){
+            // Load from config.
+            this.defaultTabKey = configObj.defaultTabKey;
+            for(let key in configObj.tabs){ this.tabs[key] = configObj.tabs[key]; }
+            for(let key in this.tabs){
+                if(typeof this.tabs[key] == "string"){ 
+                    this.tabs[key]  = document.getElementById( this.tabs[key] ); 
+                    this.views[key] = document.getElementById( this.tabs[key].getAttribute("view") ); 
+                }
+            }
 
             // Deactivate all tabs and views. 
             this.hideAllViews();
 
             // Add event listeners to the tabs.
-            this.tabs.forEach( (tab) => tab.addEventListener("click", () => this.showOneView(tab), false) ); 
+            for(let key in this.tabs){
+                this.tabs[key].addEventListener("click", () => this.showOneView(key), false); 
+            }
     
-            // Show the Section Editor tab and view. 
-            this.showOneView( this.tabs[0] );
-
-            // Show the Group Editor tab and view. 
-            // this.showOneView( this.tabs[1] );
-
-            // Show the Command Editor tab and view. 
-            // this.showOneView( this.tabs[2] );
+            // Show the default view.
+            this.showOneView(this.defaultTabKey);
         },
     },
 
     // Governs the select menus at the top for section/group/command.
     selects: {
         parent:null,
-        DOM:{
-            // Add objects for each section.
-            shared        : {},
-            sectionEditor : {},
-            groupEditor   : {},
-            commandEditor : {},
-        },
+        DOM:{},
 
         // POPULATES. (creates options for a select menu.)
         populate_sections: function(){
@@ -75,13 +73,13 @@ _APP.editor = {
             }
 
             // Change the text on the first option. 
-            this.DOM.commandEditor["section_select"].options[0].innerText = `...Sections (${count})`;
+            this.DOM["section_select"].options[0].innerText = `...Sections (${count})`;
             
             // Remove all options other than the first. 
-            this.DOM.commandEditor["section_select"].options.length = 1;  
+            this.DOM["section_select"].options.length = 1;  
             
             // Append the new options. 
-            this.DOM.commandEditor["section_select"].append(frag);
+            this.DOM["section_select"].append(frag);
         },
 
         populate_groups: function(sId){
@@ -100,13 +98,13 @@ _APP.editor = {
             }
 
             // Change the text on the first option. 
-            this.DOM.commandEditor["group_select"].options[0].innerText = `...Groups (${count})`;
+            this.DOM["group_select"].options[0].innerText = `...Groups (${count})`;
 
             // Remove all options other than the first. 
-            this.DOM.commandEditor["group_select"].options.length = 1;  
+            this.DOM["group_select"].options.length = 1;  
             
             // Append the new options. 
-            this.DOM.commandEditor["group_select"].append(frag);
+            this.DOM["group_select"].append(frag);
         },
 
         populate_commands: function(gId){
@@ -126,13 +124,13 @@ _APP.editor = {
             }
 
             // Change the text on the first option. 
-            this.DOM.commandEditor["command_select"].options[0].innerText = `...Commands (${count})`;
+            this.DOM["command_select"].options[0].innerText = `...Commands (${count})`;
 
             // Remove all options other than the first. 
-            this.DOM.commandEditor["command_select"].options.length = 1;  
+            this.DOM["command_select"].options.length = 1;  
 
             // Append the new options. 
-            this.DOM.commandEditor["command_select"].append(frag);
+            this.DOM["command_select"].append(frag);
         },
 
         // Display a command in the command editor after selecting from the commands select menu.
@@ -146,16 +144,16 @@ _APP.editor = {
             let rec = this.parent.parent.commands.commands.find(d=>d.cId == cId);
 
             // Change the section select.
-            this.DOM.commandEditor["section_select"].value = rec.sId;
-            this.DOM.commandEditor["section_select"].dispatchEvent(new Event("change")); 
+            this.DOM["section_select"].value = rec.sId;
+            this.DOM["section_select"].dispatchEvent(new Event("change")); 
             
             // Change the group select.
-            this.DOM.commandEditor["group_select"].value = rec.gId;
-            this.DOM.commandEditor["group_select"].dispatchEvent(new Event("change")); 
+            this.DOM["group_select"].value = rec.gId;
+            this.DOM["group_select"].dispatchEvent(new Event("change")); 
             
             // Change the command select.
-            this.DOM.commandEditor["command_select"].value = rec.cId;
-            this.DOM.commandEditor["command_select"].dispatchEvent(new Event("change")); 
+            this.DOM["command_select"].value = rec.cId;
+            this.DOM["command_select"].dispatchEvent(new Event("change")); 
         },
 
         // CHANGES.
@@ -179,13 +177,13 @@ _APP.editor = {
             }
 
             // Clear/reset group select.
-            this.DOM.commandEditor["group_select"].length = 1;
-            this.DOM.commandEditor["group_select"].selectedIndex = 0;
+            this.DOM["group_select"].length = 1;
+            this.DOM["group_select"].selectedIndex = 0;
             
             // Clear/reset command select.
-            this.DOM.commandEditor["command_select"].options[0].innerText = `...Commands`;
-            this.DOM.commandEditor["command_select"].length = 1;
-            this.DOM.commandEditor["command_select"].selectedIndex = 0;
+            this.DOM["command_select"].options[0].innerText = `...Commands`;
+            this.DOM["command_select"].length = 1;
+            this.DOM["command_select"].selectedIndex = 0;
 
             // Clear the editor tables.
             this.parent.sections.clearEditorTable();
@@ -207,13 +205,7 @@ _APP.editor = {
             this.populate_groups(sId);
 
             // Show the Section Editor tab and view. 
-            this.parent.nav.showOneView( this.parent.nav.tabs[0] );
-
-            // Show the Group Editor tab and view. 
-            // this.parent.nav.showOneView( this.parent.nav.tabs[1] );
-
-            // Show the Command Editor tab and view. 
-            // this.parent.nav.showOneView( this.parent.nav.tabs[2] );
+            this.parent.nav.showOneView( "section" );
         },
 
         groupChange:function(gId){
@@ -229,8 +221,8 @@ _APP.editor = {
             }
 
             // Clear/reset command select.
-            this.DOM.commandEditor["command_select"].length = 1;
-            this.DOM.commandEditor["command_select"].selectedIndex = 0;
+            this.DOM["command_select"].length = 1;
+            this.DOM["command_select"].selectedIndex = 0;
             
             // Clear the editor tables.
             // this.parent.sections.clearEditorTable();
@@ -253,14 +245,8 @@ _APP.editor = {
             // Populate.
             this.populate_commands(gId);
 
-            // Show the Section Editor tab and view. 
-            // this.parent.nav.showOneView( this.parent.nav.tabs[0] );
-
             // Show the Group Editor tab and view. 
-            this.parent.nav.showOneView( this.parent.nav.tabs[1] );
-
-            // Show the Command Editor tab and view. 
-            // this.parent.nav.showOneView( this.parent.nav.tabs[2] );
+            this.parent.nav.showOneView( "group" );
         },
 
         commandChange:function(cId){
@@ -290,52 +276,49 @@ _APP.editor = {
             // Display command.
             this.populate_command(cId);
 
-            // Show the Section Editor tab and view. 
-            // this.parent.nav.showOneView( this.parent.nav.tabs[0] );
-
-            // Show the Group Editor tab and view. 
-            // this.parent.nav.showOneView( this.parent.nav.tabs[1] );
-
             // Show the Command Editor tab and view. 
-            this.parent.nav.showOneView( this.parent.nav.tabs[2] );
+            this.parent.nav.showOneView( "command" );
         },
 
         // DEFAULT SELECTIONS.
         selectDefault: function(){
             // Pick the first section (if options has length > 1).
-            if(this.DOM.commandEditor["section_select"].options.length > 1){ 
-                this.DOM.commandEditor["section_select"].selectedIndex = 1; 
-                this.DOM.commandEditor["section_select"].dispatchEvent(new Event("change")); 
+            if(this.DOM["section_select"].options.length > 1){ 
+                this.DOM["section_select"].selectedIndex = 1; 
+                this.DOM["section_select"].dispatchEvent(new Event("change")); 
             }
             
             // Pick the first group (if options has length > 1).
-            if(this.DOM.commandEditor["group_select"].options.length > 1){
-                this.DOM.commandEditor["group_select"].selectedIndex = 1; 
-                this.DOM.commandEditor["group_select"].dispatchEvent(new Event("change")); 
+            if(this.DOM["group_select"].options.length > 1){
+                this.DOM["group_select"].selectedIndex = 1; 
+                this.DOM["group_select"].dispatchEvent(new Event("change")); 
             }
             
             // Pick the first command (if options has length > 1).
-            if(this.DOM.commandEditor["command_select"].options.length > 1){
-                this.DOM.commandEditor["command_select"].selectedIndex = 1; 
-                this.DOM.commandEditor["command_select"].dispatchEvent(new Event("change")); 
+            if(this.DOM["command_select"].options.length > 1){
+                this.DOM["command_select"].selectedIndex = 1; 
+                this.DOM["command_select"].dispatchEvent(new Event("change")); 
             }
         },
 
         // INIT
-        init: function(){
-            // Command Editor
-            this.DOM.commandEditor["section_select"] = document.getElementById("commandEditor_section_select");
-            this.DOM.commandEditor["group_select"]   = document.getElementById("commandEditor_group_select");
-            this.DOM.commandEditor["command_select"] = document.getElementById("commandEditor_command_select");
+        init: function(configObj){
+            // Load from config.
+            for(let key in configObj.DOM){ this.DOM[key] = configObj.DOM[key]; }
+            for(let key in this.DOM){
+                if(typeof this.DOM[key] == "string"){ 
+                    this.DOM[key]  = document.getElementById( this.DOM[key] ); 
+                }
+            }
 
             // When changing section:
-            this.DOM.commandEditor["section_select"].addEventListener("change", (ev)=>{ this.sectionChange(ev.target.value); }, false);
+            this.DOM["section_select"].addEventListener("change", (ev)=>{ this.sectionChange(ev.target.value); }, false);
 
             // When changing group:
-            this.DOM.commandEditor["group_select"]  .addEventListener("change", (ev)=>{ this.groupChange  (ev.target.value); }, false);
+            this.DOM["group_select"]  .addEventListener("change", (ev)=>{ this.groupChange  (ev.target.value); }, false);
             
             // When changing command:
-            this.DOM.commandEditor["command_select"].addEventListener("change", (ev)=>{ this.commandChange(ev.target.value); }, false);
+            this.DOM["command_select"].addEventListener("change", (ev)=>{ this.commandChange(ev.target.value); }, false);
 
             // Populate the sections select.
             this.populate_sections();
@@ -348,19 +331,8 @@ _APP.editor = {
     // Section Editor
     sections: {
         parent: null,
-        editor_table:{
-            table : null,
-            id    : null,
-            name  : null,
-            order : null,
-        },
-        actions: {
-            // Section
-            add    : null,
-            reset  : null,
-            remove : null,
-            update : null,
-        },
+        editor_table:{},
+        actions: {},
 
         clearEditorTable          : function(){
             this.editor_table.id   .innerText = ``;
@@ -393,7 +365,7 @@ _APP.editor = {
             if(!this.parent.parent.ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
             let obj = {
                 // Needed to update the record. 
-                sId: Number(this.parent.selects.DOM.commandEditor["section_select"].value),
+                sId: Number(this.parent.selects.DOM["section_select"].value),
                 
                 // Data that the record will be updated with.
                 updated: {
@@ -426,7 +398,7 @@ _APP.editor = {
             if(!this.parent.parent.ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
 
             // Get the selected sId.
-            let sId = this.parent.selects.DOM.commandEditor["section_select"].value;
+            let sId = this.parent.selects.DOM["section_select"].value;
 
             // Search for commands that are associated with this gId.
             let grps = this.parent.parent.commands.groups.filter(d=>d.sId == sId);
@@ -439,7 +411,7 @@ _APP.editor = {
             }
 
             // Break-out the names/title for the removal confirmation. 
-            let sectionName  = this.parent.selects.DOM.commandEditor["section_select"].options[this.parent.selects.DOM.commandEditor["section_select"].selectedIndex].innerText;
+            let sectionName  = this.parent.selects.DOM["section_select"].options[this.parent.selects.DOM["section_select"].selectedIndex].innerText;
             
             // Confirm.
             if( !confirm(
@@ -450,7 +422,7 @@ _APP.editor = {
             let obj = {
                 // Ids of the record that will be removed.
                 removed: {
-                    sId : Number(this.parent.selects.DOM.commandEditor["section_select"].value), 
+                    sId : Number(this.parent.selects.DOM["section_select"].value), 
                 },
             };
 
@@ -473,18 +445,12 @@ _APP.editor = {
             return false;
         },
 
-        init: function(){
-            // Cache the section editor table DOM.
-            this.editor_table.table = document.getElementById("sectionEditor_table");
-            this.editor_table.id    = document.getElementById("sectionEditor_table_id");
-            this.editor_table.name  = document.getElementById("sectionEditor_table_name");
-            this.editor_table.order = document.getElementById("sectionEditor_table_order");
-
-            // Cache the section editor action buttons. 
-            this.actions.add    = document.getElementById("sectionEditor_table_add");
-            this.actions.reset  = document.getElementById("sectionEditor_table_reset");
-            this.actions.remove = document.getElementById("sectionEditor_table_remove");
-            this.actions.update = document.getElementById("sectionEditor_table_update");
+        init: function(configObj){
+            // Load from config.
+            for(let key in configObj.editor_table){ this.editor_table[key] = configObj.editor_table[key]; }
+            for(let key in configObj.actions){ this.actions[key] = configObj.actions[key]; }
+            for(let key in this.editor_table){ if(typeof this.editor_table[key] == "string"){ this.editor_table[key] = document.getElementById( this.editor_table[key] ); } }
+            for(let key in this.actions)     { if(typeof this.actions[key]      == "string"){ this.actions[key]      = document.getElementById( this.actions[key] ); } }
 
             // Event listeners for actions. 
             this.actions.add    .addEventListener("click", ()=> { 
@@ -492,7 +458,7 @@ _APP.editor = {
             }, false);
 
             this.actions.reset  .addEventListener("click", ()=> {
-                this.display( Number(this.parent.selects.DOM.commandEditor.section_select.value) );
+                this.display( Number(this.parent.selects.DOM.section_select.value) );
             }, false);
 
             this.actions.remove .addEventListener("click", ()=> { 
@@ -509,19 +475,8 @@ _APP.editor = {
     // Group Editor
     groups: {
         parent: null,
-        editor_table:{
-            table : null,
-            id    : null,
-            name  : null,
-            order : null,
-        },
-        actions: {
-            // Section
-            add    : null,
-            reset  : null,
-            remove : null,
-            update : null,
-        },
+        editor_table:{},
+        actions: {},
 
         clearEditorTable          : function(){
             this.editor_table.id   .innerText = ``;
@@ -556,7 +511,7 @@ _APP.editor = {
             if(!this.parent.parent.ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
             let obj = {
                 // Needed to update the record. 
-                gId: Number(this.parent.selects.DOM.commandEditor["group_select"].value),
+                gId: Number(this.parent.selects.DOM["group_select"].value),
                 
                 // Data that the record will be updated with.
                 updated: {
@@ -578,7 +533,7 @@ _APP.editor = {
             let obj = {
                 // Data for the new group.
                 added: {
-                    sId   : Number(this.parent.selects.DOM.commandEditor["section_select"].value), 
+                    sId   : Number(this.parent.selects.DOM["section_select"].value), 
                     gId   : null, 
                     name  : "NEW - CHANGE ME",
                 },
@@ -594,7 +549,7 @@ _APP.editor = {
             if(!this.parent.parent.ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
 
             // Get the selected gId.
-            let gId = this.parent.selects.DOM.commandEditor["group_select"].value;
+            let gId = this.parent.selects.DOM["group_select"].value;
 
             // Search for commands that are associated with this gId.
             let cmds = this.parent.parent.commands.commands.filter(d=>d.gId == gId);
@@ -608,8 +563,8 @@ _APP.editor = {
             }
 
              // Break-out the names/title for the removal confirmation. 
-             let sectionName  = this.parent.selects.DOM.commandEditor["section_select"].options[this.parent.selects.DOM.commandEditor["section_select"].selectedIndex].innerText;
-             let groupName    = this.parent.selects.DOM.commandEditor["group_select"].options[this.parent.selects.DOM.commandEditor["group_select"].selectedIndex].innerText;
+             let sectionName  = this.parent.selects.DOM["section_select"].options[this.parent.selects.DOM["section_select"].selectedIndex].innerText;
+             let groupName    = this.parent.selects.DOM["group_select"].options[this.parent.selects.DOM["group_select"].selectedIndex].innerText;
              
              // Confirm.
              if( !confirm(
@@ -621,8 +576,8 @@ _APP.editor = {
              let obj = {
                 // Ids of the record that will be removed.
                 removed: {
-                    sId : Number(this.parent.selects.DOM.commandEditor["section_select"].value), 
-                    gId : Number(this.parent.selects.DOM.commandEditor["group_select"].value), 
+                    sId : Number(this.parent.selects.DOM["section_select"].value), 
+                    gId : Number(this.parent.selects.DOM["group_select"].value), 
                 },
             };
 
@@ -666,26 +621,19 @@ _APP.editor = {
             this.editor_table.section.append(frag);
         },
 
-        init: function(){
-            // Cache the group editor table DOM.
-            this.editor_table.table   = document.getElementById("groupEditor_table");
-            this.editor_table.id      = document.getElementById("groupEditor_table_id");
-            this.editor_table.section = document.getElementById("groupEditor_table_section");
-            this.editor_table.name    = document.getElementById("groupEditor_table_name");
-            this.editor_table.order   = document.getElementById("groupEditor_table_order");
-
-            // Cache the group editor action buttons. 
-            this.actions.add    = document.getElementById("groupEditor_table_add");
-            this.actions.reset  = document.getElementById("groupEditor_table_reset");
-            this.actions.remove = document.getElementById("groupEditor_table_remove");
-            this.actions.update = document.getElementById("groupEditor_table_update");
+        init: function(configObj){
+            // Load from config.
+            for(let key in configObj.editor_table){ this.editor_table[key] = configObj.editor_table[key]; }
+            for(let key in configObj.actions){ this.actions[key] = configObj.actions[key]; }
+            for(let key in this.editor_table){ if(typeof this.editor_table[key] == "string"){ this.editor_table[key] = document.getElementById( this.editor_table[key] ); } }
+            for(let key in this.actions)     { if(typeof this.actions[key]      == "string"){ this.actions[key]      = document.getElementById( this.actions[key] ); } }
 
             // Populate the section select menu.
             this.createSectionSelectOptions();
             
             // Event listeners for actions. 
             this.actions.add    .addEventListener("click", ()=> { this.add(); }, false);
-            this.actions.reset  .addEventListener("click", ()=> { this.display( Number(this.parent.selects.DOM.commandEditor.group_select.value) ); }, false);
+            this.actions.reset  .addEventListener("click", ()=> { this.display( Number(this.parent.selects.DOM.group_select.value) ); }, false);
             this.actions.remove .addEventListener("click", ()=> { this.remove(); }, false);
             this.actions.update .addEventListener("click", ()=> { this.update(); }, false);
         },
@@ -696,25 +644,10 @@ _APP.editor = {
         parent: null,
 
         // Elements of the command editor table. 
-        editor_table:{
-            table       : null,
-            ids         : null,
-            sectionGroup: null,
-            title       : null,
-            cmd         : null,
-            f_ctrlc     : null,
-            f_enter     : null,
-            f_hidden    : null,
-            order       : null,
-        },
+        editor_table:{},
 
         // Action elements of the command editor table.
-        actions: {
-            add    : null,
-            reset  : null,
-            remove : null,
-            update : null,
-        },
+        actions: {},
 
         //
         clearEditorTable          : function(){
@@ -755,7 +688,7 @@ _APP.editor = {
             // Updates require Websockets. 
             if(!this.parent.parent.ws_control.ws_utilities.isWsConnected()){ console.log("WS not connected."); return; }
             
-            let cId = Number(this.parent.selects.DOM.commandEditor.command_select.value);
+            let cId = Number(this.parent.selects.DOM.command_select.value);
 
             // Need to get a handle on the actual selected option for sectionGroup.
             let sectionGroup_option = this.editor_table.sectionGroup.options[this.editor_table.sectionGroup.options.selectedIndex];
@@ -792,8 +725,8 @@ _APP.editor = {
                 // Data for the new command.
                 added: {
                     cId:null,
-                    sId      : Number(this.parent.selects.DOM.commandEditor["section_select"].value), 
-                    gId      : Number(this.parent.selects.DOM.commandEditor["group_select"].value), 
+                    sId      : Number(this.parent.selects.DOM["section_select"].value), 
+                    gId      : Number(this.parent.selects.DOM["group_select"].value), 
                     title    : "NEW - CHANGE ME",
                     cmd      : "",
                     f_ctrlc  : false,
@@ -819,16 +752,16 @@ _APP.editor = {
             let obj = {
                 // Ids of the record that will be removed.
                 removed: {
-                    cId : Number(this.parent.selects.DOM.commandEditor["command_select"].value), 
-                    sId : Number(this.parent.selects.DOM.commandEditor["section_select"].value), 
-                    gId : Number(this.parent.selects.DOM.commandEditor["group_select"].value), 
+                    cId : Number(this.parent.selects.DOM["command_select"].value), 
+                    sId : Number(this.parent.selects.DOM["section_select"].value), 
+                    gId : Number(this.parent.selects.DOM["group_select"].value), 
                 },
             };
 
             // Break-out the names/title for the removal confirmation. 
-            let commandTitle = this.parent.selects.DOM.commandEditor["command_select"].options[this.parent.selects.DOM.commandEditor["command_select"].selectedIndex].innerText;
-            let sectionName  = this.parent.selects.DOM.commandEditor["section_select"].options[this.parent.selects.DOM.commandEditor["section_select"].selectedIndex].innerText;
-            let groupName    = this.parent.selects.DOM.commandEditor["group_select"].options[this.parent.selects.DOM.commandEditor["group_select"].selectedIndex].innerText;
+            let commandTitle = this.parent.selects.DOM["command_select"].options[this.parent.selects.DOM["command_select"].selectedIndex].innerText;
+            let sectionName  = this.parent.selects.DOM["section_select"].options[this.parent.selects.DOM["section_select"].selectedIndex].innerText;
+            let groupName    = this.parent.selects.DOM["group_select"].options[this.parent.selects.DOM["group_select"].selectedIndex].innerText;
             
             // Confirm.
             if( !confirm(
@@ -935,23 +868,12 @@ _APP.editor = {
         },
         
         //
-        init: function(){
-            // Cache the command editor table DOM.
-            this.editor_table.table       = document.getElementById("commandEditor_table");
-            this.editor_table.ids         = document.getElementById("commandEditor_table_ids");
-            this.editor_table.sectionGroup= document.getElementById("commandEditor_table_sectionGroup");
-            this.editor_table.title       = document.getElementById("commandEditor_table_title");
-            this.editor_table.cmd         = document.getElementById("commandEditor_table_cmd");
-            this.editor_table.f_ctrlc     = document.getElementById("commandEditor_table_f_ctrlc");
-            this.editor_table.f_enter     = document.getElementById("commandEditor_table_f_enter");
-            this.editor_table.f_hidden    = document.getElementById("commandEditor_table_f_hidden");
-            this.editor_table.order       = document.getElementById("commandEditor_table_order");
-
-            // Cache the command editor action buttons. 
-            this.actions.add    = document.getElementById("commandEditor_table_add");
-            this.actions.reset  = document.getElementById("commandEditor_table_reset");
-            this.actions.remove = document.getElementById("commandEditor_table_remove");
-            this.actions.update = document.getElementById("commandEditor_table_update");
+        init: function(configObj){
+            // Load from config.
+            for(let key in configObj.editor_table){ this.editor_table[key] = configObj.editor_table[key]; }
+            for(let key in configObj.actions){ this.actions[key] = configObj.actions[key]; }
+            for(let key in this.editor_table){ if(typeof this.editor_table[key] == "string"){ this.editor_table[key] = document.getElementById( this.editor_table[key] ); } }
+            for(let key in this.actions)     { if(typeof this.actions[key]      == "string"){ this.actions[key]      = document.getElementById( this.actions[key] ); } }
 
             // Event listeners for actions. 
             this.actions.add    .addEventListener("click", ()=> { 
@@ -959,7 +881,7 @@ _APP.editor = {
             }, false);
 
             this.actions.reset  .addEventListener("click", ()=> {
-                this.parent.selects.populate_command( Number(this.parent.selects.DOM.commandEditor.command_select.value) );
+                this.parent.selects.populate_command( Number(this.parent.selects.DOM.command_select.value) );
             }, false);
 
             this.actions.remove .addEventListener("click", ()=> { 
@@ -973,7 +895,7 @@ _APP.editor = {
     },
 
     // Full editor init.
-    init: function(parent){
+    init: function(parent, configObj){
         return new Promise(async (resolve,reject)=>{
             // Set the parent object of all the first-level objects within this object. 
             this.parent          = parent;
@@ -984,23 +906,23 @@ _APP.editor = {
             this.commands.parent = this;
 
             // Init the nav.
-            this.nav.init();
+            this.nav.init(configObj.nav);
 
             // Section editor.
-            this.sections.init();
+            this.sections.init(configObj.sections);
 
             // Group editor.
-            this.groups.init();
+            this.groups.init(configObj.groups);
 
             // Command editor.
-            this.commands.init();
+            this.commands.init(configObj.commands);
 
             // Init the selects.
-            this.selects.init();
+            this.selects.init(configObj.selects);
 
             // Disable all table actions.
             this.sections.disableEditorTableActions();
-            this.groups.disableEditorTableActions();
+            this.groups  .disableEditorTableActions();
             this.commands.disableEditorTableActions();
 
             resolve();

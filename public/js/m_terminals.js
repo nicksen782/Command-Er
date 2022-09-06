@@ -176,7 +176,7 @@ _APP.terminals = {
         
         // TODO: Need to better calculate padding/margin/border sizes.
         // Calculate the new height.
-        let newHeight = (main_cont_height - (terms_list_height+rolodex_height) - main_navs_height) - 15;
+        let newHeight = (main_cont_height - (terms_list_height+rolodex_height) - main_navs_height) - 12;
 
         // Set the new height.
         terms_windows.style.height = newHeight + "px";

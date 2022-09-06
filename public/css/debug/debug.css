@@ -223,6 +223,7 @@ div#commandEditor_sectionGroupDiv {
 div#main_container {
 	/* background-color: rgb(60 158 192); */
 	background-color: #ffefd5;
+	background-color: #5a90a5;
 	/* height: calc(100vh - 150px); */
 	height: calc(100vh - 150px);
 	/* width: calc(100vw - 30px); */
@@ -277,6 +278,7 @@ table#commandEditor_table {
 	margin-left: 2em;
 	border-collapse: collapse;
 	width: calc(100% - 4em);
+	background-color: blanchedalmond;
 }
 
 table#sectionEditor_table th,
@@ -300,3 +302,5 @@ table#commandEditor_table th,
 table#commandEditor_table td{
 	padding: 0.25em
 }
+
+

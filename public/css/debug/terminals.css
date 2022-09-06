@@ -62,7 +62,7 @@ div#terms_info.active{
     opacity: 0.75;
 }
 #terminalRolodex_btn{
-    background-color: #3eb3ff;
+    background-color: #0383b5;
     height: 1.6em;
     display: inline-block;
     vertical-align: top;
@@ -71,13 +71,14 @@ div#terms_info.active{
     padding: 5px;
     text-align: center;
     width: 100%;
-    cursor:pointer;
+    cursor:
+    pointer;
 }
 #terminalRolodex_btn:hover{
     /* background-color: #2b6f9b; */
     /* background-color: #3eb3ff; */
     /* background-color: #3ec4ff; */
-	opacity:0.75;
+    background-color: #06a0dc;opacity:0.75;
 }
 
 button#addTerm {
@@ -123,8 +124,18 @@ div#terminalRolodex.active {
 #terminalRolodex_table1{
     width: 100%;
 }
+#terminalRolodex_table1 td:nth-child(1){    width: 30%; }
+#terminalRolodex_table1 td:nth-child(2){    width: 30%; }
+#terminalRolodex_table1 td:nth-child(3){    width: 30%; }
+
 #terminalRolodex_table2{
     width: 100%;
+}
+#terminalRolodex_table2 td:nth-child(1){
+    width: 10%;
+}
+#terminalRolodex_table2 td:nth-child(2){
+    width: 90%;
 }
 #terminalRolodex_section_select{
     width: 100%;
@@ -136,19 +147,20 @@ div#terminalRolodex.active {
     width: 100%;
 }
 #terminalRolodex_command_edit{
-    width: 100%;
+    width: 45%;
 }
 #terminalRolodex_command_send{
-    width: 100%;
+    width: 45%;
 }
 #terminalRolodex_command{
-    border: 1px solid black;
-    width: 750px;
+    border: 1px solid rgb(218 209 195);
+    background-color: rgb(240 236 229);
+    /* width: 750px; */
+    /* width: 100%; */
     min-height: 1.7em;
     max-height: 1.7em;
     height: 100%;
-    display: inline-block;
-    vertical-align: bottom;
+    display: block;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;

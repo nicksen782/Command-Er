@@ -160,12 +160,34 @@ _APP.terminals = {
         // Hide statistics view.
         this.DOM.terms_info.classList.remove("active"); 
     },
+    resizeTerminalContainer: function(){
+        // Get a handle to the elements that are needed for this calculation.
+        let main_cont     = this.DOM.main_cont;
+        let main_navs     = this.DOM.main_navs;
+        let terms_list    = this.DOM.terms_list;
+        let rolodex       = this.rolodex.DOM.terminalRolodex;
+        let terms_windows = this.DOM.terms_windows;
+
+        // Get the heights.
+        let main_cont_height  = main_cont.clientHeight  || main_cont.offsetHeight  || (main_cont.getBoundingClientRect()).height;
+        let main_navs_height  = main_navs.clientHeight  || main_navs.offsetHeight  || (main_navs.getBoundingClientRect()).height;
+        let terms_list_height = terms_list.clientHeight || terms_list.offsetHeight || (terms_list.getBoundingClientRect()).height;
+        let rolodex_height    = rolodex.clientHeight    || rolodex.offsetHeight    || (rolodex.getBoundingClientRect()).height;
+        
+        // TODO: Need to better calculate padding/margin/border sizes.
+        // Calculate the new height.
+        let newHeight = (main_cont_height - (terms_list_height+rolodex_height) - main_navs_height) - 15;
+
+        // Set the new height.
+        terms_windows.style.height = newHeight + "px";
+    },
     // Refit the view but only if it is currently displayed.
     refitActiveTerms: function(){
         let activeTerm = this.getActiveTerminalData(); 
 
         if(activeTerm && activeTerm.termView.classList.contains("active")){
             if(activeTerm.termView.offsetParent != null){
+                this.resizeTerminalContainer();
                 activeTerm.obj.term.fitAddon.fit();
             }
         }
@@ -195,20 +217,23 @@ _APP.terminals = {
 
 
             // Shrink the terminal views to fit.
-            let termViewElems = this.parent.DOM.terms_windows.querySelectorAll(".termViewElem");
-            for(let i=0; i<termViewElems.length; i+=1){
-                // Get a handle to this terminal view in the DOM.
-                let term = termViewElems[i];
-
-                // If the rolodex is open then add the "smaller" class. 
-                if(rolodexIsOpen){ term.classList.add("smaller");  }
-
-                // If the rolodex is closed then remove the "smaller" class. 
-                else{ term.classList.remove("smaller");  }
-            }
-
-            // Refit the actively displayed terminals to their parents.
             this.parent.refitActiveTerms();
+
+            // // Shrink the terminal views to fit.
+            // let termViewElems = this.parent.DOM.terms_windows.querySelectorAll(".termViewElem");
+            // for(let i=0; i<termViewElems.length; i+=1){
+            //     // Get a handle to this terminal view in the DOM.
+            //     let term = termViewElems[i];
+
+            //     // If the rolodex is open then add the "smaller" class. 
+            //     if(rolodexIsOpen){ term.classList.add("smaller");  }
+
+            //     // If the rolodex is closed then remove the "smaller" class. 
+            //     else{ term.classList.remove("smaller");  }
+            // }
+
+            // // Refit the actively displayed terminals to their parents.
+            // this.parent.refitActiveTerms();
         },
 
         // Menus and sections.

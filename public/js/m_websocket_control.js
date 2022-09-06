@@ -690,7 +690,6 @@ _APP.ws_control = {
     connectivity_status_update: {
         parent: null,
         inited:false,
-        intervalId:null,
         data: {
             uuid: 0,
             local:{
@@ -703,21 +702,9 @@ _APP.ws_control = {
             },
             vpnStatus: null
         },
-        elems: {
-            uuid  : "bottom_status2_connectionDetails_uuid",
-            local : "bottom_status2_connectionDetails_local",
-            global: "bottom_status2_connectionDetails_global",
-            vpnStatus    : "top_vpn_status",
-            vpn_indicator: "vpn_indicator",
-        },
+        elems: {},
         display:function(){
-            // DOM cache.
-            if(typeof this.elems["uuid"]      == "string"){ this.elems["uuid"]      = document.getElementById(this.elems["uuid"]);      }
-            if(typeof this.elems["local"]     == "string"){ this.elems["local"]     = document.getElementById(this.elems["local"]);     }
-            if(typeof this.elems["global"]    == "string"){ this.elems["global"]    = document.getElementById(this.elems["global"]);    }
-            if(typeof this.elems["vpnStatus"] == "string"){ this.elems["vpnStatus"] = document.getElementById(this.elems["vpnStatus"]); }
-            if(typeof this.elems["vpn_indicator"] == "string"){ this.elems["vpn_indicator"] = document.getElementById(this.elems["vpn_indicator"]); }
-
+            // VPN
             if(this.parent.parent.config.config.connectionCheck.active){
                 // VPN setting is active so show this div. 
                 this.elems.vpnStatus.classList.add("active");
@@ -732,6 +719,7 @@ _APP.ws_control = {
                 }
             }
 
+            // Show data if the UUID is populated.
             if(this.data.uuid !== 0){
                 // Update UUID.
                 this.elems["uuid"].innerText = this.data.uuid.toUpperCase();
@@ -742,6 +730,8 @@ _APP.ws_control = {
                 // Update GLOBAL.
                 this.elems["global"].innerText = `Controls: ${this.data.global.controls}, Terminals: ${this.data.global.terms}`;
             }
+            
+            // If the UUID is NOT populated then just display "<Not Connected>".
             else{
                 this.elems["uuid"].innerText   = "<Not Connected>";
                 this.elems["local"].innerText  = "<Not Connected>";
@@ -752,13 +742,16 @@ _APP.ws_control = {
             if(!this.parent.ws_utilities.isWsConnected()){ return; }
             this.parent.activeWs.send( "CONNECTIVITY_STATUS_UPDATE" );
         },
-        clearInterval: function(){
-            console.log("WARN: 'connectivity_status_update.clearInterval' ran.");
-            clearInterval(this.intervalId);
-            this.inited = false; 
-        },
-        init: function(){
+        init: function(configObj){
             return new Promise(async (resolve,reject)=>{
+                // Load from config.
+                for(let key in configObj.elems){ this.elems[key] = configObj.elems[key]; }
+                for(let key in this.elems){
+                    if(typeof this.elems[key] == "string"){ 
+                        this.elems[key] = document.getElementById( this.elems[key] ); 
+                    }
+                }
+
                 // Do maintenance tasks based on a timer. 
                 this.parent.parent.timedTasks.addTask(
                     {
@@ -775,7 +768,7 @@ _APP.ws_control = {
         },
     },
 
-    init: async function(parent){
+    init: async function(parent, configObj){
         return new Promise(async (resolve,reject)=>{
             this.parent                            = parent;
             this.connectivity_status_update.parent = this;
@@ -785,7 +778,7 @@ _APP.ws_control = {
             this.ws_event_handlers_JSON    .parent = this;
             this.ws_event_handlers_TEXT    .parent = this;
             
-            await this.connectivity_status_update.init();
+            await this.connectivity_status_update.init(configObj.connectivity_status_update);
             await this.status.init();
             resolve();
         });

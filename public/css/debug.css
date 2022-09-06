@@ -1,6 +1,6 @@
 body{
 	background-color: #051c27;
-	width: 900px;
+	/* width: 900px; */
 	margin: auto;
 	margin-top: 5px;
 	transition: opacity 1s;
@@ -17,7 +17,7 @@ body.darken {
 	position: relative;
 }
 #top {
-	min-height: 1em;
+	min-height: 2em;
 	padding: 0.25em;
 	position: relative;
 	margin-bottom: 5px;
@@ -28,27 +28,30 @@ body.darken {
 }
 #bottom_data{
 	background-color: rgb(47 43 214 / 12%);
+	/* background-color: green; */
 	position: absolute;
 	height: 100%;
 	padding: 0.30em;
 	top: 0px;
 	left: 0px;
-	width: 335px;
+	width: 350px;
 	border-radius: 10px;
-	font-size: 16px;
+	font-size: 12px;
 	line-height: 20px;
 	text-align: left;
 }
 #bottom_links {
 	background-color: rgb(47 43 214 / 12%);
+	/* background-color: green; */
 	position: absolute;
 	height: 100%;
 	padding: 1em;
 	top: 0px;
 	right: 0px;
-	width: 190px;
+	width: 220px;
 	text-align: center;
 	border-radius: 10px;
+	display: none;
 }
 .bottom_links {
 	padding: 0.25em;
@@ -64,8 +67,8 @@ body.darken {
 	background-color: rgb(47 43 214 / 12%);
 	position: absolute;
 	top: 0px;
-	right: 160px;
-	width: 130px;
+	right: 190px;
+	width: 160px;
 	height: 45px;
 	color: white;
 	border-radius: 10px;
@@ -98,7 +101,7 @@ body.darken {
 	position: absolute;
 	top: 0px;
 	right: 0px;
-	width: 150px;
+	width: 180px;
 	color: white;
 	font-size: 14px;
 	border-radius: 10px;
@@ -129,8 +132,8 @@ body.darken {
 	width: 105px;
 }
 #main {
-	max-height: 650px;
-	height: 650px;
+	/* max-height: 650px; */
+	/* height: 650px; */
 	padding: 0.5em;
 	margin-bottom: 5px;
 	border-radius: 10px;
@@ -140,7 +143,7 @@ body.darken {
 	border-radius: 0px 0px 10px 10px;
 	overflow: hidden;
 	position: relative;
-	height: 3em;
+	height: 3.5em;
 	padding: 1em;
 	color: white;
 	border-top: 1px solid black;
@@ -172,7 +175,7 @@ body.darken {
 }
 .view {
 	display: none;
-	min-height: 350px;
+	/* min-height: 350px; */
 	padding: 0.25em;
 }
 .view.active {
@@ -203,8 +206,8 @@ div#commandEditor_sectionGroupDiv {
 	position: absolute;
 	height: 100%;
 	top: 0px;
-	right: 195px;
-	width: 330px;
+	right: 0px;
+	width: 350px;
 	border-radius: 10px;
 }
 #bottom_status2_connectionDetails{
@@ -220,7 +223,9 @@ div#commandEditor_sectionGroupDiv {
 div#main_container {
 	/* background-color: rgb(60 158 192); */
 	background-color: #ffefd5;
-	height: 100%;
+	/* height: calc(100vh - 150px); */
+	height: calc(100vh - 150px);
+	/* width: calc(100vw - 30px); */
 }
 
 
@@ -277,7 +282,7 @@ table#commandEditor_table {
 table#sectionEditor_table th,
 table#groupEditor_table th,
 table#commandEditor_table th{ width:20%; }
-table#commandEditor_table td{ width:80% }
+table#commandEditor_table td{ width:80%  }
 table#commandEditor_table tr{
 	border-bottom: 1px solid black;
 }
@@ -295,4 +300,3 @@ table#commandEditor_table th,
 table#commandEditor_table td{
 	padding: 0.25em
 }
-

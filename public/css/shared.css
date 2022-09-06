@@ -1,5 +1,13 @@
+body,html{
+	width: 99%;
+	min-width:850px;
+	height: 99%;
+	margin: auto;
+	font-family:monospace;
+}
 * {
 	box-sizing: border-box;
+	font-family:monospace;
 }
 a{
 	color: blue;
@@ -22,6 +30,9 @@ select, option{
 	/* cursor: not-allowed; */
 	pointer-events: none;
 	user-select: none;
+}
+.termViewElem canvas.disabled {
+	background-image: url(../img/x_out2.png);
 }
 .width100p{
 	width:100%;

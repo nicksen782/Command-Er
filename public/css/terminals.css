@@ -7,6 +7,8 @@ div#terms_list {
 div#terms_windows {
     background-color: #ffefd5;
     /* height: 445px; */
+    /* height: 100%; */
+/*     height: 580px; */
 }
 div.termTabElem{
     font-family:monospace;
@@ -18,11 +20,17 @@ div.termViewElem{
 }
 div.termViewElem.active{
     display: block;
-    height: 555px;
+    /* height: 555px; */
+    /* height: 100%; */
+    position: relative;
+    /* height: auto; */
+    /* min-height: 100% !important; */
+    width: 100%;
+    height: 100%;
 }
 div.termViewElem.smaller.active{
     display: block;
-    height: 490px;
+    /* height: 490px; */
 }
 div#terms_info{
     display:none;

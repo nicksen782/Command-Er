@@ -159,6 +159,9 @@ let init = async function(){
                     addTerm             : "addTerm",
                     addMini             : "addMini",
                     terminalClose       : "terminalClose",
+                    
+                    main_cont : "main_container",
+                    main_navs : "main_container_navs",
                 },
                 rolodex:{
                     DOM: {
@@ -246,10 +249,21 @@ let init = async function(){
                     },
                 },
             },
+            ws_control: {
+                connectivity_status_update:{
+                    elems: {
+                        uuid          : "bottom_status2_connectionDetails_uuid",
+                        local         : "bottom_status2_connectionDetails_local",
+                        global        : "bottom_status2_connectionDetails_global",
+                        vpnStatus     : "top_vpn_status",
+                        vpn_indicator : "vpn_indicator",
+                    },
+                }
+            },
         };
 
         // Init: http and websockets.
-        await _APP.ws_control.init(_APP);
+        await _APP.ws_control.init(_APP, configObjs.ws_control);
         await _APP.http.init(_APP);
 
         // Get the config and DB.

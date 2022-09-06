@@ -205,6 +205,223 @@ _APP.terminals = {
         };
     },
 
+    rolodexFull: {
+        parent: null,
+        DOM: {},
+        esc_modalDismiss_bound: null,
+        esc_modalDismiss: function(event){
+            if(event.key == "Escape"){
+                this.toggleFullTerminalRolodex();
+            }
+        },
+        toggleFullTerminalRolodex: function(){
+            this.DOM.rolodexFull.classList.toggle("active");
+
+            // Add remove the escape key event listener as needed.
+            if(this.DOM.rolodexFull.classList.contains("active")){
+                // console.log("esc_modalDismiss ev listener added.");
+                document.body.addEventListener("keydown", this.esc_modalDismiss_bound, false);
+            }
+            else{
+                // console.log("esc_modalDismiss ev listener removed.");
+                document.body.removeEventListener("keydown", this.esc_modalDismiss_bound, false);
+            }
+        },
+        populateSections: function(){
+            let frag = document.createDocumentFragment();
+            let option;
+            let count = 0;
+            for(let i=0; i<this.parent.parent.commands.sections.length; i+=1){
+                let rec = this.parent.parent.commands.sections[i];
+                count += 1;
+                option = document.createElement("option");
+                option.value = `${rec.sId}`;
+                option.innerText = `(${("S:"+rec.sId)}) ${rec.name}`;
+                option.setAttribute("order", `${rec.order}`);
+                frag.append(option);
+            }
+
+            // Change the text on the first option. 
+            this.DOM.section.options[0].innerText = `...Sections (${count})`;
+            
+            // Remove all options other than the first. 
+            this.DOM.section.options.length = 1;  
+            
+            // Append the new options. 
+            this.DOM.section.append(frag);
+        },
+        populateSectionGroups: function(){
+            // Need to repopulate the sectionName and groupName selects.
+            this.DOM.sectionGroup.options.length = 1;
+
+            let frag_sectionGroup = document.createDocumentFragment();
+            let option;
+
+            // Determine the longest section name for padding.
+            let longest = 0; 
+            for(let i=0; i<this.parent.parent.commands.sections.length; i+=1){
+                let rec = this.parent.parent.commands.sections[i];
+                if(rec.name.length > longest){ longest = rec.name.length; }
+            }
+
+            // Create an entry for each group and include it's section name and both the sId and the gId.
+            let entries = 1;
+            for(let i=0; i<this.parent.parent.commands.groups.length; i+=1){
+                let rec = this.parent.parent.commands.groups[i];
+                
+                // Get the names. 
+                let sectionName = this.parent.parent.commands.sections.find(d=>d.sId==rec.sId).name;
+                let groupName   = rec.name;
+
+                // Create the option. 
+                option = document.createElement("option");
+                option.value = entries.toString(); // FAKE VALUE... lookup only. Do NOT send.
+                entries += 1;
+                option.innerText = `` +
+                    // `${commandRec.gId==rec.gId?"*":decodeURI("%C2%A0")}` +
+                    `(${("S:"+rec.sId)}) ${sectionName.padEnd(longest, decodeURI("%C2%A0"))}: ` +
+                    `(${("G:"+rec.gId)}) ${groupName}`;
+                option.setAttribute("sId", `${rec.sId}`);
+                option.setAttribute("gId", `${rec.gId}`);
+                frag_sectionGroup.append(option);
+            }
+
+            // Append the fragments. 
+            this.DOM.sectionGroup.append(frag_sectionGroup);
+        },
+        createRow:function(table, rec, empty=false){
+            if(empty){
+                let tr = table.insertRow(-1);
+                for(let i=0; i<5; i+=1){
+                    let td = tr.insertCell(-1); td.innerText = "";
+                    td.classList.add("spacer");
+                }
+                return; 
+            }
+            let tr = table.insertRow(-1);
+            
+            let td1 = tr.insertCell(-1);
+            td1.innerText = rec.sectionName;
+            
+            let td2 = tr.insertCell(-1);
+            td2.innerText = rec.groupName;
+
+            let td3 = tr.insertCell(-1);
+            let editButton = document.createElement("button");
+            editButton.innerText = "Edit";
+            editButton.addEventListener("click", (ev)=>{ 
+                this.parent.rolodex.populate_selects_for_specific_command(rec.cId);
+                this.toggleFullTerminalRolodex();
+                this.parent.rolodex.editCommand(); 
+            }, false);
+            td3.append(editButton);
+            
+            let td4 = tr.insertCell(-1);
+            let sendButton = document.createElement("button");
+            sendButton.innerText = "Send";
+            sendButton.addEventListener("click", (ev)=>{ 
+                this.parent.rolodex.populate_selects_for_specific_command(rec.cId);
+                this.toggleFullTerminalRolodex();
+                this.parent.rolodex.sendCommand(); 
+            }, false);
+            td4.append(sendButton);
+            
+            let td5 = tr.insertCell(-1);
+            td5.innerText = rec.cmd;
+        },
+        displayCommands_filterBySection:function(){
+            // Deselect the sectionGroup select.
+            this.DOM.sectionGroup.value = "";
+            
+            // Get the selected sId.
+            let sId = Number( this.DOM.section.value );
+
+            // Clear the output first.
+            this.DOM.cmdDisplay.innerHTML = "";
+            let table = document.createElement("table");
+            let tr_headers = table.insertRow(-1);
+
+            let headers = [ "Section", "Group", "Edit", "Send", "Command" ];
+            headers.forEach(function(d){
+                let th = tr_headers.insertCell(-1).outerHTML = `<th>${d}</th>`; th.outerHTML = `<th>${d}</th>`;
+            });
+
+            // Display each command as a row.
+            let lastGroupName = "";
+            for(let i=0; i<this.parent.parent.commands.commands.length; i+=1){
+                let rec = this.parent.parent.commands.commands[i];
+                if(rec.sId != sId){ continue; }
+                if(rec.groupName != lastGroupName){
+                    lastGroupName = rec.groupName;
+                    // if(lastGroupName != ""){
+                        this.createRow(table, null, true);
+                    // }
+                }
+                this.createRow(table, rec);
+            }
+            this.createRow(table, null, true);
+            this.DOM.cmdDisplay.append(table);
+        },
+        displayCommands_filterBySectionGroup:function(){
+            // Deselect the section select.
+            this.DOM.section.value = "";
+            
+            // Get the selected sId and gId from the selected option.
+            let sectionGroup_option = this.DOM.sectionGroup.options[this.DOM.sectionGroup.options.selectedIndex];
+            let sId = Number( sectionGroup_option.getAttribute("sId") );
+            let gId = Number( sectionGroup_option.getAttribute("gId") );
+            
+            // Clear the output first.
+            this.DOM.cmdDisplay.innerHTML = "";
+            let table = document.createElement("table");
+            let tr_headers = table.insertRow(-1);
+
+            let headers = [ "Section", "Group", "Edit", "Send", "Command" ];
+            headers.forEach(function(d){
+                let th = tr_headers.insertCell(-1); th.outerHTML = `<th>${d}</th>`;
+            });
+            
+            // Display each command as a row.
+            for(let i=0; i<this.parent.parent.commands.commands.length; i+=1){
+                let rec = this.parent.parent.commands.commands[i];
+                if(rec.sId != sId){ continue; }
+                if(rec.gId != gId){ continue; }
+                this.createRow(table, rec);
+            }
+            this.DOM.cmdDisplay.append(table);
+        },
+        init: function(parent, configObj){
+            this.parent = parent;
+
+            // Load from config.
+            for(let key in configObj.DOM){ this.DOM[key] = configObj.DOM[key]; }
+
+            // DOM.
+            for(let key in this.DOM){
+                if(typeof this.DOM[key] == "string"){
+                    this.DOM[key] = document.getElementById( this.DOM[key] );
+                }
+            }
+
+            // Event listeners.
+            this.DOM.rolodexModal_btn.addEventListener("click", (ev)=>{ this.toggleFullTerminalRolodex(); }, false);
+            this.DOM.closeBtn        .addEventListener("click", (ev)=>{ this.toggleFullTerminalRolodex(); }, false);
+            this.DOM.section         .addEventListener("change", (ev)=>{ this.displayCommands_filterBySection(); }, false);
+            this.DOM.sectionGroup    .addEventListener("change", (ev)=>{ this.displayCommands_filterBySectionGroup(); }, false);
+
+            // BoundEventHandlers.
+            this.esc_modalDismiss_bound = this.esc_modalDismiss.bind(this);
+
+            // Remove the disableds.
+            this.DOM.rolodexModal_btn.classList.remove("disabled");
+
+            // Pre-populate sections.
+            this.populateSections();
+            
+            // Pre-populate sectionGroups.
+            this.populateSectionGroups();
+        },
+    },
     rolodex: {
         parent: null,
         DOM: {},
@@ -218,22 +435,6 @@ _APP.terminals = {
 
             // Shrink the terminal views to fit.
             this.parent.refitActiveTerms();
-
-            // // Shrink the terminal views to fit.
-            // let termViewElems = this.parent.DOM.terms_windows.querySelectorAll(".termViewElem");
-            // for(let i=0; i<termViewElems.length; i+=1){
-            //     // Get a handle to this terminal view in the DOM.
-            //     let term = termViewElems[i];
-
-            //     // If the rolodex is open then add the "smaller" class. 
-            //     if(rolodexIsOpen){ term.classList.add("smaller");  }
-
-            //     // If the rolodex is closed then remove the "smaller" class. 
-            //     else{ term.classList.remove("smaller");  }
-            // }
-
-            // // Refit the actively displayed terminals to their parents.
-            // this.parent.refitActiveTerms();
         },
 
         // Menus and sections.
@@ -267,7 +468,7 @@ _APP.terminals = {
         populate_groups  : function(){
             // Get the currently selected sId.
             let sId = Number(this.DOM.terminalRolodex_section_select.value);
-            if(!sId){ console.log("Section record not found:", sId); return; }
+            if(!sId){ console.log("populate_groups: Section record not found:", sId); return; }
 
             // Create the options. 
             let frag = document.createDocumentFragment();
@@ -297,7 +498,7 @@ _APP.terminals = {
         populate_commands: function(){
             // Get the currently selected gId.
             let gId = Number(this.DOM.terminalRolodex_group_select.value);
-            if(!gId){ console.log("Group record not found:", gId); return; }
+            if(!gId){ console.log("populate_commands: Group record not found:", gId); return; }
 
             // Create the options.
             let frag = document.createDocumentFragment();
@@ -326,7 +527,7 @@ _APP.terminals = {
             // Get the currently selected cId.
             let cId = Number(this.DOM.terminalRolodex_command_select.value);
             let rec = this.parent.parent.commands.commands.find(d=>d.cId==cId);
-            if(!rec){ console.log("Command record not found:", cId); return; }
+            if(!rec){ console.log("populate_command: Command record not found:", cId); return; }
             this.DOM.terminalRolodex_command.innerText = rec.cmd;
             this.DOM.terminalRolodex_command.setAttribute("title", rec.cmd);
         },
@@ -335,9 +536,16 @@ _APP.terminals = {
             if(!rec){ console.log("Command record not found:", cId); return; }
 
             // Set the selects to the matching sId, gId, and cId. It will all display.
+            this.populate_sections();
             this.DOM.terminalRolodex_section_select.value = Number(rec.sId);
+
+            this.populate_groups();
             this.DOM.terminalRolodex_group_select  .value = Number(rec.gId);
+
+            this.populate_commands();
             this.DOM.terminalRolodex_command_select.value = Number(rec.cId);
+            
+            this.populate_command();
         },
 
         // Sending and editing of existing commands.
@@ -353,7 +561,9 @@ _APP.terminals = {
             // Send this command to the terminal.
             let obj = this.parent.getActiveTerminalData();
             if(!obj){ console.log("Active terminal object not found:", obj); return; }
-            obj.obj.ws.send( ` ${rec.f_ctrlc ? "\u0003" : ""}${rec.cmd}${rec.f_enter ? "\r\n" : ""}` );
+            // obj.obj.ws.send( ` ${rec.f_ctrlc ? "\u0003" : ""}${rec.cmd}${rec.f_enter ? "\r\n" : ""}` );
+            // obj.obj.ws.send( ` ${rec.f_ctrlc ? "\u0003" : ""}${rec.cmd}${rec.f_enter ? "\r" : ""}` );
+            obj.obj.ws.send( ` ${rec.c ? "\u0003" : ""}${rec.cmd}${rec.f_enter ? "\n" : ""}` );
         },
         editCommand: function(){
             // Load this section/group/command in the DB editor.
@@ -490,6 +700,7 @@ _APP.terminals = {
             this.DOM.terms_list_select.classList.remove("disabled");
 
             this.rolodex.init(this, configObj.rolodex);
+            this.rolodexFull.init(this, configObj.rolodexFull);
             this.inited = true;
             resolve();
         });

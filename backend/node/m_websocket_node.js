@@ -174,7 +174,8 @@ let _MOD = {
                     r = await _MOD.queries.GET_ONE_CMD(req.body.sId, req.body.gId, req.body.cId);
                     if(r){
                         // Send the command. 
-                        target.CONFIG.tty.write(` ${r.f_ctrlc ? "\u0003" : ""}${r.cmd}${r.f_enter ? "\r\n" : ""}`);
+                        // target.CONFIG.tty.write(` ${r.f_ctrlc ? "\u0003" : ""}${r.cmd}${r.f_enter ? "\r\n" : ""}`);
+                        target.CONFIG.tty.write(` ${r.f_ctrlc ? "\u0003" : ""}${r.cmd}${r.f_enter ? "\r" : ""}`);
     
                         // Return a response.
                         msg = `*SUCCESS* ${infoLine}, cmd: ${r.cmd}`;

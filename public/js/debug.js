@@ -175,6 +175,16 @@ let init = async function(){
                         terminalRolodex_command_send   : "terminalRolodex_command_send",
                     },
                 },
+                rolodexFull:{
+                    DOM: {
+                        rolodexModal_btn : "terminalRolodexModal_btn",
+                        rolodexFull      : "terminalRolodexFull",
+                        closeBtn         : "terminalRolodexFull_close-btn",
+                        section          : "terminalRolodexFull_section",
+                        sectionGroup     : "terminalRolodexFull_sectionGroup",
+                        cmdDisplay       : "terminalRolodexFull_cmdDisplay",
+                    },
+                },
             },
             configUpdater:{
                 DOM: {

@@ -22,7 +22,7 @@ select, option{
 	background-color: rgb(217 255 0 / 50%)
 }
 .disabled {
-	background-image: url(../img/x_out.png);
+	background-image: url(../../img/x_out.png);
 	background-size: 100% 100%;
 	background-repeat: no-repeat;
 	background-position: center;
@@ -32,7 +32,7 @@ select, option{
 	user-select: none;
 }
 .termViewElem canvas.disabled {
-	background-image: url(../img/x_out2.png);
+	background-image: url(../../img/x_out2.png);
 }
 .width100p{
 	width:100%;

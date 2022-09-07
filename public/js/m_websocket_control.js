@@ -55,9 +55,7 @@ _APP.ws_control = {
             // console.log(`mode: ${data.mode}, data:`, data.data);
 
             this.parent.connectivity_status_update.data.uuid = data.data;
-            if(this.parent.parent.appView == "debug"){
-                this.parent.activeWs.send( "CONNECTIVITY_STATUS_UPDATE" );
-            }
+            this.parent.activeWs.send( "CONNECTIVITY_STATUS_UPDATE" );
 
             // Open the first terminal.
             let terms = this.parent.parent.terminals;
@@ -82,7 +80,7 @@ _APP.ws_control = {
                 this.parent.connectivity_status_update.data.local.terms     = 0;
                 this.parent.connectivity_status_update.data.global.controls = 0;
                 this.parent.connectivity_status_update.data.global.terms    = 0;
-                this.parent.connectivity_status_update.data.vpnStatus       = null;
+                this.parent.connectivity_status_update.data.vpnStatus       = {};
                 this.parent.connectivity_status_update.display();
             }
         },
@@ -102,211 +100,192 @@ _APP.ws_control = {
             // Save the updated data.
             this.parent.parent.config.config = data.data;
 
-            if(this.parent.parent.appView == "debug"){
-                this.parent.parent.configUpdater.DOM.updateRemoteConfig_textarea.value = JSON.stringify(data.data,null,1);
-            }
+            // Display the updated data.
+            this.parent.parent.configUpdater.DOM.updateRemoteConfig_textarea.value = JSON.stringify(data.data,null,1);
         },
         
         // SECTIONS 
 
         UPDATE_ONE_SECTION: function(data){
-            if(this.parent.parent.appView == "debug"){
-                // console.log("UPDATE_ONE_SECTION:", data);
+            // console.log("UPDATE_ONE_SECTION:", data);
 
-                // Replace the existing section record.
-                let index = this.parent.parent.editor.sections.findSectionIndexBy_sId(data.data.updatedRec.sId);
-                this.parent.parent.commands.sections[index] = data.data.updatedRec;
+            // Replace the existing section record.
+            let index = this.parent.parent.editor.sections.findSectionIndexBy_sId(data.data.updatedRec.sId);
+            this.parent.parent.commands.sections[index] = data.data.updatedRec;
 
-                // Replace the updated group records.
-                for(let i=0; i<data.data.updatedGrps.length; i+=1){
-                    // Find the existing record's index by gId.
-                    let index = this.parent.parent.editor.groups.findGroupIndexBy_gId(data.data.updatedGrps[i].gId);
-    
-                    // Update the old record with the updated record. 
-                    this.parent.parent.commands.groups[index] = data.data.updatedGrps[i];
-                }
+            // Replace the updated group records.
+            for(let i=0; i<data.data.updatedGrps.length; i+=1){
+                // Find the existing record's index by gId.
+                let index = this.parent.parent.editor.groups.findGroupIndexBy_gId(data.data.updatedGrps[i].gId);
 
-                // Replace the updated command records.
-                for(let i=0; i<data.data.updatedCmds.length; i+=1){
-                    // Find the existing record's index by cId.
-                    let index = this.parent.parent.editor.commands.findCommandIndexBy_cId(data.data.updatedCmds[i].cId);
-    
-                    // Update the old record with the updated record. 
-                    this.parent.parent.commands.commands[index] = data.data.updatedCmds[i];
-                }
-
-                // Save the previous select values. 
-                let loaded_sId = Number(this.parent.parent.editor.selects.DOM["section_select"].value);
-                let loaded_gId = Number(this.parent.parent.editor.selects.DOM["group_select"].value);
-                let loaded_cId = Number(this.parent.parent.editor.selects.DOM["command_select"].value);
-
-                // Populate sections, reload the section.
-                this.parent.parent.editor.selects.populate_sections();
-                this.parent.parent.editor.selects.DOM["section_select"].value = loaded_sId;
-                this.parent.parent.editor.selects.sectionChange(loaded_sId);
-                
-                // Select the previous group and run groupChange.
-                this.parent.parent.editor.selects.populate_groups(loaded_sId);
-                this.parent.parent.editor.selects.DOM["group_select"]  .value = loaded_gId;
-                this.parent.parent.editor.selects.groupChange(loaded_gId); 
-                
-                // Select the previous command and run commandChange. 
-                this.parent.parent.editor.selects.populate_commands(loaded_gId);
-                this.parent.parent.editor.selects.DOM["command_select"].value = loaded_cId;
-                this.parent.parent.editor.selects.commandChange(loaded_cId); 
+                // Update the old record with the updated record. 
+                this.parent.parent.commands.groups[index] = data.data.updatedGrps[i];
             }
+
+            // Replace the updated command records.
+            for(let i=0; i<data.data.updatedCmds.length; i+=1){
+                // Find the existing record's index by cId.
+                let index = this.parent.parent.editor.commands.findCommandIndexBy_cId(data.data.updatedCmds[i].cId);
+
+                // Update the old record with the updated record. 
+                this.parent.parent.commands.commands[index] = data.data.updatedCmds[i];
+            }
+
+            // Save the previous select values. 
+            let loaded_sId = Number(this.parent.parent.editor.selects.DOM["section_select"].value);
+            let loaded_gId = Number(this.parent.parent.editor.selects.DOM["group_select"].value);
+            let loaded_cId = Number(this.parent.parent.editor.selects.DOM["command_select"].value);
+
+            // Populate sections, reload the section.
+            this.parent.parent.editor.selects.populate_sections();
+            this.parent.parent.editor.selects.DOM["section_select"].value = loaded_sId;
+            this.parent.parent.editor.selects.sectionChange(loaded_sId);
+            
+            // Select the previous group and run groupChange.
+            this.parent.parent.editor.selects.populate_groups(loaded_sId);
+            this.parent.parent.editor.selects.DOM["group_select"]  .value = loaded_gId;
+            this.parent.parent.editor.selects.groupChange(loaded_gId); 
+            
+            // Select the previous command and run commandChange. 
+            this.parent.parent.editor.selects.populate_commands(loaded_gId);
+            this.parent.parent.editor.selects.DOM["command_select"].value = loaded_cId;
+            this.parent.parent.editor.selects.commandChange(loaded_cId); 
         },
         ADD_ONE_SECTION:function(data){
-            if(this.parent.parent.appView == "debug"){
-                // Server will send updated command record.
-                console.log("ADD_ONE_SECTION:", data, this.parent.parent.commands.sections);
-                
-                // Add the new record to the sections list. 
-                this.parent.parent.commands.sections.push(data.data.newRec);
+            // Server will send updated command record.
+            console.log("ADD_ONE_SECTION:", data, this.parent.parent.commands.sections);
+            
+            // Add the new record to the sections list. 
+            this.parent.parent.commands.sections.push(data.data.newRec);
 
-                // Repopulate the sections. 
-                this.parent.parent.editor.selects.populate_sections();
+            // Repopulate the sections. 
+            this.parent.parent.editor.selects.populate_sections();
 
-                // Set the section to be the new section and trigger the change event. This will reset the other selects too.
-                this.parent.parent.editor.selects.DOM["section_select"].value = Number(data.data.newRec.sId);
-                this.parent.parent.editor.selects.DOM["section_select"].dispatchEvent(new Event("change")); 
-            }
+            // Set the section to be the new section and trigger the change event. This will reset the other selects too.
+            this.parent.parent.editor.selects.DOM["section_select"].value = Number(data.data.newRec.sId);
+            this.parent.parent.editor.selects.DOM["section_select"].dispatchEvent(new Event("change")); 
         },
         REMOVE_ONE_SECTION:function(data){
-            if(this.parent.parent.appView == "debug"){
-                // Server will send updated command record.
-                console.log("REMOVE_ONE_SECTION:", data);
-                
-                // Find the existing record's index by gId.
-                let index = this.parent.parent.editor.sections.findSectionIndexBy_sId(data.data.removedRec.sId);
-                
-                // Remove the group from the groups list.
-                this.parent.parent.commands.sections.splice(index, 1);
+            // Server will send updated command record.
+            console.log("REMOVE_ONE_SECTION:", data);
+            
+            // Find the existing record's index by gId.
+            let index = this.parent.parent.editor.sections.findSectionIndexBy_sId(data.data.removedRec.sId);
+            
+            // Remove the group from the groups list.
+            this.parent.parent.commands.sections.splice(index, 1);
 
-                // Repopulate the sections select, populate groups, clear commands. 
-                this.parent.parent.editor.selects.sectionChange();
-            }
+            // Repopulate the sections select, populate groups, clear commands. 
+            this.parent.parent.editor.selects.sectionChange();
         },
 
 
         // GROUPS
 
         UPDATE_ONE_GROUP: function(data){
-            if(this.parent.parent.appView == "debug"){
-                // Server will send updated group record and updated command records.
-                // console.log("UPDATE_ONE_GROUP:", data);
-                
-                // Find the existing record's index by gId.
-                let index = this.parent.parent.editor.groups.findGroupIndexBy_gId(data.data.updatedRec.gId);
-    
+            // Server will send updated group record and updated command records.
+            // console.log("UPDATE_ONE_GROUP:", data);
+            
+            // Find the existing record's index by gId.
+            let index = this.parent.parent.editor.groups.findGroupIndexBy_gId(data.data.updatedRec.gId);
+
+            // Update the old record with the updated record. 
+            this.parent.parent.commands.groups[index] = data.data.updatedRec;
+
+            // Update all the commands in this group locally.
+            for(let i=0; i<data.data.updatedCmds.length; i+=1){
+                // Find the existing record's index by cId.
+                let index = this.parent.parent.editor.commands.findCommandIndexBy_cId(data.data.updatedCmds[i].cId);
+
                 // Update the old record with the updated record. 
-                this.parent.parent.commands.groups[index] = data.data.updatedRec;
-
-                // Update all the commands in this group locally.
-                for(let i=0; i<data.data.updatedCmds.length; i+=1){
-                    // Find the existing record's index by cId.
-                    let index = this.parent.parent.editor.commands.findCommandIndexBy_cId(data.data.updatedCmds[i].cId);
-    
-                    // Update the old record with the updated record. 
-                    this.parent.parent.commands.commands[index] = data.data.updatedCmds[i];
-                }
-
-                // Save the loaded cId before it gets cleared.
-                let loaded_cId = Number(this.parent.parent.editor.selects.DOM["command_select"].value);
-                
-                // Repopulate the group select.
-                this.parent.parent.editor.selects.populate_groups( data.data.updatedRec.sId );
-
-                // Reload the group.
-                this.parent.parent.editor.selects.DOM["group_select"].value = data.data.updatedRec.gId;
-                this.parent.parent.editor.selects.DOM["group_select"].dispatchEvent(new Event("change")); 
-                
-                // Reload the command editor with the current loaded command.
-                this.parent.parent.editor.selects.DOM["command_select"].value = loaded_cId;
-                this.parent.parent.editor.selects.DOM["command_select"].dispatchEvent(new Event("change")); 
+                this.parent.parent.commands.commands[index] = data.data.updatedCmds[i];
             }
-        },
+
+            // Save the loaded cId before it gets cleared.
+            let loaded_cId = Number(this.parent.parent.editor.selects.DOM["command_select"].value);
+            
+            // Repopulate the group select.
+            this.parent.parent.editor.selects.populate_groups( data.data.updatedRec.sId );
+
+            // Reload the group.
+            this.parent.parent.editor.selects.DOM["group_select"].value = data.data.updatedRec.gId;
+            this.parent.parent.editor.selects.DOM["group_select"].dispatchEvent(new Event("change")); 
+            
+            // Reload the command editor with the current loaded command.
+            this.parent.parent.editor.selects.DOM["command_select"].value = loaded_cId;
+            this.parent.parent.editor.selects.DOM["command_select"].dispatchEvent(new Event("change")); 
+    },
         ADD_ONE_GROUP:function(data){
-            if(this.parent.parent.appView == "debug"){
-                // Server will send updated command record.
-                console.log("ADD_ONE_GROUP:", data);
-                
-                // Add the new record to the commands list. 
-                this.parent.parent.commands.groups.push(data.data.newRec);
+            // Server will send updated command record.
+            console.log("ADD_ONE_GROUP:", data);
+            
+            // Add the new record to the commands list. 
+            this.parent.parent.commands.groups.push(data.data.newRec);
 
-                // Repopulate the group select.
-                this.parent.parent.editor.selects.populate_groups( data.data.newRec.sId );
+            // Repopulate the group select.
+            this.parent.parent.editor.selects.populate_groups( data.data.newRec.sId );
 
-                // Reload the group.
-                this.parent.parent.editor.selects.DOM["group_select"].value = data.data.newRec.gId;
-                this.parent.parent.editor.selects.DOM["group_select"].dispatchEvent(new Event("change")); 
-                
-                // Reload the command editor nothing.
-                this.parent.parent.editor.selects.DOM["command_select"].value = "";
-                this.parent.parent.editor.selects.DOM["command_select"].dispatchEvent(new Event("change")); 
-            }
+            // Reload the group.
+            this.parent.parent.editor.selects.DOM["group_select"].value = data.data.newRec.gId;
+            this.parent.parent.editor.selects.DOM["group_select"].dispatchEvent(new Event("change")); 
+            
+            // Reload the command editor nothing.
+            this.parent.parent.editor.selects.DOM["command_select"].value = "";
+            this.parent.parent.editor.selects.DOM["command_select"].dispatchEvent(new Event("change")); 
         },
         REMOVE_ONE_GROUP: function(data){
-            if(this.parent.parent.appView == "debug"){
-                // Server will send updated command record.
-                console.log("REMOVE_ONE_GROUP:", data);
-                
-                // Find the existing record's index by gId.
-                let index = this.parent.parent.editor.groups.findGroupIndexBy_gId(data.data.removedRec.gId);
-                
-                // Remove the group from the groups list.
-                this.parent.parent.commands.groups.splice(index, 1);
+            // Server will send updated command record.
+            console.log("REMOVE_ONE_GROUP:", data);
+            
+            // Find the existing record's index by gId.
+            let index = this.parent.parent.editor.groups.findGroupIndexBy_gId(data.data.removedRec.gId);
+            
+            // Remove the group from the groups list.
+            this.parent.parent.commands.groups.splice(index, 1);
 
-                // Repopulate the sections select, populate groups, clear commands. 
-                this.parent.parent.editor.selects.sectionChange( Number(this.parent.parent.editor.selects.DOM["section_select"].value) );
-            }
+            // Repopulate the sections select, populate groups, clear commands. 
+            this.parent.parent.editor.selects.sectionChange( Number(this.parent.parent.editor.selects.DOM["section_select"].value) );
         },
 
         // COMMANDS
         UPDATE_ONE_COMMAND: function(data){
-            if(this.parent.parent.appView == "debug"){
-                // Server will send updated command record.
-                // console.log("UPDATE_ONE_COMMAND:", data);
-                
-                // Find the existing record's index by cId.
-                let index = this.parent.parent.editor.commands.findCommandIndexBy_cId(data.data.updatedRec.cId);
+            // Server will send updated command record.
+            // console.log("UPDATE_ONE_COMMAND:", data);
+            
+            // Find the existing record's index by cId.
+            let index = this.parent.parent.editor.commands.findCommandIndexBy_cId(data.data.updatedRec.cId);
 
-                // Update the old record with the updated record. 
-                this.parent.parent.commands.commands[index] = data.data.updatedRec;
+            // Update the old record with the updated record. 
+            this.parent.parent.commands.commands[index] = data.data.updatedRec;
 
-                // Load the recently edited command.
-                this.parent.parent.editor.selects.populateSelectsBy_cId(data.data.updatedRec.cId);
-            }
+            // Load the recently edited command.
+            this.parent.parent.editor.selects.populateSelectsBy_cId(data.data.updatedRec.cId);
         },
         ADD_ONE_COMMAND: function(data){
-            if(this.parent.parent.appView == "debug"){
-                // Server will send updated command record.
-                console.log("ADD_ONE_COMMAND:", data);
-                
-                // Add the new record to the commands list. 
-                this.parent.parent.commands.commands.push(data.data.newRec);
+            // Server will send updated command record.
+            console.log("ADD_ONE_COMMAND:", data);
+            
+            // Add the new record to the commands list. 
+            this.parent.parent.commands.commands.push(data.data.newRec);
 
-                // Load the recently edited command.
-                this.parent.parent.editor.selects.populateSelectsBy_cId(data.data.newRec.cId);
-            }
+            // Load the recently edited command.
+            this.parent.parent.editor.selects.populateSelectsBy_cId(data.data.newRec.cId);
         },
         REMOVE_ONE_COMMAND: function(data){
-            if(this.parent.parent.appView == "debug"){
-                // Server will send updated command record.
-                console.log("REMOVE_ONE_COMMAND:", data);
-                
-                // Find the existing record's index by cId.
-                let index = this.parent.parent.editor.commands.findCommandIndexBy_cId(data.data.removedRec.cId);
-                
-                // Remove the command from the commands list.
-                this.parent.parent.commands.commands.splice(index, 1);
+            // Server will send updated command record.
+            console.log("REMOVE_ONE_COMMAND:", data);
+            
+            // Find the existing record's index by cId.
+            let index = this.parent.parent.editor.commands.findCommandIndexBy_cId(data.data.removedRec.cId);
+            
+            // Remove the command from the commands list.
+            this.parent.parent.commands.commands.splice(index, 1);
 
-                // Clear the command editor table. 
-                this.parent.parent.editor.commands.clearEditorTable();
+            // Clear the command editor table. 
+            this.parent.parent.editor.commands.clearEditorTable();
 
-                // Repopulate the commands select. 
-                this.parent.parent.editor.selects.populate_commands(data.data.removedRec.gId);
-            }
+            // Repopulate the commands select. 
+            this.parent.parent.editor.selects.populate_commands(data.data.removedRec.gId);
         },
     },
     ws_event_handlers_TEXT:{
@@ -509,15 +488,13 @@ _APP.ws_control = {
         el_close: async function(event){
             // console.log("Web WebSockets Client: CLOSE:", event); 
 
-            if(this.parent.parent.appView == "debug"){
-                this.parent.connectivity_status_update.data.uuid            = 0;
-                this.parent.connectivity_status_update.data.local.controls  = 0;
-                this.parent.connectivity_status_update.data.local.terms     = 0;
-                this.parent.connectivity_status_update.data.global.controls = 0;
-                this.parent.connectivity_status_update.data.global.terms    = 0;
-                this.parent.connectivity_status_update.data.vpnStatus       = null;
-                this.parent.connectivity_status_update.display();
-            }
+            this.parent.connectivity_status_update.data.uuid            = 0;
+            this.parent.connectivity_status_update.data.local.controls  = 0;
+            this.parent.connectivity_status_update.data.local.terms     = 0;
+            this.parent.connectivity_status_update.data.global.controls = 0;
+            this.parent.connectivity_status_update.data.global.terms    = 0;
+            this.parent.connectivity_status_update.data.vpnStatus       = {};
+            this.parent.connectivity_status_update.display();
 
             // Yellow icon.
             this.parent.status.setStatusColor("disconnecting");
@@ -563,15 +540,13 @@ _APP.ws_control = {
         el_error:function(ws, event){
             console.log("Web WebSockets Client: ERROR:", event); 
             
-            if(this.parent.parent.appView == "debug"){
-                this.parent.connectivity_status_update.data.uuid            = 0;
-                this.parent.connectivity_status_update.data.local.controls  = 0;
-                this.parent.connectivity_status_update.data.local.terms     = 0;
-                this.parent.connectivity_status_update.data.global.controls = 0;
-                this.parent.connectivity_status_update.data.global.terms    = 0;
-                this.parent.connectivity_status_update.data.vpnStatus       = null;
-                this.parent.connectivity_status_update.display();
-            }
+            this.parent.connectivity_status_update.data.uuid            = 0;
+            this.parent.connectivity_status_update.data.local.controls  = 0;
+            this.parent.connectivity_status_update.data.local.terms     = 0;
+            this.parent.connectivity_status_update.data.global.controls = 0;
+            this.parent.connectivity_status_update.data.global.terms    = 0;
+            this.parent.connectivity_status_update.data.vpnStatus       = {};
+            this.parent.connectivity_status_update.display();
 
             // If not CLOSING or CLOSED.
             if(ws.readyState != 2 || ws.readyState != 3){
@@ -700,7 +675,7 @@ _APP.ws_control = {
                 controls: 0,
                 terms: 0,
             },
-            vpnStatus: null
+            vpnStatus: {}
         },
         elems: {},
         display:function(){
@@ -708,14 +683,17 @@ _APP.ws_control = {
             if(this.parent.parent.config.config.connectionCheck.active){
                 // VPN setting is active so show this div. 
                 this.elems.vpnStatus.classList.add("active");
-                
-                if(this.data.vpnStatus == true){
+                // host
+                // alive
+                if(this.data.vpnStatus.alive == true){
                     this.elems.vpn_indicator.classList.add("active");
                     this.elems.vpn_indicator.innerText = "VPN:  ONLINE";
+                    this.elems.vpn_indicator.title = `HOST: ${this.data.vpnStatus.host}, ALIVE: ${this.data.vpnStatus.alive}`;
                 }
                 else{
                     this.elems.vpn_indicator.classList.remove("active");
                     this.elems.vpn_indicator.innerText = "VPN: OFFLINE";
+                    this.elems.vpn_indicator.title = `HOST: ${this.data.vpnStatus.host}, ALIVE: ${this.data.vpnStatus.alive}`;
                 }
             }
 

@@ -117,7 +117,7 @@ let _MOD = {
         // Check for the tty. If no tty then nothing to do. (el_close can be triggered twice. This prevents this function from running a second time for a given terminal/ws.)
         if(!ws.tty){
             // console.log("ERROR: endRemoteTty: This terminal is already closed.", getDebugLine()); 
-            console.log(type);
+            // console.log(type);
             
             if(
                 ws.readyState != _APP.m_websocket_node.ws_readyStates.CLOSING ||

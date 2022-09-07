@@ -52,11 +52,12 @@ let _MOD = {
         // Websockets routes.
         // ******************
 
-        _APP.addToRouteList({ path: "SUBSCRIBE"                 , method: "ws", args: [], file: __filename, desc: "(JSON): Subscript to event." });
-        _APP.addToRouteList({ path: "UNSUBSCRIBE"               , method: "ws", args: [], file: __filename, desc: "(JSON): Unsubscribe from event." });
-        _APP.addToRouteList({ path: "GET_SUBSCRIPTIONS"         , method: "ws", args: [], file: __filename, desc: "(JSON): Get list of active subscriptions." });
-        _APP.addToRouteList({ path: "GET_ONE_CMD"               , method: "ws", args: [], file: __filename, desc: "(JSON): GET_ONE_CMD." });
-        _APP.addToRouteList({ path: "TYPE_CMD_TO_TERM"          , method: "ws", args: [], file: __filename, desc: "(JSON): TYPE_CMD_TO_TERM." });
+        _APP.addToRouteList({ path: "SUBSCRIBE"        , method: "ws", args: [], file: __filename, desc: "(JSON): Subscript to event." });
+        _APP.addToRouteList({ path: "UNSUBSCRIBE"      , method: "ws", args: [], file: __filename, desc: "(JSON): Unsubscribe from event." });
+        _APP.addToRouteList({ path: "GET_SUBSCRIPTIONS", method: "ws", args: [], file: __filename, desc: "(JSON): Get list of active subscriptions." });
+        _APP.addToRouteList({ path: "GET_ONE_CMD"      , method: "ws", args: [], file: __filename, desc: "(JSON): GET_ONE_CMD." });
+        _APP.addToRouteList({ path: "TYPE_CMD_TO_TERM" , method: "ws", args: [], file: __filename, desc: "(JSON): TYPE_CMD_TO_TERM." });
+        _APP.addToRouteList({ path: "UPDATE_CONFIG"    , method: "ws", args: [], file: __filename, desc: "(JSON): UPDATE_CONFIG." });
         
         // EDITOR: SECTION/GROUP/COMMAND
         _APP.addToRouteList({ path: "UPDATE_ONE_SECTION" , method: "ws", args: [], file: __filename, desc: "(JSON): UPDATE_ONE_SECTION." });
@@ -154,8 +155,8 @@ let _MOD = {
 
                 // Try to find the matching target.
                 if (
-                    ws.readyState === 1         // Is open.
-                    && ws.CONFIG.isTerm                  // Is a term.
+                    ws.readyState === 1                // Is open.
+                    && ws.CONFIG.isTerm                // Is a term.
                     && ws.CONFIG.uuid == req.body.uuid // Matching UUID.
                     && ws.CONFIG.type == "MINI"        // Terminal type of "MINI".
                 ) {
@@ -175,6 +176,7 @@ let _MOD = {
                     if(r){
                         // Send the command. 
                         // target.CONFIG.tty.write(` ${r.f_ctrlc ? "\u0003" : ""}${r.cmd}${r.f_enter ? "\r\n" : ""}`);
+                        // target.CONFIG.tty.write(` ${r.f_ctrlc ? "\u0003" : ""}${r.cmd}${r.f_enter ? "\n" : ""}`);
                         target.CONFIG.tty.write(` ${r.f_ctrlc ? "\u0003" : ""}${r.cmd}${r.f_enter ? "\r" : ""}`);
     
                         // Return a response.
@@ -227,7 +229,10 @@ let _MOD = {
         return new Promise(async function(resolve,reject){
             let timeoutSec = Math.floor(timeoutMs / 1000);
             let result = await ping.promise.probe(host, { timeout: timeoutSec, });
-            resolve(result.alive);
+            resolve({
+                host: host,
+                alive: result.alive,
+            });
         });
     },
 
@@ -541,12 +546,12 @@ let _MOD = {
                 process.exit(0);
             },
             
-            CLIENT_COUNT:      async function(ws, data){
+            CLIENT_COUNT: async function(ws, data){
                 // console.log(`mode: ${data.mode}, data:`, data.data);
                 ws.send( JSON.stringify( { "mode":"CLIENT_COUNT", "data":_MOD.ws_utilities.getClientCount() } ) );
             },
 
-            GET_DB_AS_JSON:      async function(ws, data){
+            GET_DB_AS_JSON: async function(ws, data){
                 // console.log(`mode: ${data.mode}, data:`, data.data);
 
                 // Object to store the results. 
@@ -580,17 +585,17 @@ let _MOD = {
             },
 
             // DEBUG
-            SECTIONS_LIST:      async function(ws, data){
+            SECTIONS_LIST: async function(ws, data){
                 // console.log(`mode: ${data.mode}, data:`, data.data);
                 let resp = await _MOD.queries.SECTIONS_LIST();
                 ws.send( JSON.stringify( { "mode":"SECTIONS_LIST", "data":resp } ) );
             },
-            GROUPS_LIST:      async function(ws, data){
+            GROUPS_LIST: async function(ws, data){
                 // console.log(`mode: ${data.mode}, data:`, data.data);
                 let resp = await _MOD.queries.GROUPS_LIST();
                 ws.send( JSON.stringify( { "mode":"GROUPS_LIST", "data":resp } ) );
             },
-            COMMANDS_LIST:      async function(ws, data){
+            COMMANDS_LIST: async function(ws, data){
                 // console.log(`mode: ${data.mode}, data:`, data.data);
                 let resp = await _MOD.queries.COMMANDS_LIST();
                 ws.send( JSON.stringify( { "mode":"COMMANDS_LIST", "data":resp } ) );
@@ -1013,11 +1018,10 @@ let _MOD = {
                     "sql" : `
                         SELECT
                             sections.'sId', 
-                            sections.name,
-                            sections.'order'
+                            sections.'order',
+                            sections.'name'
                         FROM sections
-                        -- ORDER BY sections.name ASC
-                        ORDER BY sections.sId ASC
+                        ORDER BY sections.'order' ASC
                         ;`.replace(/\t/g, " ").replace(/  +/g, "  "), 
                     "params" : {},
                     "type": "SELECT",
@@ -1034,14 +1038,12 @@ let _MOD = {
                         SELECT
                             groups.'gId', 
                             groups.'sId', 
-                            sections.name AS sectionName,
-                            groups.'gId', 
+                            groups.'order',
                             groups.'name', 
-                            groups.'order'
+                            sections.name AS sectionName
                         FROM groups
                         LEFT JOIN sections ON sections.sId = groups.sId
-                        -- ORDER BY sections.name ASC
-                        ORDER BY sections.sId ASC
+                        ORDER BY groups.'order' ASC
                         ;`.replace(/\t/g, " ").replace(/  +/g, "  "), 
                     "params" : {},
                     "type": "SELECT",
@@ -1055,23 +1057,22 @@ let _MOD = {
             return new Promise(async function(resolve,reject){
                 let q3 = {
                     "sql" : `
-                        SELECT
-                            commands.'cId', 
-                            commands.'sId', 
-                            commands.'gId', 
-                            sections.name AS sectionName,
-                            groups.name   AS groupName,
-                            commands.'title', 
-                            commands.'cmd', 
-                            commands.'f_ctrlc', 
-                            commands.'f_enter', 
-                            commands.'f_hidden',
-                            commands.'order'
-                        FROM commands
-                        LEFT JOIN sections ON sections.sId = commands.sId
-                        LEFT JOIN groups   ON groups.gId   = commands.gId
-                        -- ORDER BY sections.name ASC, groups.name ASC
-                        --ORDER BY commands.'sId' ASC, commands.'gId' ASC
+                    SELECT
+                        commands.'cId', 
+                        commands.'sId', 
+                        commands.'gId', 
+                        commands.'title', 
+                        commands.'cmd', 
+                        commands.'f_ctrlc', 
+                        commands.'f_enter', 
+                        commands.'f_hidden',
+                        commands.'order',
+                        sections.name AS 'sectionName',
+                        groups.name   AS 'groupName'
+                    FROM commands
+                    LEFT JOIN sections ON sections.sId = commands.sId
+                    LEFT JOIN groups   ON groups.gId   = commands.gId
+                    ORDER BY sections.'order' ASC, groups.'order' ASC, commands.'order' ASC
                         ;`.replace(/\t/g, " ").replace(/  +/g, "  "), 
                     "params" : {},
                     "type": "SELECT",
@@ -1103,14 +1104,14 @@ let _MOD = {
                             commands.'cId', 
                             commands.'sId', 
                             commands.'gId', 
-                            sections.name AS sectionName,
-                            groups.name   AS groupName,
                             commands.'title', 
                             commands.'cmd', 
                             commands.'f_ctrlc', 
                             commands.'f_enter', 
                             commands.'f_hidden',
-                            commands.'order'
+                            commands.'order',
+                            sections.name AS 'sectionName',
+                            groups.name   AS 'groupName'
                         FROM commands
                         LEFT JOIN sections ON sections.sId = commands.sId
                         LEFT JOIN groups   ON groups.gId   = commands.gId

@@ -62,12 +62,12 @@ body.darken {
 .bottom_links:hover {
 	background-color: #fdff00;
 }
-#top_vpn_status{
+#bottom_vpn_status{
 	background-color: rgb(101 135 149);
 	background-color: rgb(47 43 214 / 12%);
 	position: absolute;
 	top: 0px;
-	right: 190px;
+	left: 300px;
 	width: 160px;
 	height: 45px;
 	color: white;
@@ -77,7 +77,7 @@ body.darken {
 	padding: 5px;
 	overflow: hidden;
 }
-#top_vpn_status.active{
+#bottom_vpn_status.active{
 	display:block;
 }
 
@@ -262,7 +262,8 @@ input#commandEditor_table_cmd {
 }
 #updateRemoteConfig_textarea{
     width: 100%;
-    height: 530px;
+    /* height: 530px; */
+    height: 280px;
 }
 #updateRemoteConfig_reset{
     width: 100%;
@@ -302,5 +303,3 @@ table#commandEditor_table th,
 table#commandEditor_table td{
 	padding: 0.25em
 }
-
-

@@ -221,7 +221,7 @@ div#terminalRolodex.active {
 
 #terminalRolodexFull .modal-content {
     position: absolute;
-    background-color: rgb(255 255 255 / 100%);
+    /* background-color: rgb(255 255 255 / 100%); */
     padding: 5px;
     /*     margin: auto; */
     width: 90%;
@@ -236,8 +236,10 @@ div#terminalRolodex.active {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) !important;
-    background-color: skyblue;
+    background-color: rgb(90 144 165);
+    border: 5px solid #005c80;
     overflow: auto;
+    border-radius: 10px;
 }
 
 #terminalRolodexFull_close-btn {
@@ -299,6 +301,7 @@ div#terminalRolodex.active {
 .modal-header_title {
     font-size: 22px;
     font-weight: bold;
+    color: whitesmoke;
 }
 
 .modal-content_inner {

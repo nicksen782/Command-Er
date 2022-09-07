@@ -26,8 +26,7 @@ _APP.terminals = {
             prefix2 = "MINI #"; 
         }
         else{ console.log("INVALID TYPE"); return; }
-
-
+        
         // Create the WebSocket connection.
         let locUrl = `` +
         `${window.location.protocol == "https:" ? "wss" : "ws"}://` +
@@ -68,10 +67,6 @@ _APP.terminals = {
             this.DOM.terms_list_select.value = newTermId;
             this.DOM.terms_windows.append(elem_view);
 
-            // Open the terminal and display.
-            terminal.open( elem_view );
-            fitAddon.fit();
-
             // Add the terminal to the list.
             let obj = {
                 termId : prefix1 + newTermId,
@@ -97,6 +92,11 @@ _APP.terminals = {
             };
             obj.funcs.obj = obj;
             this.terms.push(obj);
+
+            // Open the terminal and display.
+            terminal.open( elem_view );
+            this.refitActiveTerms();
+            // fitAddon.fit();
         };
 
         // Increment nextTermId.
@@ -185,9 +185,14 @@ _APP.terminals = {
     refitActiveTerms: function(){
         let activeTerm = this.getActiveTerminalData(); 
 
+        // If the activeTerm was found AND it's view contains the class "active".
         if(activeTerm && activeTerm.termView.classList.contains("active")){
+            // If the termView is NOT offscreen (not visible.)
             if(activeTerm.termView.offsetParent != null){
+                // Resize the terminal windows container. 
                 this.resizeTerminalContainer();
+
+                // Resize the terminal view.
                 activeTerm.obj.term.fitAddon.fit();
             }
         }
@@ -208,13 +213,16 @@ _APP.terminals = {
     rolodexFull: {
         parent: null,
         DOM: {},
+
+        // Copy of esc_modalDismiss with "this" bound correctly. (Required for event listener removal.)
         esc_modalDismiss_bound: null,
+        // Event listener function. Runs toggleFullTerminalRolodex when "Escape" is pressed.
         esc_modalDismiss: function(event){
-            if(event.key == "Escape"){
-                this.toggleFullTerminalRolodex();
-            }
+            if(event.key == "Escape"){ this.toggleFullTerminalRolodex(); }
         },
+        // Toggles the full terminal command rolodex.
         toggleFullTerminalRolodex: function(){
+            // Toggle the "active" class.
             this.DOM.rolodexFull.classList.toggle("active");
 
             // Add remove the escape key event listener as needed.
@@ -227,6 +235,7 @@ _APP.terminals = {
                 document.body.removeEventListener("keydown", this.esc_modalDismiss_bound, false);
             }
         },
+        // Populates the sections select.
         populateSections: function(){
             let frag = document.createDocumentFragment();
             let option;
@@ -250,6 +259,7 @@ _APP.terminals = {
             // Append the new options. 
             this.DOM.section.append(frag);
         },
+        // Populates the sectionGroup select.
         populateSectionGroups: function(){
             // Need to repopulate the sectionName and groupName selects.
             this.DOM.sectionGroup.options.length = 1;
@@ -289,24 +299,25 @@ _APP.terminals = {
             // Append the fragments. 
             this.DOM.sectionGroup.append(frag_sectionGroup);
         },
+        // Used by "displayCommands_filterBySection" and "displayCommands_filterBySectionGroup" to create command rows.
         createRow:function(table, rec, empty=false){
             if(empty){
                 let tr = table.insertRow(-1);
-                for(let i=0; i<5; i+=1){
+                for(let i=0; i<6; i+=1){
                     let td = tr.insertCell(-1); td.innerText = "";
                     td.classList.add("spacer");
                 }
                 return; 
             }
-            let tr = table.insertRow(-1);
+            tr = table.insertRow(-1);
             
-            let td1 = tr.insertCell(-1);
-            td1.innerText = rec.sectionName;
+            td = tr.insertCell(-1); td.innerText = rec.sectionName;
             
-            let td2 = tr.insertCell(-1);
-            td2.innerText = rec.groupName;
+            td = tr.insertCell(-1); td.innerText = rec.groupName;
 
-            let td3 = tr.insertCell(-1);
+            td = tr.insertCell(-1); td.innerText = rec.title;
+
+            td = tr.insertCell(-1);
             let editButton = document.createElement("button");
             editButton.innerText = "Edit";
             editButton.addEventListener("click", (ev)=>{ 
@@ -314,9 +325,9 @@ _APP.terminals = {
                 this.toggleFullTerminalRolodex();
                 this.parent.rolodex.editCommand(); 
             }, false);
-            td3.append(editButton);
+            td.append(editButton);
             
-            let td4 = tr.insertCell(-1);
+            td = tr.insertCell(-1);
             let sendButton = document.createElement("button");
             sendButton.innerText = "Send";
             sendButton.addEventListener("click", (ev)=>{ 
@@ -324,11 +335,11 @@ _APP.terminals = {
                 this.toggleFullTerminalRolodex();
                 this.parent.rolodex.sendCommand(); 
             }, false);
-            td4.append(sendButton);
+            td.append(sendButton);
             
-            let td5 = tr.insertCell(-1);
-            td5.innerText = rec.cmd;
+            td = tr.insertCell(-1); td.innerText = rec.cmd;
         },
+        // Display command rows associated with a section. 
         displayCommands_filterBySection:function(){
             // Deselect the sectionGroup select.
             this.DOM.sectionGroup.value = "";
@@ -341,7 +352,7 @@ _APP.terminals = {
             let table = document.createElement("table");
             let tr_headers = table.insertRow(-1);
 
-            let headers = [ "Section", "Group", "Edit", "Send", "Command" ];
+            let headers = [ "Section", "Group", "Command Title", "Edit", "Send", "Command" ];
             headers.forEach(function(d){
                 let th = tr_headers.insertCell(-1).outerHTML = `<th>${d}</th>`; th.outerHTML = `<th>${d}</th>`;
             });
@@ -362,6 +373,7 @@ _APP.terminals = {
             this.createRow(table, null, true);
             this.DOM.cmdDisplay.append(table);
         },
+        // Display command rows associated with a section and a group. 
         displayCommands_filterBySectionGroup:function(){
             // Deselect the section select.
             this.DOM.section.value = "";
@@ -376,7 +388,7 @@ _APP.terminals = {
             let table = document.createElement("table");
             let tr_headers = table.insertRow(-1);
 
-            let headers = [ "Section", "Group", "Edit", "Send", "Command" ];
+            let headers = [ "Section", "Group", "Command Title", "Edit", "Send", "Command" ];
             headers.forEach(function(d){
                 let th = tr_headers.insertCell(-1); th.outerHTML = `<th>${d}</th>`;
             });
@@ -390,6 +402,7 @@ _APP.terminals = {
             }
             this.DOM.cmdDisplay.append(table);
         },
+
         init: function(parent, configObj){
             this.parent = parent;
 
@@ -422,6 +435,7 @@ _APP.terminals = {
             this.populateSectionGroups();
         },
     },
+
     rolodex: {
         parent: null,
         DOM: {},
@@ -430,8 +444,7 @@ _APP.terminals = {
         toggleTerminalRolodex     : function(){
             // Open the command rolodex.
             this.DOM.terminalRolodex.classList.toggle("active");
-            let rolodexIsOpen = this.DOM.terminalRolodex.classList.contains("active");
-
+            // let rolodexIsOpen = this.DOM.terminalRolodex.classList.contains("active");
 
             // Shrink the terminal views to fit.
             this.parent.refitActiveTerms();
@@ -562,8 +575,8 @@ _APP.terminals = {
             let obj = this.parent.getActiveTerminalData();
             if(!obj){ console.log("Active terminal object not found:", obj); return; }
             // obj.obj.ws.send( ` ${rec.f_ctrlc ? "\u0003" : ""}${rec.cmd}${rec.f_enter ? "\r\n" : ""}` );
-            // obj.obj.ws.send( ` ${rec.f_ctrlc ? "\u0003" : ""}${rec.cmd}${rec.f_enter ? "\r" : ""}` );
-            obj.obj.ws.send( ` ${rec.c ? "\u0003" : ""}${rec.cmd}${rec.f_enter ? "\n" : ""}` );
+            // obj.obj.ws.send( ` ${rec.f_ctrlc ? "\u0003" : ""}${rec.cmd}${rec.f_enter ? "\n" : ""}` );
+            obj.obj.ws.send( ` ${rec.c ? "\u0003" : ""}${rec.cmd}${rec.f_enter ? "\r" : ""}` );
         },
         editCommand: function(){
             // Load this section/group/command in the DB editor.

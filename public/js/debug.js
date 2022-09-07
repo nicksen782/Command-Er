@@ -278,7 +278,7 @@ let init = async function(){
 
         // Get the config and DB.
         _APP.config   = await _APP.http.send("get_configs", {}, 5000 );
-        _APP.commands = await _APP.http.send("/GET_DB_AS_JSON", {}, 5000 );
+        _APP.commands = await _APP.http.send("GET_DB_AS_JSON", {}, 5000 );
 
         // Init mainNav.
         _APP.mainNav = _APP.debug.mainNav;

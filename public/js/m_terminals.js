@@ -26,12 +26,15 @@ _APP.terminals = {
         else{ console.log("INVALID TYPE"); return; }
         
         // Create the WebSocket connection.
+        let prePath = window.location.pathname.split("/");
+        prePath.pop(); 
+        prePath = prePath.join("/");
+        prePath = prePath.indexOf("/") != 0 ? ("/") : (prePath + "/");
         let locUrl = `` +
         `${window.location.protocol == "https:" ? "wss" : "ws"}://` +
         `${location.hostname}` + 
         `${location.port ? ':'+location.port : ''}` +
-        // `${location.pathname != "/" ? ''+location.pathname : '/'}` +
-        `/`+
+        `${prePath}` +
         `TERM?uuid=${this.parent.ws_control.connectivity_status_update.data.uuid}` +
         `&termId=${prefix1 + newTermId}` +
         `&type=${type}`

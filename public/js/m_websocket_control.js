@@ -304,15 +304,17 @@ _APP.ws_control = {
                 if(this.parent.connecting){ console.log("WS connection attempt already in progress."); resolve(false); return; }
 
                 // GENERATE THE WEBSOCKET URL.
+                let prePath = window.location.pathname.split("/");
+                prePath.pop(); 
+                prePath = prePath.join("/");
+                prePath = prePath.indexOf("/") != 0 ? ("/") : (prePath + "/");
                 let locUrl = `` +
-                    `${window.location.protocol == "https:" ? "wss" : "ws"}://` +
-                    `${window.location.hostname}` + 
-                    `${window.location.port ? ':'+window.location.port : ''}` +
-                    // `${window.location.pathname != "/" ? ''+window.location.pathname : '/'}` +
-                    `/` +
-                    `CONTROL`
+                `${window.location.protocol == "https:" ? "wss" : "ws"}://` +
+                `${window.location.hostname}` + 
+                `${window.location.port ? ':'+window.location.port : ''}` +
+                `${prePath}` +
+                `CONTROL`
                 ;
-                // console.log("locUrl:", locUrl);
 
                 // Make sure that the server is up.
                 let isServerUp = await this.parent.parent.http.pingServer();

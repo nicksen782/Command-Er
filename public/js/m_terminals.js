@@ -1,6 +1,3 @@
-// import { Terminal } from 'xterm';
-// import { FitAddon } from 'xterm-addon-fit';
-
 _APP.terminals = {
     parent: null, 
     inited: false,
@@ -8,6 +5,7 @@ _APP.terminals = {
     terms: [],
     nextTermId: 1,
     
+    //
     createNewTerminal: function(newTermId, config={}, type="TERM"){
         let prefix1;
         let prefix2;
@@ -102,6 +100,7 @@ _APP.terminals = {
         // Increment nextTermId.
         this.nextTermId += 1;
     },
+    // Switch to a different terminal or the terms_info view.
     switchTerminal: function(termId){
         // Try to find the matching terminal view. 
         let view = this.DOM.terms_windows.querySelector(`.termViewElem[termId='${termId}'`);
@@ -120,6 +119,7 @@ _APP.terminals = {
             this.DOM.terms_info.classList.add("active"); 
         }
     },
+    // 
     removeTerminal: function(obj, fullRemoval=false){
         // Get the select option of the terminal.
         let prevSelectedIndex = this.DOM.terms_list_select.selectedIndex;
@@ -153,11 +153,13 @@ _APP.terminals = {
             this.terms = this.terms.filter( function(d){ if(d.termId2 != obj.termId2){ return d; }; } );
         }
     },
+    // Hides all terminal views and the terms_info view.
     deactivatate_terminalViews: function(){
+        // Hide the active terminal views.
         let termViewElems = this.DOM.terms_windows.querySelectorAll(".termViewElem");
         for(let i=0; i<termViewElems.length; i+=1){ termViewElems[i].classList.remove("active"); }
 
-        // Hide statistics view.
+        // Hide terms_info.
         this.DOM.terms_info.classList.remove("active"); 
     },
     resizeTerminalContainer: function(){
@@ -181,28 +183,42 @@ _APP.terminals = {
         // Set the new height.
         terms_windows.style.height = newHeight + "px";
     },
-    // Refit the view but only if it is currently displayed.
+    // Refit the "terms_windows" if needed.
     refitActiveTerms: function(){
+        // If the activeTerm was found AND has visability and has the class "active".
         let activeTerm = this.getActiveTerminalData(); 
+        if(activeTerm && activeTerm.termView.offsetParent != null){
+            // Resize the terminal windows container. 
+            this.resizeTerminalContainer();
 
-        // If the activeTerm was found AND it's view contains the class "active".
-        if(activeTerm && activeTerm.termView.classList.contains("active")){
-            // If the termView is NOT offscreen (not visible.)
-            if(activeTerm.termView.offsetParent != null){
+            // Resize the terminal view.
+            activeTerm.obj.term.fitAddon.fit();
+        }
+
+        // No activeTerm. Check terms_info visability and for the class "active".
+        else if(this.DOM.terms_info.classList.contains("active")){
+            if(this.DOM.terms_info.offsetParent != null){
                 // Resize the terminal windows container. 
                 this.resizeTerminalContainer();
-
-                // Resize the terminal view.
-                activeTerm.obj.term.fitAddon.fit();
             }
         }
+
     },
+    // Get the data object for the active terminal. (return false if not found.)
     getActiveTerminalData: function(){
         let termView = this.DOM.terms_windows.querySelector(".termViewElem.active");
-        if(!termView){ console.log("No active terminal view was found."); return false; }
+        if(!termView){ 
+            // console.log("No active terminal view was found."); 
+            return false; 
+        }
+
         let termId = termView.getAttribute("termId");
         let activeTermObj = this.terms.find(d=>d.termId2 == termId);
-        if(!activeTermObj){ console.log("No active terminal object was found."); return false; }
+        if(!activeTermObj){ 
+            console.log("ERROR: No active terminal object was found."); 
+            return false; 
+        }
+
         return {
             termView : termView,
             termId   : termId,
@@ -361,12 +377,11 @@ _APP.terminals = {
             let lastGroupName = "";
             for(let i=0; i<this.parent.parent.commands.commands.length; i+=1){
                 let rec = this.parent.parent.commands.commands[i];
+                if(rec.f_hidden){ continue; }
                 if(rec.sId != sId){ continue; }
                 if(rec.groupName != lastGroupName){
                     lastGroupName = rec.groupName;
-                    // if(lastGroupName != ""){
-                        this.createRow(table, null, true);
-                    // }
+                    this.createRow(table, null, true);
                 }
                 this.createRow(table, rec);
             }
@@ -396,6 +411,7 @@ _APP.terminals = {
             // Display each command as a row.
             for(let i=0; i<this.parent.parent.commands.commands.length; i+=1){
                 let rec = this.parent.parent.commands.commands[i];
+                if(rec.f_hidden){ continue; }
                 if(rec.sId != sId){ continue; }
                 if(rec.gId != gId){ continue; }
                 this.createRow(table, rec);

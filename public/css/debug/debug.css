@@ -303,3 +303,14 @@ table#commandEditor_table th,
 table#commandEditor_table td{
 	padding: 0.25em
 }
+
+
+span.cmdEditorOption {
+	border: 1px solid burlywood;
+    padding: 2px;
+    display: inline-block;
+    border-radius: 5px;
+}
+span.cmdEditorOption label{
+	user-select: none;
+}

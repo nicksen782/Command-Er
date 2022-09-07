@@ -295,24 +295,28 @@ _APP.terminals = {
 
             // Create an entry for each group and include it's section name and both the sId and the gId.
             let entries = 1;
-            for(let i=0; i<this.parent.parent.commands.groups.length; i+=1){
-                let rec = this.parent.parent.commands.groups[i];
-                
-                // Get the names. 
-                let sectionName = this.parent.parent.commands.sections.find(d=>d.sId==rec.sId).name;
-                let groupName   = rec.name;
+            for(let i=0; i<this.parent.parent.commands.sections.length; i+=1){
+                let sId = this.parent.parent.commands.sections[i].sId;
+                for(let i=0; i<this.parent.parent.commands.groups.length; i+=1){
+                    let rec = this.parent.parent.commands.groups[i];
+                    if(rec.sId != sId){ continue; }
+                    
+                    // Get the names. 
+                    let sectionName = this.parent.parent.commands.sections.find(d=>d.sId==rec.sId).name;
+                    let groupName   = rec.name;
 
-                // Create the option. 
-                option = document.createElement("option");
-                option.value = entries.toString(); // FAKE VALUE... lookup only. Do NOT send.
-                entries += 1;
-                option.innerText = `` +
-                    // `${commandRec.gId==rec.gId?"*":decodeURI("%C2%A0")}` +
-                    `(${("S:"+rec.sId)}) ${sectionName.padEnd(longest, decodeURI("%C2%A0"))}: ` +
-                    `(${("G:"+rec.gId)}) ${groupName}`;
-                option.setAttribute("sId", `${rec.sId}`);
-                option.setAttribute("gId", `${rec.gId}`);
-                frag_sectionGroup.append(option);
+                    // Create the option. 
+                    option = document.createElement("option");
+                    option.value = entries.toString(); // FAKE VALUE... lookup only. Do NOT send.
+                    entries += 1;
+                    option.innerText = `` +
+                        // `${commandRec.gId==rec.gId?"*":decodeURI("%C2%A0")}` +
+                        `(${("S:"+rec.sId)}) ${sectionName.padEnd(longest, decodeURI("%C2%A0"))}: ` +
+                        `(${("G:"+rec.gId)}) ${groupName}`;
+                    option.setAttribute("sId", `${rec.sId}`);
+                    option.setAttribute("gId", `${rec.gId}`);
+                    frag_sectionGroup.append(option);
+                }
             }
 
             // Append the fragments. 

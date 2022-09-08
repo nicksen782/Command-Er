@@ -1,6 +1,5 @@
 body{
 	background-color: #051c27;
-	/* width: 900px; */
 	margin: auto;
 	margin-top: 5px;
 	transition: opacity 1s;
@@ -28,7 +27,6 @@ body.darken {
 }
 #bottom_data{
 	background-color: rgb(47 43 214 / 12%);
-	/* background-color: green; */
 	position: absolute;
 	height: 100%;
 	padding: 0.30em;
@@ -42,7 +40,6 @@ body.darken {
 }
 #bottom_links {
 	background-color: rgb(47 43 214 / 12%);
-	/* background-color: green; */
 	position: absolute;
 	height: 100%;
 	padding: 1em;
@@ -132,8 +129,6 @@ body.darken {
 	width: 105px;
 }
 #main {
-	/* max-height: 650px; */
-	/* height: 650px; */
 	padding: 0.5em;
 	margin-bottom: 5px;
 	border-radius: 10px;
@@ -175,7 +170,6 @@ body.darken {
 }
 .view {
 	display: none;
-	/* min-height: 350px; */
 	padding: 0.25em;
 }
 .view.active {
@@ -221,14 +215,10 @@ div#commandEditor_sectionGroupDiv {
 .views {
 }
 div#main_container {
-	/* background-color: rgb(60 158 192); */
 	background-color: #ffefd5;
 	background-color: #5a90a5;
-	/* height: calc(100vh - 150px); */
 	height: calc(100vh - 150px);
-	/* width: calc(100vw - 30px); */
 }
-
 
 select#commandEditor_section_select {
     min-width: 340px;
@@ -313,4 +303,21 @@ span.cmdEditorOption {
 }
 span.cmdEditorOption label{
 	user-select: none;
+}
+
+div#terms_info_localGlobalStatus {
+    white-space: pre;
+    display: inline-block;
+}
+
+div#terms_info_localGlobalStatus_title {
+    text-decoration: underline;
+    display: inline-block;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+span.terms_info_localGlobalStatus_pids {
+    font-family: monospace;
+    font-style: italic;
 }

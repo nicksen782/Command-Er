@@ -726,10 +726,12 @@ let _MOD = {
                 local:{
                     controls: [],
                     terms   : [],
+                    termPids: [],
                 },
                 global:{
                     controls: [],
                     terms   : [],
+                    termPids: [],
                 }
             };
             
@@ -739,12 +741,19 @@ let _MOD = {
                     // Is this local? 
                     if(ws.CONFIG.uuid==localUuid){
                         if(ws.CONFIG.isTerm == false){ wsClients.local.controls.push(ws); }
-                        else{ wsClients.local.terms.push(ws); }
+                        else{ 
+                            wsClients.local.terms.push(ws); 
+                            wsClients.local.termPids.push(ws.CONFIG.pid);
+                        }
                     }
 
                     // Always add to global.
                     if(ws.CONFIG.isTerm == false){ wsClients.global.controls.push(ws); }
-                    else{ wsClients.global.terms.push(ws); }
+                    else{ 
+                        wsClients.global.terms.push(ws); 
+                        wsClients.global.termPids.push(ws.CONFIG.pid);
+                    }
+
                 }
             });
 
@@ -752,10 +761,12 @@ let _MOD = {
                 local:{
                     controls: wsClients.local.controls.length,
                     terms   : wsClients.local.terms.length,
+                    termPids: wsClients.local.termPids,
                 },
                 global:{
                     controls: wsClients.global.controls.length,
                     terms   : wsClients.global.terms.length,
+                    termPids: wsClients.global.termPids,
                 }
             };
         },

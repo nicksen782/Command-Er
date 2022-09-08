@@ -262,11 +262,12 @@ let init = async function(){
             ws_control: {
                 connectivity_status_update:{
                     elems: {
-                        uuid          : "bottom_status2_connectionDetails_uuid",
-                        local         : "bottom_status2_connectionDetails_local",
-                        global        : "bottom_status2_connectionDetails_global",
-                        vpnStatus     : "bottom_vpn_status",
-                        vpn_indicator : "vpn_indicator",
+                        uuid              : "bottom_status2_connectionDetails_uuid",
+                        local             : "bottom_status2_connectionDetails_local",
+                        global            : "bottom_status2_connectionDetails_global",
+                        vpnStatus         : "bottom_vpn_status",
+                        vpn_indicator     : "vpn_indicator",
+                        localGlobalStatus : "terms_info_localGlobalStatus",
                     },
                 }
             },

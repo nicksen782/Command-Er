@@ -59,7 +59,7 @@ _APP.ws_control = {
 
             // Open the first terminal.
             let terms = this.parent.parent.terminals;
-            if(!terms.terms.length){ terms.createNewTerminal(terms.nextTermId++, _APP.config.config.terms, 'TERM'); }
+            if(!terms.terms.length){ terms.createNewTerminal(terms.nextTermId, _APP.config.config.terms, 'TERM'); }
         },
         WELCOMEMESSAGE: function(data){
             console.log(`mode: ${data.mode}, data:`, data.data);
@@ -69,8 +69,10 @@ _APP.ws_control = {
             try{
                 this.parent.connectivity_status_update.data.local.controls  = data.data.local.controls;
                 this.parent.connectivity_status_update.data.local.terms     = data.data.local.terms;
+                this.parent.connectivity_status_update.data.local.termPids  = data.data.local.termPids;
                 this.parent.connectivity_status_update.data.global.controls = data.data.global.controls;
                 this.parent.connectivity_status_update.data.global.terms    = data.data.global.terms;
+                this.parent.connectivity_status_update.data.global.termPids = data.data.global.termPids;
                 this.parent.connectivity_status_update.data.vpnStatus       = data.data.vpnCheck;
                 this.parent.connectivity_status_update.display();
             }
@@ -672,10 +674,12 @@ _APP.ws_control = {
             local:{
                 controls: 0,
                 terms: 0,
+                termPids: [],
             },
             global:{
                 controls: 0,
                 terms: 0,
+                termPids: [],
             },
             vpnStatus: {}
         },
@@ -717,6 +721,23 @@ _APP.ws_control = {
                 this.elems["local"].innerText  = "<Not Connected>";
                 this.elems["global"].innerText = "<Not Connected>";
             }
+
+            // Show localGlobalStatus data.
+            // Get the current text.
+            let oldText = this.elems.localGlobalStatus.innerHTML;
+
+            // Create new text.
+            let newText = ``;
+            // newText += `\n`;
+            newText += "  LOCAL  Terminal PIDS: " + (this.data.local .termPids.length ? `[ <span class="terms_info_localGlobalStatus_pids">${this.data.local.termPids.join(", ") }</span> ]\n` : `[]\n`);
+            newText += "  GLOBAL Terminal PIDS: " + (this.data.global.termPids.length ? `[ <span class="terms_info_localGlobalStatus_pids">${this.data.global.termPids.join(", ")}</span> ]\n` : `[]\n`);
+
+            // Only update the DOM if the oldText and the newText are different.
+            if(oldText != newText){
+                // console.log("Updating PID list");
+                this.elems.localGlobalStatus.innerHTML = newText;
+            }
+
         },
         requestUpdate: function(){
             if(!this.parent.ws_utilities.isWsConnected()){ return; }

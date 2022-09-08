@@ -43,9 +43,7 @@ let _MOD = {
         },
         el_close  : function(ws){ 
             // Close the terminal if it is still open.
-            if(ws.CONFIG.tty && !ws.CONFIG.isClosing){
-                console.log("WebSockets Server: CLOSE  :", ws.CONFIG.type.padEnd(7, " "), ws.CONFIG.uuid, ws.CONFIG.termId);
-
+            if(ws.CONFIG.tty && !ws.CONFIG.isClosed){
                 // Set the isClosing flag;
                 ws.CONFIG.isClosing = true;
 
@@ -58,7 +56,7 @@ let _MOD = {
             console.log("WebSockets Server: ERROR  :", ws.CONFIG.type.padEnd(7, " "), ws.CONFIG.uuid, ws.CONFIG.termId, event);
 
             // Close the terminal if it is still open.
-            if(ws.CONFIG.tty && !ws.CONFIG.isClosing){
+            if(ws.CONFIG.tty && !ws.CONFIG.isClosed){
                 // Set the isClosing flag;
                 ws.CONFIG.isClosing = true;
 
@@ -84,14 +82,14 @@ let _MOD = {
 
         // On tty exit, close the tty and close the websocket. 
 		tty.onExit( function(event) { 
-            console.log("exit was called", ws.readyState, ws.CONFIG.isClosing, ws.CONFIG.isClosed);
-            // if(ws.CONFIG.tty && !ws.CONFIG.isClosing){
+            // End the tty and ws.
+            if(ws.CONFIG.tty && !ws.CONFIG.isClosed){
                 // Set the isClosing flag;
                 ws.CONFIG.isClosing = true;
 
                 // End the tty and ws.
                 _MOD.endRemoteTty(ws, "exit"); 
-            // }
+            }
         });
 
         // Save to the ws object.
@@ -105,43 +103,47 @@ let _MOD = {
     },
     endRemoteTty: function(ws, type){
         // This function generates the debug line when called.
-        // console.log("type:", type);
         let getDebugLine = function(){
-            return `platform: ${os.platform()}, uuid: ${ws.CONFIG.uuid}, type: ${ws.CONFIG.type}, termId: ${ws.CONFIG.termId}, isClosing: ${ws.CONFIG.isClosing}`;
-        };
-
-        // Make sure that getDebugLine works. 
-        try{ getDebugLine(); }
-        catch(e){ console.log(`ERROR: endRemoteTty: getDebugLine:`, e); }
-        
-        // Check for the tty. If no tty then nothing to do. (el_close can be triggered twice. This prevents this function from running a second time for a given terminal/ws.)
-        if(!ws.tty){
-            // console.log("ERROR: endRemoteTty: This terminal is already closed.", getDebugLine()); 
-            // console.log(type);
-            
-            if(
-                ws.readyState != _APP.m_websocket_node.ws_readyStates.CLOSING ||
-                ws.readyState != _APP.m_websocket_node.ws_readyStates.CLOSED
-            ){
-                // Set the isClosed
-                ws.CONFIG.isClosed=true;
-                ws.close();
+            // Make sure that getDebugLine works. 
+            try{
+                return `platform: ${os.platform()}, uuid: ${ws.CONFIG.uuid}, type: ${ws.CONFIG.type}, termId: ${ws.CONFIG.termId}, isClosing: ${ws.CONFIG.isClosing}, isClosed: ${ws.CONFIG.isClosed}, type: ${type}`;
             }
-
-            return;
+            catch(e){
+                return `ERROR: getDebugLine: ${e}`;
+            }
+        };
+        
+        // Stop here if the terminal is already closed.
+        if(ws.CONFIG.isClosed){ 
+            console.log(`Already closed:`, getDebugLine()); 
+            return ;
+        }
+        
+        // Replace the onData and exit functions. 
+        if(ws.CONFIG.tty){
+            ws.CONFIG.tty.onData( ()=>{} );
+            ws.CONFIG.tty.onExit( ()=>{} );
         }
 
-        // Replace the onData and exit functions. 
-        ws.CONFIG.tty.onData( ()=>{} );
-        ws.CONFIG.tty.onExit( ()=>{} );
-
         // Close the terminal (differently based on the server os).
-        if(os.platform == "win32"){ try{ ws.CONFIG.tty.kill() ; } catch(e){ console.log("ERROR: endRemoteTty: (close terminal)", getDebugLine(), e); } }
-        else                      { try{ ws.CONFIG.tty.kill(9); } catch(e){ console.log("ERROR: endRemoteTty: (close terminal)", getDebugLine(), e); } }
+        if(os.platform == "win32"){ 
+            try{ 
+                if(ws.CONFIG.tty){ ws.CONFIG.tty.kill() ; }
+                // var spawn = require('child_process').spawn;    
+                // spawn("taskkill", ["/pid", ws.CONFIG.pid, '/f', '/t']);
+            } 
+            catch(e){ console.log("ERROR: endRemoteTty: (Close terminal)", getDebugLine(), e); } 
+        }
+        else { 
+            if(ws.CONFIG.tty){ 
+                try{ ws.CONFIG.tty.kill(9); } 
+                catch(e){ console.log("ERROR: endRemoteTty: (Close terminal)", getDebugLine(), e); } 
+            }
+        }
 
         // Clear the tty from the ws object.
         try{ ws.CONFIG.tty = null; } 
-        catch(e){ console.log("ERROR: endRemoteTty: (remove terminal)", os.platform(), e); }
+        catch(e){ console.log("ERROR: endRemoteTty: (Remove terminal)", getDebugLine(), e); }
         
         // Close the ws connection.
         try{ 
@@ -153,17 +155,17 @@ let _MOD = {
                 ws.close(); 
             }
         } 
-        catch(e){ console.log("ERROR: endRemoteTty: (close ws connection)", os.platform(), e); }
+        catch(e){ console.log("ERROR: endRemoteTty: (Close ws connection)", getDebugLine(), e); }
         
         // Set the isClosed
         ws.CONFIG.isClosed=true;
         
         // Terminate the terminal's WebSocket connection.
         try{ ws.terminate(); }
-        catch(e){ console.log("ERROR: endRemoteTty: (terminate ws connection)", os.platform(), e); }
+        catch(e){ console.log("ERROR: endRemoteTty: (Terminate ws connection)", getDebugLine(), e); }
 
         // Terminal is closed.
-        console.log("WebSockets Server: CLOSE  :", ws.CONFIG.type.padEnd(7, " "), ws.CONFIG.uuid, ws.CONFIG.termId);
+        console.log("WebSockets Server: CLOSE  :", ws.CONFIG.type.padEnd(7, " "), ws.CONFIG.uuid, ws.CONFIG.termId, "--", getDebugLine());
     },
 
 };

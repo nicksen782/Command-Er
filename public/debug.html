@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; font-src 'self' data: fonts.gstatic.com;"> -->
+
+    <title>Command-Er (debug)</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+    <link rel="stylesheet" href="css/debug/shared.css">
+    <link rel="stylesheet" href="libs/xterm/css/xterm.css">
+    <link rel="stylesheet" href="css/debug//terminals.css">
+    <link rel="stylesheet" href="css/debug//debug.css">
+    <script src="js/shared.js" defer></script>
+    <script src="js/m_http.js" defer></script>
+    <script src="js/m_websocket_control.js" defer></script>
+    <script src="js/m_editor.js" defer></script>
+
+    <script src="libs/xterm/lib/xterm.js" defer></script>
+    <script src="libs/xterm-addon-fit/lib/xterm-addon-fit.js" defer></script>
+    <script src="libs/xterm-addon-attach/lib/xterm-addon-attach.js" defer></script>
+
+    <script src="js/m_terminals.js" defer></script>
+    <script src="js/debug.js" defer></script>
+</head>
+
+<body class="darken">
+    <div id="container">
+        <div id="top_status">
+            <table>
+                <tr>
+                    <td><div id="top_connected_status" class="disconnected"></div></td>
+                    <td><div id="top_connected_status_text">Disconnected</div></td>
+                </tr>
+                <tr>
+                    <td><input id="ws_autoReconnect" type="checkbox"></td>
+                    <td><label for="ws_autoReconnect">Auto-reconnect</label></td>
+                </tr>
+            </table>
+        </div>
+
+        <div id="top">
+            COMMAND-ER (debug)
+        </div>
+
+        <div id="main" class="disconnected">
+            <div id="main_container">
+                <div id="main_container_navs" class="nav">
+                    <div class="nav_tab" id="top_nav_nav_tests1"        view="top_nav_view_tests1">DEBUG</div>
+                    <div class="nav_tab" id="top_nav_nav_configUpdater" view="top_nav_view_configUpdater">config.json Updater</div>
+                    <div class="nav_tab" id="top_nav_nav_editor"        view="top_nav_view_editor">DB Editor</div>
+                    <div class="nav_tab" id="top_nav_nav_terms"         view="top_nav_view_terms">Terminals</div>
+                </div>
+
+                <div id="main_container_views" class="views">
+                    <div id="top_nav_view_tests1" class="view">
+                        <!-- CONNECTITY AND SERVER COMMANDS -->
+                        <div>
+                            <table>
+                                <tr>
+                                    <td colspan="2">CONNECTIVITY</td>
+                                </tr>
+                                <tr>
+                                    <td>WS Connect:</td>
+                                    <td>
+                                        <button id="ws_connect">Connect</button>
+                                        <button id="ws_disconnect">Disconnect (skipAutoReconnect)</button>
+                                        <button id="ws_disconnect2">Disconnect (with autoReconnect)</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Change status color:</td>
+                                    <td>
+                                        <button onclick="_APP.ws_control.status.setStatusColor('pinging');">Pinging</button>
+                                        <button onclick="_APP.ws_control.status.setStatusColor('connecting');">Connecting</button>
+                                        <button onclick="_APP.ws_control.status.setStatusColor('connected');">Connected</button>
+                                        <button onclick="_APP.ws_control.status.setStatusColor('disconnecting');">Disconnecting</button>
+                                        <button onclick="_APP.ws_control.status.setStatusColor('disconnected');">Disconnected</button>
+                                    </td>
+                                </tr>
+                            </table>
+                            <br>
+                            <table>
+                                <tr>
+                                    <td colspan="2">SERVER COMMANDS</td>
+                                </tr>
+                                <tr>
+                                    <td>Restart/Exit:</td>
+                                    <td>
+                                        <button onclick="_APP.debug.wsClient_restart();">process.exit()</button>
+                                    </td>
+                                </tr>
+                            </table>
+                            <br>
+                        </div>
+
+                    </div>
+
+                    <div id="top_nav_view_editor" class="view">
+                        <div class="nav">
+                            <div class="nav_tab" id="commandEditor_tab_section" view="commandEditor_view_section">Section Editor</div>
+                            <div class="nav_tab" id="commandEditor_tab_group"   view="commandEditor_view_group">Group Editor</div>
+                            <div class="nav_tab" id="commandEditor_tab_command" view="commandEditor_view_command">Command Editor</div>
+                        </div>
+
+                        <div class="views">
+                            <div id="commandEditor_sectionGroupDiv">
+                                <table>
+                                    <tr>
+                                        <td>SECTION:</td>
+                                        <td><select id="commandEditor_section_select"><option value="">...Choose section</option></select></td>
+                                    </tr>
+                                    <tr>
+                                        <td>GROUP:</td>
+                                        <td><select id="commandEditor_group_select"><option value="">...Choose group</option></select></td>
+                                    </tr>
+                                    <tr>
+                                        <td>COMMAND:</td>
+                                        <td><select id="commandEditor_command_select"><option value="">...Choose command</option></select></td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div class="view" id="commandEditor_view_section">
+                                <table id="sectionEditor_table" class="table1">
+                                    <tr>
+                                        <th>TYPE:</th>
+                                        <td>SECTION</td>
+                                    </tr>
+                                    <tr> 
+                                        <th>ID:</th>         
+                                        <td><span  id="sectionEditor_table_id"></span></td> 
+                                    </tr>
+                                    <tr> 
+                                        <th>NAME:</th>         
+                                        <td><input type="text" id="sectionEditor_table_name"></td> 
+                                    </tr>
+                                    <tr> 
+                                        <th>ORDER:</th>         
+                                        <td><input type="number" id="sectionEditor_table_order"></td> 
+                                    </tr>
+                                    <tr> 
+                                        <th>ACTIONS</th>   
+                                        <td>
+                                            <button id="sectionEditor_table_reset">Reset</button>
+                                            <button id="sectionEditor_table_remove">Remove</button>
+                                            <button id="sectionEditor_table_update">Update</button>
+                                        </td> 
+                                    </tr>
+                                    <tr> 
+                                        <th>ACTIONS</th>   
+                                        <td>
+                                            <button id="sectionEditor_table_add">Add New Section</button>
+                                        </td> 
+                                    </tr>
+                                </table>
+                                <br>
+                            </div>
+                            
+                            <div class="view" id="commandEditor_view_group">
+                                <table id="groupEditor_table" class="table1">
+                                    <tr>
+                                        <th>TYPE:</th>
+                                        <td>GROUP</td>
+                                    </tr>
+                                    <tr> 
+                                        <th>ID:</th>         
+                                        <td><span  id="groupEditor_table_id"></span></td> 
+                                    </tr>
+                                    <tr> 
+                                        <th>SECTION:</th>         
+                                        <td><select id="groupEditor_table_section"><option value="">...Choose section</option></select></td> 
+                                    </tr>
+                                    <tr> 
+                                        <th>NAME:</th>         
+                                        <td><input type="text" id="groupEditor_table_name"></td> 
+                                    </tr>
+                                    <tr> 
+                                        <th>ORDER:</th>         
+                                        <td><input type="number" id="groupEditor_table_order"></td> 
+                                    </tr>
+                                    <tr> 
+                                        <th>ACTIONS</th>   
+                                        <td>
+                                            <button id="groupEditor_table_reset">Reset</button>
+                                            <button id="groupEditor_table_remove">Remove</button>
+                                            <button id="groupEditor_table_update">Update</button>
+                                        </td> 
+                                    </tr>
+                                    <tr> 
+                                        <th>ACTIONS</th>   
+                                        <td>
+                                            <button id="groupEditor_table_add">Add New Group</button>
+                                        </td> 
+                                    </tr>
+                                </table>
+                                <br>
+                            </div>
+                            
+                            <div class="view" id="commandEditor_view_command">
+                                <table id="commandEditor_table" class="table1">
+                                    <tr>
+                                        <th>TYPE:</th>
+                                        <td>COMMAND</td>
+                                    </tr>
+                                    <tr> 
+                                        <th>IDs:</th>         
+                                        <td><span  id="commandEditor_table_ids"></span></td> 
+                                    </tr>
+                                    <tr> 
+                                        <th>SECTION/GROUP:</th>         
+                                        <td>
+                                            <select id="commandEditor_table_sectionGroup"><option value="">...Choose sectionGroup</option></select>
+                                        </td> 
+                                    </tr>
+                                    <tr> 
+                                        <th>Title</th>        
+                                        <td><input id="commandEditor_table_title" type="text"></td> 
+                                    </tr>
+                                    <tr> 
+                                        <th>Command</th>      
+                                        <td><input id="commandEditor_table_cmd" type="text"></td> 
+                                    </tr>
+                                    <tr> 
+                                        <th>Options</th>
+                                        <td>
+                                            <span class="cmdEditorOption">
+                                                <label for="commandEditor_table_f_hidden">Is hidden</label><input id="commandEditor_table_f_hidden" type="checkbox">
+                                            </span>
+                                            <span class="cmdEditorOption">
+                                                <label for="commandEditor_table_f_ctrlc">Press Ctrl</label><input id="commandEditor_table_f_ctrlc" type="checkbox">
+                                            </span>
+                                            <span class="cmdEditorOption">
+                                                <label for="commandEditor_table_f_enter">Press enter</label><input id="commandEditor_table_f_enter" type="checkbox">
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr> 
+                                        <th>Sort order</th>   
+                                        <td><input id="commandEditor_table_order" type="number" min="1"></td> 
+                                    </tr>
+                                    <tr> 
+                                        <th>ACTIONS</th>   
+                                        <td>
+                                            <button id="commandEditor_table_reset">Reset</button>
+                                            <button id="commandEditor_table_remove">Remove</button>
+                                            <button id="commandEditor_table_update">Update</button>
+                                        </td> 
+                                    </tr>
+                                    <tr> 
+                                        <th>ACTIONS</th>   
+                                        <td>
+                                            <button id="commandEditor_table_add">Add New Command</button>
+                                        </td> 
+                                    </tr>
+                                </table>
+                                <br>
+                            </div>
+
+                        </div>
+                    </div>
+                    
+                    <div id="top_nav_view_terms" class="view">
+                        <!-- MODAL FOR COMMAND ROLODEX - FULL -->
+                        <div class="modal" id="terminalRolodexFull">
+                            
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <div class="modal-header_title">Command Rolodex - Full View</div>
+                                    <span id="terminalRolodexFull_close-btn">&times;</span>
+                                </div>
+
+                                <div class="modal-content_inner">
+                                    <div id="terminalRolodexFull_filters">
+                                        <select id="terminalRolodexFull_section"><option value="">...Choose section</option></select>
+                                        <select id="terminalRolodexFull_sectionGroup"><option value="">...Choose sectionGroup</option></select>
+                                    </div>
+                                    <div id="terminalRolodexFull_cmdDisplay">
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div id="terms_list">
+                            <table id="terms_list_table" class="table2 width100p">
+                                <tr>
+                                    <td>
+                                        <button class="disabled" id="addTerm" onclick="_APP.terminals.createNewTerminal(_APP.terminals.nextTermId, _APP.config.config.terms, 'TERM');">NEW TERM</button>
+                                        <button class="disabled" id="addMini" onclick="_APP.terminals.createNewTerminal(_APP.terminals.nextTermId, _APP.config.config.terms, 'MINI');">NEW MINI</button>
+                                    </td>
+
+                                    <td>
+                                        <span class="disabled" id="terminalRolodexModal_btn">Command Rolodex - Full</span>
+                                        <span class="disabled" id="terminalRolodex_btn">Command Rolodex - Simple</span>
+                                    </td>
+                                    
+                                    <td>
+                                        <select class="disabled" id="terms_list_select"> <option value = "">Display info</option> </select>
+                                        <span id="terminalClose">X</span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- COMMAND ROLODEX - SIMPLE -->
+                        <div class="" id="terminalRolodex">
+                            <table id="terminalRolodex_table1">
+                                <tr>
+                                    <td><select id="terminalRolodex_section_select"><option value="">... Choose section</option></select></td>
+                                    <td><select id="terminalRolodex_group_select"><option value="">... Choose group</option></select></td>
+                                    <td><select id="terminalRolodex_command_select"><option value="">... Choose command</option></select></td>
+                                </tr>
+                            </table>
+                            <table id="terminalRolodex_table2">
+                                <tr>
+                                    <td>
+                                        <button id="terminalRolodex_command_edit">Edit</button>
+                                        <button id="terminalRolodex_command_send">Send</button>
+                                    </td>
+                                    <td>
+                                        <span id="terminalRolodex_command"></span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div id="terms_windows">
+                            <div id="terms_info" class="active">
+                                <br>
+                                Click "NEW TERM" to open a normal terminal.
+                                <br>
+                                Click "NEW MINI" to open a normal terminal that can be used with Command-Er MINI.
+                                <br>
+                                The select menu to the right of the buttons allow you to switch to other open terminals. 
+                                <br>
+                                
+                                <br>
+                                
+                                <div id="terms_info_localGlobalStatus_title">Terminal PIDs in use:</div>
+                                <br>
+                                <div id="terms_info_localGlobalStatus"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="top_nav_view_configUpdater" class="view">
+                        <div id="updateRemoteConfig_div">
+                            <table id="updateRemoteConfig_table">
+                                <tr>
+                                    <td colspan="2">
+                                        UPDATE CONFIG.JSON
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">
+                                        <textarea spellcheck="false" id="updateRemoteConfig_textarea"></textarea>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <button id="updateRemoteConfig_reset">Reset</button>
+                                    </td>
+                                    <td>
+                                        <button id="updateRemoteConfig_save">Save</button>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="bottom">
+            <div id="bottom_data">
+                (C) 2022 Nickolas Andersen (nicksen782)
+                <br>
+                Github Repo: 
+                <a href="https://github.com/nicksen782/Command-Er" target="_blank">nicksen782/Command-Er</a>
+            </div>
+            <div id="bottom_links">
+                <a class="bottom_links" href="index.html">index</a> 
+                <a class="bottom_links" href="main.html">main</a> 
+                <a class="bottom_links" href="debug.html">debug</a> 
+            </div>
+
+            <div id="bottom_vpn_status">
+                <div id="vpn_indicator"></div>
+            </div>
+
+            <div id="bottom_status2">
+                <div id="bottom_status2_connectionDetails">
+                    <table>
+                        <tr>
+                            <td>ClientId:</td> <td> <div id="bottom_status2_connectionDetails_uuid"></div></td>
+                        </tr>
+                        <tr>
+                            <td>Local:</td>    <td> <div id="bottom_status2_connectionDetails_local"></div></td>
+                        </tr>
+                        <tr>
+                            <td>Global:</td>   <td> <div id="bottom_status2_connectionDetails_global"></div></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

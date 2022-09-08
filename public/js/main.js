@@ -1,5 +1,5 @@
 
 window.onload = async function(){
-    appView = "index";
+    appView = "main";
     window.onload = null;
 };

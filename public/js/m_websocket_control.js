@@ -99,11 +99,18 @@ _APP.ws_control = {
             // console.log("UPDATE_CONFIG:", this.parent.parent.config.config);
             // console.log("UPDATE_CONFIG:", data.data);
             
-            // Save the updated data.
-            this.parent.parent.config.config = data.data;
-
-            // Display the updated data.
-            this.parent.parent.configUpdater.DOM.updateRemoteConfig_textarea.value = JSON.stringify(data.data,null,1);
+            if(data.error){
+                // Error. Display a warning.
+                alert("UPDATE_CONFIG: The data sent unable to be parsed.\n\nPlease correct this and try again.");
+                return; 
+            }
+            else{
+                // Save the updated data.
+                this.parent.parent.config.config = data.data;
+    
+                // Display the updated data.
+                this.parent.parent.configUpdater.DOM.updateRemoteConfig_textarea.value = JSON.stringify(data.data,null,1);
+            }
         },
         
         // SECTIONS 

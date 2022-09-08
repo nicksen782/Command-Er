@@ -196,11 +196,15 @@ let setErrorHandlers = function(){
         }
 
         // Get a list of the WS routes from ws_event_handlers.
-        let expectedWsRoutes = [
-            ...Object.keys(_APP.m_websocket_node.ws_event_handlers.JSON),
-            ...Object.keys(_APP.m_websocket_node.ws_event_handlers.TEXT),
-        ]
+        let expectedWsRoutes = [];
         
+        let types = ["JSON", "TEXT"];
+        for(let i=0; i<types.length; i+=1){
+            for(let key in _APP.m_websocket_node.handlers[types[i]]){
+                expectedWsRoutes.push( ..._APP.m_websocket_node.handlers[types[i]][key] );
+            }
+        }
+
         // If any routes are in expected routes but not the manual routes then add them to the warn list. 
         for(let key of expectedWsRoutes){
             if(manualWsRoutes.indexOf(key) == -1){

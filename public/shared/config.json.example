@@ -1,7 +1,8 @@
 {
     "toggles": {
         "show_APP_consolelog": true,
-        "isActive_nodeWsServer": true
+        "isActive_nodeWsServer": true,
+        "isActive_commanderMini": true
     },
     "node": {
         "http": {

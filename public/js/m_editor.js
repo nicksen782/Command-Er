@@ -211,7 +211,7 @@ _APP.editor = {
         groupChange:function(gId){
             // console.log("groupChange: gId:", gId);
             if(!gId){ 
-                console.log("groupChange: No gId. Will clear this editor.");
+                // console.log("groupChange: No gId. Will clear this editor.");
                 this.parent.groups.clearEditorTable();
                 this.parent.groups.disableEditorTableActions();
                 this.parent.commands.clearEditorTable();
@@ -252,7 +252,7 @@ _APP.editor = {
         commandChange:function(cId){
             // console.log("commandChange: cId:", cId);
             if(!cId){ 
-                console.log("commandChange: No cId. Will clear this editor.");
+                // console.log("commandChange: No cId. Will clear this editor.");
                 this.parent.commands.clearEditorTable();
                 this.parent.commands.disableEditorTableActions();
                 return; 

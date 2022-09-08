@@ -48,43 +48,39 @@ let _MOD = {
 
     // Adds routes for this module.
     addRoutes: function(app, express){
-        // ******************
-        // Websockets routes.
-        // ******************
+        // ********************
+        // Websockets "routes".
+        // ********************
 
-        _APP.addToRouteList({ path: "SUBSCRIBE"        , method: "ws", args: [], file: __filename, desc: "(JSON): Subscript to event." });
-        _APP.addToRouteList({ path: "UNSUBSCRIBE"      , method: "ws", args: [], file: __filename, desc: "(JSON): Unsubscribe from event." });
-        _APP.addToRouteList({ path: "GET_SUBSCRIPTIONS", method: "ws", args: [], file: __filename, desc: "(JSON): Get list of active subscriptions." });
-        _APP.addToRouteList({ path: "GET_ONE_CMD"      , method: "ws", args: [], file: __filename, desc: "(JSON): GET_ONE_CMD." });
-        _APP.addToRouteList({ path: "TYPE_CMD_TO_TERM" , method: "ws", args: [], file: __filename, desc: "(JSON): TYPE_CMD_TO_TERM." });
-        _APP.addToRouteList({ path: "UPDATE_CONFIG"    , method: "ws", args: [], file: __filename, desc: "(JSON): UPDATE_CONFIG." });
-        
-        // EDITOR: SECTION/GROUP/COMMAND
-        _APP.addToRouteList({ path: "UPDATE_ONE_SECTION" , method: "ws", args: [], file: __filename, desc: "(JSON): UPDATE_ONE_SECTION." });
-        _APP.addToRouteList({ path: "ADD_ONE_SECTION"    , method: "ws", args: [], file: __filename, desc: "(JSON): ADD_ONE_SECTION." });
-        _APP.addToRouteList({ path: "REMOVE_ONE_SECTION" , method: "ws", args: [], file: __filename, desc: "(JSON): REMOVE_ONE_SECTION." });
-        _APP.addToRouteList({ path: "UPDATE_ONE_GROUP"   , method: "ws", args: [], file: __filename, desc: "(JSON): UPDATE_ONE_GROUP." });
-        _APP.addToRouteList({ path: "ADD_ONE_GROUP"      , method: "ws", args: [], file: __filename, desc: "(JSON): ADD_ONE_GROUP." });
-        _APP.addToRouteList({ path: "REMOVE_ONE_GROUP"   , method: "ws", args: [], file: __filename, desc: "(JSON): REMOVE_ONE_GROUP." });
-        _APP.addToRouteList({ path: "UPDATE_ONE_COMMAND" , method: "ws", args: [], file: __filename, desc: "(JSON): UPDATE_ONE_COMMAND." });
-        _APP.addToRouteList({ path: "ADD_ONE_COMMAND"    , method: "ws", args: [], file: __filename, desc: "(JSON): ADD_ONE_COMMAND." });
-        _APP.addToRouteList({ path: "REMOVE_ONE_COMMAND" , method: "ws", args: [], file: __filename, desc: "(JSON): REMOVE_ONE_COMMAND." });
-        
-        _APP.addToRouteList({ path: "PING"                      , method: "ws", args: [], file: __filename, desc: "(TEXT): PING." });
-        _APP.addToRouteList({ path: "PROCESS_EXIT"              , method: "ws", args: [], file: __filename, desc: "(TEXT): PROCESS_EXIT." });
-        _APP.addToRouteList({ path: "CLIENT_COUNT"              , method: "ws", args: [], file: __filename, desc: "(TEXT): CLIENT_COUNT." });
-        _APP.addToRouteList({ path: "CONNECTIVITY_STATUS_UPDATE", method: "ws", args: [], file: __filename, desc: "(TEXT): CONNECTIVITY_STATUS_UPDATE." });
-        _APP.addToRouteList({ path: "SECTIONS_LIST"             , method: "ws", args: [], file: __filename, desc: "(TEXT): SECTIONS_LIST." });
-        _APP.addToRouteList({ path: "GROUPS_LIST"               , method: "ws", args: [], file: __filename, desc: "(TEXT): GROUPS_LIST." });
-        _APP.addToRouteList({ path: "COMMANDS_LIST"             , method: "ws", args: [], file: __filename, desc: "(TEXT): COMMANDS_LIST." });
-        _APP.addToRouteList({ path: "GET_DB_AS_JSON"            , method: "ws", args: [], file: __filename, desc: "(TEXT): GET_DB_AS_JSON." });
+        _APP.addToRouteList({ path: "SUBSCRIBE"                  , method: "ws", args: [], file: __filename, desc: "JSON: subscriptions    : Subscribe to event." });
+        _APP.addToRouteList({ path: "UNSUBSCRIBE"                , method: "ws", args: [], file: __filename, desc: "JSON: subscriptions    : Unsubscribe from event." });
+        _APP.addToRouteList({ path: "GET_SUBSCRIPTIONS"          , method: "ws", args: [], file: __filename, desc: "TEXT: subscriptions    : Get list of active subscriptions." });
 
-        // ********************************************
-        // HTTP routes. (Command-Er or Command-Er MINI.
-        // ********************************************
+        _APP.addToRouteList({ path: "UPDATE_CONFIG"              , method: "ws", args: [], file: __filename, desc: "JSON: config           : Updates config.json." });
+        _APP.addToRouteList({ path: "GET_DB_AS_JSON"             , method: "ws", args: [], file: __filename, desc: "TEXT: config           : Returns the database as JSON." });
+        
+        _APP.addToRouteList({ path: "UPDATE_ONE_SECTION"         , method: "ws", args: [], file: __filename, desc: "JSON: dbEditor_sections: Updates one section." });
+        _APP.addToRouteList({ path: "ADD_ONE_SECTION"            , method: "ws", args: [], file: __filename, desc: "JSON: dbEditor_sections: Adds one section." });
+        _APP.addToRouteList({ path: "REMOVE_ONE_SECTION"         , method: "ws", args: [], file: __filename, desc: "JSON: dbEditor_sections: Removes one section." });
+        
+        _APP.addToRouteList({ path: "UPDATE_ONE_GROUP"           , method: "ws", args: [], file: __filename, desc: "JSON: dbEditor_groups  : Updates one group." });
+        _APP.addToRouteList({ path: "ADD_ONE_GROUP"              , method: "ws", args: [], file: __filename, desc: "JSON: dbEditor_groups  : Adds one group." });
+        _APP.addToRouteList({ path: "REMOVE_ONE_GROUP"           , method: "ws", args: [], file: __filename, desc: "JSON: dbEditor_groups  : Removes one group." });
+        
+        _APP.addToRouteList({ path: "UPDATE_ONE_COMMAND"         , method: "ws", args: [], file: __filename, desc: "JSON: dbEditor_commands: Updates one command." });
+        _APP.addToRouteList({ path: "ADD_ONE_COMMAND"            , method: "ws", args: [], file: __filename, desc: "JSON: dbEditor_commands: Adds one command." });
+        _APP.addToRouteList({ path: "REMOVE_ONE_COMMAND"         , method: "ws", args: [], file: __filename, desc: "JSON: dbEditor_commands: Removes one command." });
+        
+        _APP.addToRouteList({ path: "TYPE_CMD_TO_TERM"           , method: "ws", args: [], file: __filename, desc: "JSON: general          : TYPE_CMD_TO_TERM." });
+        _APP.addToRouteList({ path: "PROCESS_EXIT"               , method: "ws", args: [], file: __filename, desc: "TEXT: general          : Tells node to exit (will restart with PM2.)" });
+        _APP.addToRouteList({ path: "CONNECTIVITY_STATUS_UPDATE" , method: "ws", args: [], file: __filename, desc: "TEXT: general          : Get connectivity statuses." });
+
+        // ************
+        // HTTP routes. 
+        // ************
 
         // /GET_DB_AS_JSON : Get DB as JSON.
-        _APP.addToRouteList({ path: "/GET_DB_AS_JSON", method: "post", args: [], file: __filename, desc: "Get DB as JSON." });
+        _APP.addToRouteList({ path: "/GET_DB_AS_JSON", method: "post", args: [], file: __filename, desc: "Returns the database as JSON." });
         app.post('/GET_DB_AS_JSON'    ,express.json(), async (req, res) => {
             // Object to store the results. 
             let obj = {
@@ -106,118 +102,6 @@ let _MOD = {
             res.json(obj);
         });
 
-        // ********************************************
-        // HTTP routes. (Intended for Command-Er MINI).
-        // ********************************************
-
-        // /MINI/GET_UNIQUE_UUIDS : Clients connected to this Command-Er server.
-        _APP.addToRouteList({ path: "/MINI/GET_UNIQUE_UUIDS", method: "post", args: [], file: __filename, desc: "Get clients connected to this Command-Er server." });
-        app.post('/MINI/GET_UNIQUE_UUIDS'    ,express.json(), async (req, res) => {
-            let uuids = [];
-           _MOD.ws.clients.forEach(function each(ws) { 
-                if (ws.readyState === 1 && ws.CONFIG.isTerm && ws.CONFIG.type == "MINI") {
-                    if(uuids.indexOf(ws.CONFIG.uuid) == -1){ uuids.push(ws.CONFIG.uuid); }
-                }
-            });
-            res.json(uuids);
-        });
-        
-        // /MINI/GET_MINI_TERMS   : Get MINI terms connected to this Command-Er server.
-        _APP.addToRouteList({ path: "/MINI/GET_MINI_TERMS", method: "post", args: [], file: __filename, desc: "Get MINI terms connected to this Command-Er server." });
-        app.post('/MINI/GET_MINI_TERMS'    ,express.json(), async (req, res) => {
-            let availableClients = [];
-
-            _MOD.ws.clients.forEach(function each(ws) { 
-                if (
-                    ws.readyState === 1 
-                    && ws.CONFIG.isTerm 
-                    && ws.CONFIG.type == "MINI"
-                ) {
-                    availableClients.push(ws.CONFIG.uuid);
-                }
-            });
-
-            res.json(availableClients);
-        });
-        
-        // /MINI/RUNCMD           : Allows Command-Er MINI to request a command to be sent to a specific MINI term.
-        _APP.addToRouteList({ path: "/MINI/RUNCMD", method: "post", args: [], file: __filename, desc: "Allows Command-Er MINI to request a command to be sent to a specific MINI term." });
-        app.post('/MINI/RUNCMD'    ,express.json(), async (req, res) => {
-            let target;
-            let msg = ``;
-            let infoLine;
-            let r;
-
-            // Look through each Websocket connect to find the target.
-            _MOD.ws.clients.forEach(function each(ws) { 
-                // If the target was already found then quit looking. 
-                if(target){ return; }
-
-                // Try to find the matching target.
-                if (
-                    ws.readyState === 1                // Is open.
-                    && ws.CONFIG.isTerm                // Is a term.
-                    && ws.CONFIG.uuid == req.body.uuid // Matching UUID.
-                    && ws.CONFIG.type == "MINI"        // Terminal type of "MINI".
-                ) {
-                    // Save the target. Stop looking. 
-                    target = ws; return;
-                }
-            });
-
-            // Was the matching target found? 
-            if(target){
-                infoLine = `RUNCMD: type: ${req.body.type}, uuid: ${req.body.uuid}, sId: ${req.body.sId}, gId: ${req.body.gId}, cId: ${req.body.cId}`;
-
-                // Use ids to get from the database?
-                if(req.body.type == "FROMCONFIG"){
-                    // Use the sId, gId, and cId to get the actual command from the database.
-                    r = await _MOD.queries.GET_ONE_CMD(req.body.sId, req.body.gId, req.body.cId);
-                    if(r){
-                        // Send the command. 
-                        // target.CONFIG.tty.write(` ${r.f_ctrlc ? "\u0003" : ""}${r.cmd}${r.f_enter ? "\r\n" : ""}`);
-                        // target.CONFIG.tty.write(` ${r.f_ctrlc ? "\u0003" : ""}${r.cmd}${r.f_enter ? "\n" : ""}`);
-                        target.CONFIG.tty.write(` ${r.f_ctrlc ? "\u0003" : ""}${r.cmd}${r.f_enter ? "\r" : ""}`);
-    
-                        // Return a response.
-                        msg = `*SUCCESS* ${infoLine}, cmd: ${r.cmd}`;
-                        console.log(msg); 
-                        res.json(msg);
-                    }
-                    else{
-                        // Return a response.
-                        msg = `*FAILURE* ${JSON.stringify(results)}, ${infoLine}`;
-                        console.log(msg); 
-                        res.json(msg);
-                    }
-                }
-
-                // Raw command ("\r\n" (enter) must also be included if needed.)
-                else if(req.body.type == "RAW"){
-                    // Send the command. 
-                    target.CONFIG.tty.write(` ${req.body.cmd}`);
-
-                    // Return a response.
-                    msg = `*SUCCESS* ${infoLine}, cmd: ${req.body.cmd}`;
-                    console.log(msg); 
-                    res.json(msg);
-                }
-                
-                // FAIL. Not a known type. 
-                else { 
-                    msg = `INVALID TYPE: ${infoLine}`;
-                    console.log(msg); 
-                    res.json(msg);
-                }
-            }
-
-            // FAIL. Target was NOT found.
-            else{
-                msg = `*FAILURE* TARGET NOT FOUND: RUNCMD: ${req.body.type}, uuid: ${req.body.uuid}, cId: ${req.body.cId}, cmd: ${req.body.cmd}`;
-                console.log(msg); 
-                res.json(msg);
-            }
-        });
     },
 
     // **********
@@ -265,340 +149,431 @@ let _MOD = {
         "CLOSED"    :3,
     },
     ws_event_handlers:{
-        JSON:{
-            SUBSCRIBE: async function(ws, data){
-                // console.log(`mode: ${data.mode}, data:`, data.data);
-                _MOD.ws_utilities.addSubscription(ws, data.data);
+        // Subscription handler.
+        subscriptions: {
+            modes: {
+                JSON:{
+                    SUBSCRIBE  : async function(ws, data){ _MOD.ws_utilities.subscriptions.funcs.SUBSCRIBE(ws, data.data); },
+                    UNSUBSCRIBE: async function(ws, data){ _MOD.ws_utilities.subscriptions.funcs.UNSUBSCRIBE(ws, data.data); },
+                },
+                TEXT:{
+                    GET_SUBSCRIPTIONS: async function(ws, data){ _MOD.ws_utilities.subscriptions.funcs.GET_SUBSCRIPTIONS(ws, data.data); },
+                },
             },
-            UNSUBSCRIBE: async function(ws, data){
-                // console.log(`mode: ${data.mode}, data:`, data.data);
-                _MOD.ws_utilities.removeSubscription(ws, data.data);
-            },
-            GET_SUBSCRIPTIONS: async function(ws, data){
-                // console.log(`mode: ${data.mode}, data:`, data.data);
-                
-                // Send the client's current subscription list. 
-                ws.send(JSON.stringify({"mode":"GET_SUBSCRIPTIONS", "data":ws.subscriptions}));
-            },
-
-            // DEBUG
-            GET_ONE_CMD: async function(ws, data){
-                // console.log(`mode: ${data.mode}, data:`, data.data);
-                let resp = await _MOD.queries.GET_ONE_CMD(data.data.sId, data.data.gId, data.data.cId);
-                ws.send( JSON.stringify( { "mode":"GET_ONE_CMD", "data":resp } ) );
-            },
-            // TODO:
-            TYPE_CMD_TO_TERM: async function(ws, data){
-                console.log(`mode: ${data.mode}, data:`, data.data);
-            },
-            UPDATE_CONFIG: async function(ws, data){
-                // console.log(data);
-                // console.log(JSON.parse(data.data));
-                
-                // Write the updated config.json.
-                fs.writeFileSync(_APP.m_config.config_filename, data.data, {});
-
-                // Store the updated config.json.
-                _APP.m_config.config = JSON.parse(data.data);
-
-                 // Send back the updated config.json.
-                 ws.send( JSON.stringify( { 
-                    "mode":"UPDATE_CONFIG", 
-                    "data":_APP.m_config.config 
-                } ) );
-            },
-
-            // SECTION UPDATE/ADD/REMOVE
-
-            UPDATE_ONE_SECTION: async function(ws, data){
-                // console.log(`mode: ${data.mode}, data:`, data.data);
-                
-                // Break-out the data.
-                let obj = {
-                    sId   : data.data.sId  ,
-                    name  : data.data.updated.name ,
-                    order : data.data.updated.order,
-                };
-                
-                // Update the group in the database. 
-                let resp = await _MOD.queries.UPDATE_ONE_SECTION(obj);
-                
-                // Get updated commands related to this group.
-                let updatedGrps = await _MOD.queries.GET_GROUPS_IN_SECTION(obj.sId);
-                
-                // Get updated commands related to this group.
-                let updatedCmds = await _MOD.queries.GET_CMDS_IN_SECTION(obj.sId);
-                
-                // Send back the status of the request and the updated group and related commands.
-                ws.send( JSON.stringify( { 
-                    "mode":"UPDATE_ONE_SECTION", 
-                    "data":{
-                        updatedRec : await _MOD.queries.GET_ONE_SECTION(obj.sId), 
-                        updatedGrps: updatedGrps,
-                        updatedCmds: updatedCmds,
-                        _err: resp.err ? resp.err : false
-                    } 
-                } ) );
-            },
-            ADD_ONE_SECTION: async function(ws, data){
-                // console.log(`mode: ${data.mode}, data:`, data.data);
-                
-                // Break-out the data.
-                let obj = {
-                    "name"    : data.data.added.name,
-                };
-
-                // Add the command to the database. 
-                let resp = await _MOD.queries.ADD_ONE_SECTION(obj);
-
-                // Send back the status of the request and the new record. 
-                ws.send( JSON.stringify( { 
-                    "mode":"ADD_ONE_SECTION", 
-                    "data":{
-                        newRec : await _MOD.queries.GET_ONE_SECTION(resp.lastID), 
-                        _err: resp.err ? resp.err : false
-                    } 
-                } ) );
-            },
-            REMOVE_ONE_SECTION: async function(ws, data){
-                // console.log(`mode: ${data.mode}, data:`, data.data);
-                
-                // Break-out the data.
-                let obj = {
-                    "sId"     : data.data.removed.sId,
-                };
-
-                // Remove the section from the database. 
-                let resp = await _MOD.queries.REMOVE_ONE_SECTION(obj);
-
-                // Send back the status of the request.
-                ws.send( JSON.stringify( { 
-                    "mode":"REMOVE_ONE_SECTION", 
-                    "data":{
-                        removedRec : obj, 
-                        _err: resp.err ? resp.err : false
-                    } 
-                } ) );
-            },
-
-            // GROUP UPDATE/ADD/REMOVE
-
-            UPDATE_ONE_GROUP: async function(ws, data){
-                // console.log(`mode: ${data.mode}, data:`, data.data);
-                
-                // Break-out the data.
-                let obj = {
-                    gId   : data.data.gId  ,
-                    sId   : data.data.updated.sId  ,
-                    name  : data.data.updated.name ,
-                    order : data.data.updated.order,
-                };
-
-                // Update the group in the database. 
-                let resp = await _MOD.queries.UPDATE_ONE_GROUP(obj);
-
-                // Get updated commands related to this group.
-                let updatedCmds = await _MOD.queries.GET_CMDS_IN_GROUP(obj.gId);
-                
-                // Send back the status of the request and the updated group and related commands.
-                ws.send( JSON.stringify( { 
-                    "mode":"UPDATE_ONE_GROUP", 
-                    "data":{
-                        updatedRec : await _MOD.queries.GET_ONE_GROUP(obj.gId), 
-                        updatedCmds: updatedCmds,
-                        _err: resp.err ? resp.err : false
-                    } 
-                } ) );
-            },
-            ADD_ONE_GROUP: async function(ws, data){
-                // console.log(`mode: ${data.mode}, data:`, data.data);
-                
-                // Break-out the data.
-                let obj = {
-                    "sId"     : data.data.added.sId,
-                    "gId"     : data.data.added.gId,
-                    "name"    : data.data.added.name,
-                };
-
-                // Add the command to the database. 
-                let resp = await _MOD.queries.ADD_ONE_GROUP(obj);
-
-                // Send back the status of the request and the new record. 
-                ws.send( JSON.stringify( { 
-                    "mode":"ADD_ONE_GROUP", 
-                    "data":{
-                        newRec : await _MOD.queries.GET_ONE_GROUP(resp.lastID), 
-                        _err: resp.err ? resp.err : false
-                    } 
-                } ) );
-            },
-            REMOVE_ONE_GROUP: async function(ws, data){
-                // console.log(`mode: ${data.mode}, data:`, data.data);
-                
-                // Break-out the data.
-                let obj = {
-                    "gId"     : data.data.removed.gId,
-                };
-
-                // Remove the command from the database. 
-                let resp = await _MOD.queries.REMOVE_ONE_GROUP(obj);
-
-                // Send back the status of the request.
-                ws.send( JSON.stringify( { 
-                    "mode":"REMOVE_ONE_GROUP", 
-                    "data":{
-                        removedRec : obj, 
-                        _err: resp.err ? resp.err : false
-                    } 
-                } ) );
-            },
-
-            // COMMAND UPDATE/ADD/REMOVE.
-
-            UPDATE_ONE_COMMAND: async function(ws, data){
-                // console.log(`mode: ${data.mode}, data:`, data.data);
-                
-                // Break-out the data.
-                let obj = {
-                    "cId"     : data.data.cId,
-                    "sId"     : data.data.updated.sId,
-                    "gId"     : data.data.updated.gId,
-                    "title"   : data.data.updated.title,
-                    "cmd"     : data.data.updated.cmd,
-                    "f_ctrlc" : data.data.updated.f_ctrlc,
-                    "f_enter" : data.data.updated.f_enter,
-                    "f_hidden": data.data.updated.f_hidden,
-                    "order"   : data.data.updated.order,
-                };
-
-                // Update the command in the database. 
-                let resp = await _MOD.queries.UPDATE_ONE_COMMAND(obj);
-
-                // Send back the status of the request and the updated command.
-                ws.send( JSON.stringify( { 
-                    "mode":"UPDATE_ONE_COMMAND", 
-                    "data":{
-                        updatedRec : await _MOD.queries.GET_ONE_CMD(obj.sId, obj.gId, obj.cId), 
-                        _err: resp.err ? resp.err : false
-                    } 
-                } ) );
-            },
-            ADD_ONE_COMMAND: async function(ws, data){
-                // console.log(`mode: ${data.mode}, data:`, data.data);
-                
-                // Break-out the data.
-                let obj = {
-                    "cId"     : data.data.added.cId,
-                    "sId"     : data.data.added.sId,
-                    "gId"     : data.data.added.gId,
-                    "title"   : data.data.added.title,
-                    "cmd"     : data.data.added.cmd,
-                    "f_ctrlc" : data.data.added.f_ctrlc,
-                    "f_enter" : data.data.added.f_enter,
-                    "f_hidden": data.data.added.f_hidden,
-                    "order"   : data.data.added.order,
-                };
-
-                // Add the command to the database. 
-                let resp = await _MOD.queries.ADD_ONE_COMMAND(obj);
-
-                // Send back the status of the request and the new record. 
-                ws.send( JSON.stringify( { 
-                    "mode":"ADD_ONE_COMMAND", 
-                    "data":{
-                        newRec : await _MOD.queries.GET_ONE_CMD(obj.sId, obj.gId, resp.lastID), 
-                        _err: resp.err ? resp.err : false
-                    } 
-                } ) );
-            },
-            REMOVE_ONE_COMMAND: async function(ws, data){
-                // console.log(`mode: ${data.mode}, data:`, data.data);
-                
-                // Break-out the data.
-                let obj = {
-                    "cId"     : data.data.removed.cId,
-                    "sId"     : data.data.removed.sId,
-                    "gId"     : data.data.removed.gId,
-                };
-
-                // Remove the command from the database. 
-                let resp = await _MOD.queries.REMOVE_ONE_COMMAND(obj);
-
-                // Send back the status of the request.
-                ws.send( JSON.stringify( { 
-                    "mode":"REMOVE_ONE_COMMAND", 
-                    "data":{
-                        removedRec : obj, 
-                        _err: resp.err ? resp.err : false
-                    } 
-                } ) );
+            funcs: {
+                // TEXT
+                GET_SUBSCRIPTIONS  : function(ws)   { 
+                    // Send the client's current subscription list. 
+                    ws.send(JSON.stringify({"mode":"GET_SUBSCRIPTIONS", "data":ws.subscriptions}));
+                },
+                // JSON
+                SUBSCRIBE   : function(ws, eventType){ 
+                    function conflictCheck(){
+                        switch(eventType){
+                            //
+                            // case "STATS1" : { break; }
+                            // case "STATS2" : { break; }
+        
+                            //
+                            default: { break; }
+                        }
+                    };
+        
+                    // Only accept valid eventTypes.
+                    if(_MOD.subscriptionKeys.indexOf(eventType) != -1){
+                        // Add the eventType if it doesn't exist.
+                        if(ws.subscriptions.indexOf(eventType) == -1){
+                            conflictCheck();
+                            ws.subscriptions.push(eventType);
+                        }
+        
+                        // Send the client's current subscription list. 
+                        ws.send(JSON.stringify({"mode":"SUBSCRIBE", "data":ws.subscriptions}));
+                    }
+                    else{
+                        console.log("Invalid subscription eventType provided:", eventType);
+                    }
+                },
+                // JSON
+                UNSUBSCRIBE: function(ws, eventType){ 
+                    // Only accept valid eventTypes.
+                    if(_MOD.subscriptionKeys.indexOf(eventType) != -1){
+                        // Remove the eventType if it exists.
+                        if(ws.subscriptions.indexOf(eventType) != -1){
+                            ws.subscriptions = ws.subscriptions.filter(d=>d!=eventType);
+                        }
+        
+                        // Send the client's current subscription list. 
+                        ws.send(JSON.stringify({"mode":"UNSUBSCRIBE", "data":ws.subscriptions}));
+                    }
+                    else{
+                        console.log("Invalid subscription eventType provided:", eventType);
+                    }
+                },
             },
         },
-        TEXT:{
-            PING: async function(ws, data){
-                // console.log(`mode: ${data.mode}, data:`, data.data);
-                ws.send("PONG");
-            },
 
-            PROCESS_EXIT: async function(ws, data){
-                // console.log(`mode: ${data.mode}, data:`, data.data);
-                console.log(":: PROCESS_EXIT ::");
-                process.exit(0);
-            },
-            
-            CLIENT_COUNT: async function(ws, data){
-                // console.log(`mode: ${data.mode}, data:`, data.data);
-                ws.send( JSON.stringify( { "mode":"CLIENT_COUNT", "data":_MOD.ws_utilities.getClientCount() } ) );
-            },
-
-            GET_DB_AS_JSON: async function(ws, data){
-                // console.log(`mode: ${data.mode}, data:`, data.data);
-
-                // Object to store the results. 
-                let obj = {
-                    "sections" : [],
-                    "groups"   : [],
-                    "commands" : [],
-                };
-
-                // Get the data.
-                let proms = [
-                    new Promise(async function(res,rej){ let resp = await _MOD.queries.SECTIONS_LIST(); obj.sections = resp; res(); }),
-                    new Promise(async function(res,rej){ let resp = await _MOD.queries.GROUPS_LIST();   obj.groups   = resp; res(); }),
-                    new Promise(async function(res,rej){ let resp = await _MOD.queries.COMMANDS_LIST(); obj.commands = resp; res(); }),
-                ];
-
-                // Wait for the data request to complete. 
-                await Promise.all(proms);
-
-                // Return the data.
-                ws.send( JSON.stringify( { "mode":"GET_DB_AS_JSON", "data":obj } ) );
-            },
-
-            CONNECTIVITY_STATUS_UPDATE: async function(ws, data){
-                // console.log(`mode: ${data.mode}, data:`, data.data);
-                let resp = _MOD.ws_utilities.getGlobalClientCounts(ws.CONFIG.uuid);
-                if(_APP.m_config.config.connectionCheck.active){
-                    resp.vpnCheck = await _MOD.pingCheck(_APP.m_config.config.connectionCheck.url, 1000);
+        // Config update and retrieval.
+        config:{
+            modes:{
+                JSON:{
+                    UPDATE_CONFIG: async function(ws, data){ _MOD.ws_event_handlers.config.funcs.UPDATE_CONFIG(ws, data); },
+                },
+                TEXT:{ 
+                    GET_DB_AS_JSON: async function(ws, data){ _MOD.ws_event_handlers.config.funcs.GET_DB_AS_JSON(ws, data); },
                 }
-                ws.send(JSON.stringify({"mode":"CONNECTIVITY_STATUS_UPDATE", "data":resp }));
             },
+            funcs:{
+                // JSON
+                UPDATE_CONFIG: async function(ws, data){
+                    // Make sure that the JSON is valid. The client should have already verified this.
+                    let parsed;
+                    try{ parsed = JSON.parse(data.data); }
+                    catch(e){
+                        console.log("ERROR: Failure to parse the new config.json data.");
+                        
+                        // Send back an error.
+                        ws.send( JSON.stringify( { 
+                            "mode" :"UPDATE_CONFIG", 
+                            "data" : "",
+                            "error": true,
+                        } ) );
+                        return; 
+                    }
 
-            // DEBUG
-            SECTIONS_LIST: async function(ws, data){
-                // console.log(`mode: ${data.mode}, data:`, data.data);
-                let resp = await _MOD.queries.SECTIONS_LIST();
-                ws.send( JSON.stringify( { "mode":"SECTIONS_LIST", "data":resp } ) );
+                    // Write the updated config.json.
+                    fs.writeFileSync(_APP.m_config.config_filename, data.data, {});
+    
+                    // Store the updated config.json.
+                    _APP.m_config.config = parsed;
+    
+                     // Send back the updated config.json.
+                     ws.send( JSON.stringify( { 
+                        "mode":"UPDATE_CONFIG", 
+                        "data":_APP.m_config.config,
+                        "error": false,
+                    } ) );
+                },
+                // TEXT
+                GET_DB_AS_JSON: async function(ws, data){
+                    // console.log(`mode: ${data.mode}, data:`, data.data);
+    
+                    // Object to store the results. 
+                    let obj = {
+                        "sections" : [],
+                        "groups"   : [],
+                        "commands" : [],
+                    };
+    
+                    // Get the data.
+                    let proms = [
+                        new Promise(async function(res,rej){ let resp = await _MOD.queries.SECTIONS_LIST(); obj.sections = resp; res(); }),
+                        new Promise(async function(res,rej){ let resp = await _MOD.queries.GROUPS_LIST();   obj.groups   = resp; res(); }),
+                        new Promise(async function(res,rej){ let resp = await _MOD.queries.COMMANDS_LIST(); obj.commands = resp; res(); }),
+                    ];
+    
+                    // Wait for the data request to complete. 
+                    await Promise.all(proms);
+    
+                    // Return the data.
+                    ws.send( JSON.stringify( { "mode":"GET_DB_AS_JSON", "data":obj } ) );
+                },
             },
-            GROUPS_LIST: async function(ws, data){
-                // console.log(`mode: ${data.mode}, data:`, data.data);
-                let resp = await _MOD.queries.GROUPS_LIST();
-                ws.send( JSON.stringify( { "mode":"GROUPS_LIST", "data":resp } ) );
+        },
+
+        // DB editor: sections.
+        dbEditor_sections:{
+            modes:{
+                JSON:{
+                    UPDATE_ONE_SECTION: async function(ws, data){ _MOD.ws_event_handlers.dbEditor_sections.funcs.UPDATE_ONE_SECTION(ws, data);},
+                    ADD_ONE_SECTION   : async function(ws, data){ _MOD.ws_event_handlers.dbEditor_sections.funcs.ADD_ONE_SECTION(ws, data); },
+                    REMOVE_ONE_SECTION: async function(ws, data){ _MOD.ws_event_handlers.dbEditor_sections.funcs.REMOVE_ONE_SECTION(ws, data); },
+                },
+                TEXT:{},
             },
-            COMMANDS_LIST: async function(ws, data){
-                // console.log(`mode: ${data.mode}, data:`, data.data);
-                let resp = await _MOD.queries.COMMANDS_LIST();
-                ws.send( JSON.stringify( { "mode":"COMMANDS_LIST", "data":resp } ) );
+            funcs:{
+                // JSON
+                UPDATE_ONE_SECTION: async function(ws, data){
+                    // Break-out the data.
+                    let obj = {
+                        sId   : data.data.sId  ,
+                        name  : data.data.updated.name ,
+                        order : data.data.updated.order,
+                    };
+                    
+                    // Update the section in the database. 
+                    let resp = await _MOD.queries.UPDATE_ONE_SECTION(obj);
+                    
+                    // Get updated groups related to this section.
+                    let updatedGrps = await _MOD.queries.GET_GROUPS_IN_SECTION(obj.sId);
+                    
+                    // Get updated commands related to this section.
+                    let updatedCmds = await _MOD.queries.GET_CMDS_IN_SECTION(obj.sId);
+                    
+                    // Send back the status of the request and the updated group and related commands.
+                    ws.send( JSON.stringify( { 
+                        "mode":"UPDATE_ONE_SECTION", 
+                        "data":{
+                            updatedRec : await _MOD.queries.GET_ONE_SECTION(obj.sId), 
+                            updatedGrps: updatedGrps,
+                            updatedCmds: updatedCmds,
+                            _err: resp.err ? resp.err : false
+                        } 
+                    } ) );
+                },
+                // JSON
+                ADD_ONE_SECTION: async function(ws, data){
+                    // Break-out the data.
+                    let obj = {
+                        "name"    : data.data.added.name,
+                    };
+    
+                    // Add the command to the database. 
+                    let resp = await _MOD.queries.ADD_ONE_SECTION(obj);
+    
+                    // Send back the status of the request and the new record. 
+                    ws.send( JSON.stringify( { 
+                        "mode":"ADD_ONE_SECTION", 
+                        "data":{
+                            newRec : await _MOD.queries.GET_ONE_SECTION(resp.lastID), 
+                            _err: resp.err ? resp.err : false
+                        } 
+                    } ) );
+                },
+                // JSON
+                REMOVE_ONE_SECTION: async function(ws, data){
+                    // Break-out the data.
+                    let obj = {
+                        "sId"     : data.data.removed.sId,
+                    };
+    
+                    // Remove the section from the database. 
+                    let resp = await _MOD.queries.REMOVE_ONE_SECTION(obj);
+    
+                    // Send back the status of the request.
+                    ws.send( JSON.stringify( { 
+                        "mode":"REMOVE_ONE_SECTION", 
+                        "data":{
+                            removedRec : obj, 
+                            _err: resp.err ? resp.err : false
+                        } 
+                    } ) );
+                },
+            },
+        },
+
+        // DB editor: groups.
+        dbEditor_groups:{
+            modes:{
+                JSON:{
+                    UPDATE_ONE_GROUP: async function(ws, data){ _MOD.ws_event_handlers.dbEditor_groups.funcs.UPDATE_ONE_GROUP(ws, data); },
+                    ADD_ONE_GROUP   : async function(ws, data){ _MOD.ws_event_handlers.dbEditor_groups.funcs.ADD_ONE_GROUP(ws, data); },
+                    REMOVE_ONE_GROUP: async function(ws, data){ _MOD.ws_event_handlers.dbEditor_groups.funcs.REMOVE_ONE_GROUP(ws, data); },
+                },
+                TEXT:{},
+            },
+            funcs:{
+                // JSON
+                UPDATE_ONE_GROUP: async function(ws, data){
+                    // Break-out the data.
+                    let obj = {
+                        gId   : data.data.gId  ,
+                        sId   : data.data.updated.sId  ,
+                        name  : data.data.updated.name ,
+                        order : data.data.updated.order,
+                    };
+    
+                    // Update the group in the database. 
+                    let resp = await _MOD.queries.UPDATE_ONE_GROUP(obj);
+    
+                    // Get updated commands related to this group.
+                    let updatedCmds = await _MOD.queries.GET_CMDS_IN_GROUP(obj.gId);
+                    
+                    // Send back the status of the request and the updated group and related commands.
+                    ws.send( JSON.stringify( { 
+                        "mode":"UPDATE_ONE_GROUP", 
+                        "data":{
+                            updatedRec : await _MOD.queries.GET_ONE_GROUP(obj.gId), 
+                            updatedCmds: updatedCmds,
+                            _err: resp.err ? resp.err : false
+                        } 
+                    } ) );
+                },
+                // JSON
+                ADD_ONE_GROUP: async function(ws, data){
+                    // Break-out the data.
+                    let obj = {
+                        "sId"     : data.data.added.sId,
+                        "gId"     : data.data.added.gId,
+                        "name"    : data.data.added.name,
+                    };
+    
+                    // Add the command to the database. 
+                    let resp = await _MOD.queries.ADD_ONE_GROUP(obj);
+    
+                    // Send back the status of the request and the new record. 
+                    ws.send( JSON.stringify( { 
+                        "mode":"ADD_ONE_GROUP", 
+                        "data":{
+                            newRec : await _MOD.queries.GET_ONE_GROUP(resp.lastID), 
+                            _err: resp.err ? resp.err : false
+                        } 
+                    } ) );
+                },
+                // JSON
+                REMOVE_ONE_GROUP: async function(ws, data){
+                    // Break-out the data.
+                    let obj = {
+                        "gId"     : data.data.removed.gId,
+                    };
+    
+                    // Remove the command from the database. 
+                    let resp = await _MOD.queries.REMOVE_ONE_GROUP(obj);
+    
+                    // Send back the status of the request.
+                    ws.send( JSON.stringify( { 
+                        "mode":"REMOVE_ONE_GROUP", 
+                        "data":{
+                            removedRec : obj, 
+                            _err: resp.err ? resp.err : false
+                        } 
+                    } ) );
+                },
+            },
+        },
+
+        // DB editor: commands.
+        dbEditor_commands:{
+            modes:{
+                JSON:{
+                    UPDATE_ONE_COMMAND: async function(ws, data){ _MOD.ws_event_handlers.dbEditor_commands.funcs.UPDATE_ONE_COMMAND(ws, data); },
+                    ADD_ONE_COMMAND   : async function(ws, data){ _MOD.ws_event_handlers.dbEditor_commands.funcs.ADD_ONE_COMMAND(ws, data); },
+                    REMOVE_ONE_COMMAND: async function(ws, data){ _MOD.ws_event_handlers.dbEditor_commands.funcs.REMOVE_ONE_COMMAND(ws, data); },
+                },
+                TEXT:{
+                },
+            },
+            funcs:{
+                // JSON
+                UPDATE_ONE_COMMAND: async function(ws, data){
+                    // console.log(`mode: ${data.mode}, data:`, data.data);
+                    
+                    // Break-out the data.
+                    let obj = {
+                        "cId"     : data.data.cId,
+                        "sId"     : data.data.updated.sId,
+                        "gId"     : data.data.updated.gId,
+                        "title"   : data.data.updated.title,
+                        "cmd"     : data.data.updated.cmd,
+                        "f_ctrlc" : data.data.updated.f_ctrlc,
+                        "f_enter" : data.data.updated.f_enter,
+                        "f_hidden": data.data.updated.f_hidden,
+                        "order"   : data.data.updated.order,
+                    };
+    
+                    // Update the command in the database. 
+                    let resp = await _MOD.queries.UPDATE_ONE_COMMAND(obj);
+    
+                    // Send back the status of the request and the updated command.
+                    ws.send( JSON.stringify( { 
+                        "mode":"UPDATE_ONE_COMMAND", 
+                        "data":{
+                            updatedRec : await _MOD.queries.GET_ONE_CMD(obj.sId, obj.gId, obj.cId), 
+                            _err: resp.err ? resp.err : false
+                        } 
+                    } ) );
+                },
+                // JSON
+                ADD_ONE_COMMAND: async function(ws, data){
+                    // console.log(`mode: ${data.mode}, data:`, data.data);
+                    
+                    // Break-out the data.
+                    let obj = {
+                        "cId"     : data.data.added.cId,
+                        "sId"     : data.data.added.sId,
+                        "gId"     : data.data.added.gId,
+                        "title"   : data.data.added.title,
+                        "cmd"     : data.data.added.cmd,
+                        "f_ctrlc" : data.data.added.f_ctrlc,
+                        "f_enter" : data.data.added.f_enter,
+                        "f_hidden": data.data.added.f_hidden,
+                        "order"   : data.data.added.order,
+                    };
+    
+                    // Add the command to the database. 
+                    let resp = await _MOD.queries.ADD_ONE_COMMAND(obj);
+    
+                    // Send back the status of the request and the new record. 
+                    ws.send( JSON.stringify( { 
+                        "mode":"ADD_ONE_COMMAND", 
+                        "data":{
+                            newRec : await _MOD.queries.GET_ONE_CMD(obj.sId, obj.gId, resp.lastID), 
+                            _err: resp.err ? resp.err : false
+                        } 
+                    } ) );
+                },
+                // JSON
+                REMOVE_ONE_COMMAND: async function(ws, data){
+                    // console.log(`mode: ${data.mode}, data:`, data.data);
+                    
+                    // Break-out the data.
+                    let obj = {
+                        "cId"     : data.data.removed.cId,
+                        "sId"     : data.data.removed.sId,
+                        "gId"     : data.data.removed.gId,
+                    };
+    
+                    // Remove the command from the database. 
+                    let resp = await _MOD.queries.REMOVE_ONE_COMMAND(obj);
+    
+                    // Send back the status of the request.
+                    ws.send( JSON.stringify( { 
+                        "mode":"REMOVE_ONE_COMMAND", 
+                        "data":{
+                            removedRec : obj, 
+                            _err: resp.err ? resp.err : false
+                        } 
+                    } ) );
+                },
+            },
+        },
+
+        // General
+        general: {
+            modes:{
+                JSON:{
+                    // TODO:
+                    TYPE_CMD_TO_TERM: async function(ws, data){ _MOD.ws_event_handlers.general.funcs.TYPE_CMD_TO_TERM(ws, data); },
+                },
+                TEXT:{
+                    PROCESS_EXIT              : async function(ws, data){ _MOD.ws_event_handlers.general.funcs.PROCESS_EXIT(ws, data); },
+                    CONNECTIVITY_STATUS_UPDATE: async function(ws, data){ _MOD.ws_event_handlers.general.funcs.CONNECTIVITY_STATUS_UPDATE(ws, data); },
+                },
+            },
+            funcs:{
+                // TODO: JSON
+                TYPE_CMD_TO_TERM: async function(ws, data){
+                    // console.log(`mode: ${data.mode}, data:`, data.data);
+                    console.log(`TODO: mode: ${data.mode}, data:`, data.data);
+                },
+                // TEXT
+                PROCESS_EXIT: async function(ws, data){
+                    console.log(":: PROCESS_EXIT ::");
+                    process.exit(0);
+                },
+                // TEXT
+                CONNECTIVITY_STATUS_UPDATE: async function(ws, data){
+                    // Get local/global control/term counts and terminal PIDs.
+                    let resp = _MOD.ws_utilities.getGlobalClientCounts(ws.CONFIG.uuid);
+
+                    // Get the VPN status.
+                    if(_APP.m_config.config.connectionCheck.active){
+                        resp.vpnCheck = await _MOD.pingCheck(_APP.m_config.config.connectionCheck.url, 1000);
+                    }
+
+                    // Return the data.
+                    ws.send(JSON.stringify({"mode":"CONNECTIVITY_STATUS_UPDATE", "data":resp }));
+                },
             },
         },
     },
@@ -613,7 +588,6 @@ let _MOD = {
 
         // Returns a list of connected clients. 
         getClientCount: function(){
-            // _APP.m_lcd.WebSocket.getClientCount();
             let i=0;
             _MOD.ws.clients.forEach(function each(ws) { 
                 if (ws.readyState === _MOD.ws_readyStates.OPEN) {
@@ -625,7 +599,6 @@ let _MOD = {
 
         // Returns a list of connected clients that have the specified subscription. 
         getClientCount_bySubscription: function(eventType){
-            // _APP.m_lcd.WebSocket.getClientCount_bySubscription("VRAM_CHANGES");
             let i=0;
             _MOD.ws.clients.forEach(function each(ws) { 
                 if (ws.readyState === _MOD.ws_readyStates.OPEN) {
@@ -639,7 +612,6 @@ let _MOD = {
 
         // Returns a list of connected client ids. 
         getClientIds: function(){
-            // _APP.m_lcd.WebSocket.getClientIds();
             let arr={
                 "connected":[],
                 "disconnected":[],
@@ -651,18 +623,7 @@ let _MOD = {
             return arr;
         },
         
-        // Sends the specified data to ALL connected clients. 
-        sendToAll: function(data){
-            // _APP.m_lcd.WebSocket.sendToAll("HEY EVERYONE!");
-            _MOD.ws.clients.forEach(function each(ws) { 
-                if (ws.readyState === _MOD.ws_readyStates.OPEN) {
-                    ws.send(data); 
-                }
-            });
-        },
-
         sendToAllSubscribers: function(data, eventType=""){
-            // _APP.m_lcd.WebSocket.sendToAll("HEY EVERYONE!");
             _MOD.ws.clients.forEach(function each(ws) {
                 if (ws.readyState === _MOD.ws_readyStates.OPEN) {
                     if(ws.subscriptions.indexOf(eventType) != -1){
@@ -672,52 +633,13 @@ let _MOD = {
             });
         },
 
-        getSubscriptions  : function(ws)   { 
-            // if(websocket.activeWs){ websocket.activeWs.send("GET_SUBSCRIPTIONS"); }
-        },
-
-        addSubscription   : function(ws, eventType){ 
-            function conflictCheck(){
-                switch(eventType){
-                    //
-                    // case "STATS1" : { break; }
-                    // case "STATS2" : { break; }
-
-                    //
-                    default: { break; }
+        // Sends the specified data to ALL connected clients. 
+        sendToAll: function(data){
+            _MOD.ws.clients.forEach(function each(ws) { 
+                if (ws.readyState === _MOD.ws_readyStates.OPEN) {
+                    ws.send(data); 
                 }
-            };
-
-            // Only accept valid eventTypes.
-            if(_MOD.subscriptionKeys.indexOf(eventType) != -1){
-                // Add the eventType if it doesn't exist.
-                if(ws.subscriptions.indexOf(eventType) == -1){
-                    conflictCheck();
-                    ws.subscriptions.push(eventType);
-                }
-
-                // Send the client's current subscription list. 
-                ws.send(JSON.stringify({"mode":"SUBSCRIBE", "data":ws.subscriptions}));
-            }
-            else{
-                console.log("Invalid subscription eventType provided:", eventType);
-            }
-        },
-        
-        removeSubscription: function(ws, eventType){ 
-            // Only accept valid eventTypes.
-            if(_MOD.subscriptionKeys.indexOf(eventType) != -1){
-                // Remove the eventType if it exists.
-                if(ws.subscriptions.indexOf(eventType) != -1){
-                    ws.subscriptions = ws.subscriptions.filter(d=>d!=eventType);
-                }
-
-                // Send the client's current subscription list. 
-                ws.send(JSON.stringify({"mode":"UNSUBSCRIBE", "data":ws.subscriptions}));
-            }
-            else{
-                console.log("Invalid subscription eventType provided:", eventType);
-            }
+            });
         },
 
         getGlobalClientCounts: function(localUuid){
@@ -772,6 +694,26 @@ let _MOD = {
         },
 
     },
+    handlers: {
+        JSON:{
+            subscriptions    : ["SUBSCRIBE", "UNSUBSCRIBE"],
+            config           : ["UPDATE_CONFIG", "GET_DB_AS_JSON"],
+            dbEditor_sections: ["UPDATE_ONE_SECTION", "ADD_ONE_SECTION", "REMOVE_ONE_SECTION"],
+            dbEditor_groups  : ["UPDATE_ONE_GROUP", "ADD_ONE_GROUP", "REMOVE_ONE_GROUP"],
+            dbEditor_commands: ["UPDATE_ONE_COMMAND", "ADD_ONE_COMMAND", "REMOVE_ONE_COMMAND"],
+            general          : ["TYPE_CMD_TO_TERM"],
+        },
+        TEXT:{
+            subscriptions: ["GET_SUBSCRIPTIONS"],
+            config       : ["GET_DB_AS_JSON"],
+            general      : ["PROCESS_EXIT", "CONNECTIVITY_STATUS_UPDATE"],
+        },
+    },
+    handlerLookup: function(mode, type){
+        let keys = Object.keys(_MOD.handlers[type]);
+        for(let i=0; i<keys.length; i+=1){ if(_MOD.handlers[type][keys[i]].indexOf(mode) != -1){ return keys[i]; } }
+        return false;
+    },
     ws_events:{
         el_message: function(ws, event){
             let data;
@@ -783,20 +725,33 @@ let _MOD = {
             // Isn't JSON. Assume that it is text. 
             catch(e){ data = event.data; tests.isText = true; }
 
+            // Handle JSON.
             if(tests.isJson){
-                if(_MOD.ws_event_handlers.JSON[data.mode]){
-                    _MOD.ws_event_handlers.JSON[data.mode](ws, data);
-                }
+                // Find the event handler key.
+                let key = _MOD.handlerLookup(data.mode, "JSON");
+
+                // Use the key if found.
+                if(key){ _MOD.ws_event_handlers[key].modes.JSON[data.mode](ws, data); }
+
+                // Unhandled.
                 else{
+                    console.log("UNKNOWN MODE:", "key:", key, "JSON");
                     ws.send(JSON.stringify({"mode":"ERROR", "data":"UNKNOWN MODE: " + data.mode}));
                     return; 
                 }
             }
+
+            // Handle TEXT.
             else if(tests.isText){
-                if(_MOD.ws_event_handlers.TEXT[data]){
-                    _MOD.ws_event_handlers.TEXT[data](ws);
-                }
+                // Find the event handler key.
+                let key = _MOD.handlerLookup(data, "TEXT");
+
+                // Use the key if found.
+                if(key){ _MOD.ws_event_handlers[key].modes.TEXT[data](ws); }
+
+                // Unhandled.
                 else{
+                    console.log("UNKNOWN MODE:", "key:", key, "TEXT");
                     ws.send(JSON.stringify({"mode":"ERROR", "data":"UNKNOWN MODE: " + data}));
                     return;
                 }
@@ -910,6 +865,7 @@ let _MOD = {
                 }
             }
         });
+
     },
 
     queries: {

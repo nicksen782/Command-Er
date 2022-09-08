@@ -10,6 +10,7 @@ const m_modules = [
     './m_dbInit.js', 
     './m_db.js', 
     './m_websocket_node.js',
+    './m_commander_mini.js',
     './m_terminals.js',
 ];
 const rpbp = require( './removeprocess.js' ).run;

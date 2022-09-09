@@ -26,14 +26,20 @@ select, option{
 	background-size: 100% 100%;
 	background-repeat: no-repeat;
 	background-position: center;
-	background-color: rgb(0 0 0 / 20%);
-	/* cursor: not-allowed; */
-	pointer-events: none;
+	/* background-color: rgb(0 0 0 / 10%) !important; */
+	cursor: not-allowed;
 	user-select: none;
+	opacity: 0.5;
+}
+.disabled * {
+	pointer-events: none;
 }
 .termViewElem canvas.disabled {
 	background-image: url(../../img/x_out2.png);
+	pointer-events: unset;
+	cursor: text;
 }
 .width100p{
 	width:100%;
 }
+.textAlignLeft{text-align: left !important;}

@@ -183,6 +183,7 @@ let init = async function(){
                         section          : "terminalRolodexFull_section",
                         sectionGroup     : "terminalRolodexFull_sectionGroup",
                         cmdDisplay       : "terminalRolodexFull_cmdDisplay",
+                        refresh          : "terminalRolodexFull_refresh",
                     },
                 },
             },

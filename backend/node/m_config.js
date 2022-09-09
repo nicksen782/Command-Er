@@ -39,7 +39,7 @@ let _MOD = {
     // Adds routes for this module.
     addRoutes: function(app, express){
         //
-        _APP.addToRouteList({ path: "/get_configs", method: "post", args: [], file: __filename, desc: "get_configs" });
+        _APP.addToRouteList({ path: "/get_configs", method: "post", args: [], file: __filename, desc: "Get config.json" });
         app.post('/get_configs', express.json(), async (req, res) => {
             try{ 
                 // If the config.json file does not exist then make a copy from the example file. 

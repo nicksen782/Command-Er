@@ -350,6 +350,7 @@ div#terminalRolodexFull_cmdDisplay {
     text-align: left;
     padding: 10px;
     border: 1px solid black;
+    text-align: center;
 }
 #terminalRolodexFull_cmdDisplay table td.spacer{
     padding: 1px;

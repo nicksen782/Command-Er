@@ -335,11 +335,8 @@ _APP.terminals = {
             tr = table.insertRow(-1);
             
             td = tr.insertCell(-1); td.innerText = rec.sectionName;
-            
             td = tr.insertCell(-1); td.innerText = rec.groupName;
-
             td = tr.insertCell(-1); td.innerText = rec.title;
-
             td = tr.insertCell(-1);
             let editButton = document.createElement("button");
             editButton.innerText = "Edit";
@@ -358,9 +355,11 @@ _APP.terminals = {
                 this.toggleFullTerminalRolodex();
                 this.parent.rolodex.sendCommand(); 
             }, false);
+            if(rec.f_hidden){ td.classList.add("disabled"); }
             td.append(sendButton);
             
             td = tr.insertCell(-1); td.innerText = rec.cmd;
+            td.classList.add("textAlignLeft");
         },
         // Display command rows associated with a section. 
         displayCommands_filterBySection:function(){
@@ -384,7 +383,7 @@ _APP.terminals = {
             let lastGroupName = "";
             for(let i=0; i<this.parent.parent.commands.commands.length; i+=1){
                 let rec = this.parent.parent.commands.commands[i];
-                if(rec.f_hidden){ continue; }
+                // if(rec.f_hidden){ continue; }
                 if(rec.sId != sId){ continue; }
                 if(rec.groupName != lastGroupName){
                     lastGroupName = rec.groupName;
@@ -418,12 +417,19 @@ _APP.terminals = {
             // Display each command as a row.
             for(let i=0; i<this.parent.parent.commands.commands.length; i+=1){
                 let rec = this.parent.parent.commands.commands[i];
-                if(rec.f_hidden){ continue; }
+                // if(rec.f_hidden){ continue; }
                 if(rec.sId != sId){ continue; }
                 if(rec.gId != gId){ continue; }
                 this.createRow(table, rec);
             }
             this.DOM.cmdDisplay.append(table);
+        },
+        refreshList: function(){
+            // Refresh the section filter if it has a value. 
+            if(this.DOM.section.value){ this.displayCommands_filterBySection(); }
+            
+            // Refresh the sectionGroup filter if it has a value. 
+            else if(this.DOM.sectionGroup.value){ this.displayCommands_filterBySectionGroup(); }
         },
 
         init: function(parent, configObj){
@@ -440,10 +446,11 @@ _APP.terminals = {
             }
 
             // Event listeners.
-            this.DOM.rolodexModal_btn.addEventListener("click", (ev)=>{ this.toggleFullTerminalRolodex(); }, false);
-            this.DOM.closeBtn        .addEventListener("click", (ev)=>{ this.toggleFullTerminalRolodex(); }, false);
+            this.DOM.rolodexModal_btn.addEventListener("click" , (ev)=>{ this.toggleFullTerminalRolodex(); }, false);
+            this.DOM.closeBtn        .addEventListener("click" , (ev)=>{ this.toggleFullTerminalRolodex(); }, false);
             this.DOM.section         .addEventListener("change", (ev)=>{ this.displayCommands_filterBySection(); }, false);
             this.DOM.sectionGroup    .addEventListener("change", (ev)=>{ this.displayCommands_filterBySectionGroup(); }, false);
+            this.DOM.refresh         .addEventListener("click" , (ev)=>{ this.refreshList(); }, false);
 
             // BoundEventHandlers.
             this.esc_modalDismiss_bound = this.esc_modalDismiss.bind(this);

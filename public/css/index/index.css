@@ -1,0 +1,323 @@
+body{
+	background-color: #051c27;
+	margin: auto;
+	margin-top: 5px;
+	transition: opacity 1s;
+}
+body.darken {
+    opacity: 0.15;
+}
+#container {
+	background-color: #264757;
+	background-color: rgb(0 92 128);
+	min-height: 0.5em;
+	padding: 0.5em;
+	border-radius: 10px;
+	position: relative;
+}
+#top {
+	min-height: 2em;
+	padding: 0.25em;
+	position: relative;
+	margin-bottom: 5px;
+	border-radius: 10px 10px 0px 0px;
+	border-bottom: 1px solid black;
+	color: white;
+	font-size: 22px;
+}
+#bottom_data{
+	background-color: rgb(47 43 214 / 12%);
+	position: absolute;
+	height: 100%;
+	padding: 0.30em;
+	top: 0px;
+	left: 0px;
+	width: 350px;
+	border-radius: 10px;
+	font-size: 12px;
+	line-height: 20px;
+	text-align: left;
+}
+#bottom_links {
+	background-color: rgb(47 43 214 / 12%);
+	position: absolute;
+	height: 100%;
+	padding: 1em;
+	top: 0px;
+	right: 0px;
+	width: 220px;
+	text-align: center;
+	border-radius: 10px;
+	display: none;
+}
+.bottom_links {
+	padding: 0.25em;
+	border: 1px solid darkgray;
+	border-radius: 0.5em;
+	font-size: 16px;
+}
+.bottom_links:hover {
+	background-color: #fdff00;
+}
+#bottom_vpn_status{
+	background-color: rgb(101 135 149);
+	background-color: rgb(47 43 214 / 12%);
+	position: absolute;
+	top: 0px;
+	left: 300px;
+	width: 160px;
+	height: 45px;
+	color: white;
+	border-radius: 10px;
+	display: none;
+	font-family: monospace;
+	padding: 5px;
+	overflow: hidden;
+}
+#bottom_vpn_status.active{
+	display:block;
+}
+
+#vpn_indicator {
+	background-color: #a51430;
+	padding: 5px;
+	font-size: 16px;
+	border-radius: 10px;
+	border: 1px solid black;
+	height: 32px;
+	text-align: center;
+}
+
+#vpn_indicator.active {
+	background-color: #178817;
+}
+
+#top_status{
+	background-color: rgb(0 92 128 / 25%);
+	background-color: rgb(47 43 214 / 12%);
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	width: 180px;
+	color: white;
+	font-size: 14px;
+	border-radius: 10px;
+}
+#top_connected_status{
+	border: 1px solid black;
+	width: 1.25em;
+	height: 1.25em;
+	display: inline-block;
+	vertical-align: top;
+}
+#top_connected_status.pinging , #top.pinging , #bottom.pinging , #main.pinging {
+	background-color: #2662f7;
+}
+#top_connected_status.connecting , #top.connecting , #bottom.connecting , #main.connecting {
+	background-color: #eab700;
+}
+#top_connected_status.connected , #top.connected , #bottom.connected , #main.connected {
+	background-color: #16c60c;
+}
+#top_connected_status.disconnecting, #top.disconnecting , #bottom.disconnecting, #main.disconnecting{
+	background-color: #ff2100;
+}
+#top_connected_status.disconnected , #top.disconnected , #bottom.disconnected , #main.disconnected {
+	background-color: #cb513f;
+}
+#top_connected_status_text{
+	width: 105px;
+}
+#main {
+	padding: 0.5em;
+	margin-bottom: 5px;
+	border-radius: 10px;
+}
+
+#bottom {
+	border-radius: 0px 0px 10px 10px;
+	overflow: hidden;
+	position: relative;
+	height: 3.5em;
+	padding: 1em;
+	color: white;
+	border-top: 1px solid black;
+}
+#wsClient_count_output{
+}
+.nav{
+	min-height: 0.5em;
+	padding: 0.25em;
+	border-bottom: 1px solid black;
+}
+.nav_tab {
+	border: 1px solid black;
+	display: inline-block;
+	vertical-align: top;
+	padding: 5px;
+	border-radius: 5px;
+	background-color: blanchedalmond;
+	cursor: pointer;
+}
+.nav_tab.active {
+	background-color: yellow;
+}
+.nav_tab:hover {
+	background-color: yellow;
+}
+.nav_tab:active {
+	background-color: yellow;
+}
+.view {
+	display: none;
+	padding: 0.25em;
+}
+.view.active {
+	display: block;
+}
+div#commandEditor_sectionGroupDiv {
+	border-bottom: 1px dotted black;
+	min-height: 0.5em;
+}
+.table1{
+	border: 1px solid black;
+	margin-left: 2em;
+	border-collapse: collapse;
+}
+.table1 tr{
+	border-bottom: 1px solid black;
+}
+.table1 th{
+	text-align: left;
+	border-right: 1px solid black;
+}
+.table1 th,.table1 td{
+	padding: 0.25em
+}
+
+#bottom_status2{
+	background-color: rgb(47 43 214 / 12%);
+	position: absolute;
+	height: 100%;
+	top: 0px;
+	right: 0px;
+	width: 350px;
+	border-radius: 10px;
+}
+#bottom_status2_connectionDetails{
+	font-family: monospace;
+	font-weight: bold;
+	color: white;
+	font-size: 12px;
+	line-height: 10px;
+	padding: 0.125em;
+}
+.views {
+}
+div#main_container {
+	background-color: #ffefd5;
+	background-color: #5a90a5;
+	height: calc(100vh - 150px);
+}
+
+select#commandEditor_section_select {
+    min-width: 340px;
+}
+
+select#commandEditor_group_select {
+    min-width: 340px;
+}
+
+select#commandEditor_command_select {
+    min-width: 340px;
+}
+
+select#commandEditor_table_sectionGroup {
+    width: 100%;
+}
+
+input#commandEditor_table_title {
+    width: 100%;
+}
+
+input#commandEditor_table_cmd {
+    width: 100%;
+}
+
+#updateRemoteConfig_div{
+    background-color: aliceblue;
+}
+#updateRemoteConfig_table{
+    width: 100%;
+}
+#updateRemoteConfig_textarea{
+    width: 100%;
+    /* height: 530px; */
+    height: 280px;
+}
+#updateRemoteConfig_reset{
+    width: 100%;
+}
+#updateRemoteConfig_save{
+    width: 100%;
+}
+
+table#sectionEditor_table,
+table#groupEditor_table,
+table#commandEditor_table {
+	border: 1px solid black;
+	margin-left: 2em;
+	border-collapse: collapse;
+	width: calc(100% - 4em);
+	background-color: blanchedalmond;
+}
+
+table#sectionEditor_table th,
+table#groupEditor_table th,
+table#commandEditor_table th{ width:20%; }
+table#commandEditor_table td{ width:80%  }
+table#commandEditor_table tr{
+	border-bottom: 1px solid black;
+}
+table#sectionEditor_table th,
+table#groupEditor_table th,
+table#commandEditor_table th{
+	text-align: left;
+	border-right: 1px solid black;
+}
+table#sectionEditor_table th,
+table#sectionEditor_table td,
+table#groupEditor_table th,
+table#groupEditor_table td,
+table#commandEditor_table th,
+table#commandEditor_table td{
+	padding: 0.25em
+}
+
+
+span.cmdEditorOption {
+	border: 1px solid burlywood;
+    padding: 2px;
+    display: inline-block;
+    border-radius: 5px;
+}
+span.cmdEditorOption label{
+	user-select: none;
+}
+
+div#terms_info_localGlobalStatus {
+    white-space: pre;
+    display: inline-block;
+}
+
+div#terms_info_localGlobalStatus_title {
+    text-decoration: underline;
+    display: inline-block;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+span.terms_info_localGlobalStatus_pids {
+    font-family: monospace;
+    font-style: italic;
+}

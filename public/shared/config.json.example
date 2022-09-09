@@ -1,0 +1,45 @@
+{
+    "toggles": {
+        "show_APP_consolelog": true,
+        "isActive_nodeWsServer": true,
+        "isActive_commanderMini": true
+    },
+    "node": {
+        "http": {
+            "host": "127.0.0.1",
+            "port": 12345
+        }
+    },
+    "db":{
+        "type": "file",
+        "file": "backend/db/Command-Er.db",
+        "examples":{
+            "file":{
+                "type": "file",
+                "file": "backend/db/Command-Er.db"
+            },
+            "memory":{
+                "type": "memory",
+                "file": ""
+            }
+        }
+    },
+    "terms":{
+        "name": "xterm-color",
+        "cols": 80,
+        "rows": 40,
+        "fontSize": 12,
+        "cursorBlink": true,
+        "shellType": "win32a",
+        "shells":{
+            "win32a": "C:\\Windows\\system32\\cmd.exe",
+            "win32b": "powershell.exe",
+            "linux" : "/bin/bash"
+        }
+    },
+    "connectionCheck":{
+		"name":"VPN",
+		"active":false,
+		"url":"127.0.0.1"
+	}
+}

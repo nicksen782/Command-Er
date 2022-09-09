@@ -1,13 +1,19 @@
+# Node packages and git.
 node_modules
 .git
 
-public/OLD
-configs/BACKUP
+# Commands.
+commands/*
+!commands/.gitKeep
 
-# These should be created by the user and NOT be added to the git repo.
-config_cmds.json
-configs/config_srv_extra.json
-configs/config_srv.json
-configs/config_terms.json
-backend/commands/*
-!backend/commands/.gitKeep
+# Config
+public/shared/config.json
+
+# Database.
+backend/db/*
+!backend/db/.gitkeep
+backend/Command-Er.db
+
+# Miscellaneous
+INFO.TXT
+ecosystem.config.js

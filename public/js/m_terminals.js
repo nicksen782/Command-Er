@@ -606,7 +606,7 @@ _APP.terminals = {
             if(!obj){ console.log("Active terminal object not found:", obj); return; }
             // obj.obj.ws.send( ` ${rec.f_ctrlc ? "\u0003" : ""}${rec.cmd}${rec.f_enter ? "\r\n" : ""}` );
             // obj.obj.ws.send( ` ${rec.f_ctrlc ? "\u0003" : ""}${rec.cmd}${rec.f_enter ? "\n" : ""}` );
-            obj.obj.ws.send( ` ${rec.c ? "\u0003" : ""}${rec.cmd}${rec.f_enter ? "\r" : ""}` );
+            obj.obj.ws.send(` ${rec.f_ctrlc ? "\u0003 " : ""}${rec.cmd}${rec.f_enter ? "\r" : ""}` );
         },
         editCommand: function(){
             // Load this section/group/command in the DB editor.

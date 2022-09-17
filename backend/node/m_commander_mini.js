@@ -106,7 +106,7 @@ let _MOD = {
                         rec = await _APP.m_websocket_node.queries.GET_ONE_CMD(req.body.sId, req.body.gId, req.body.cId);
                         if(rec){
                             // Send the command. 
-                            target.CONFIG.tty.write(` ${rec.f_ctrlc ? "\u0003" : ""}${rec.cmd}${rec.f_enter ? "\r" : ""}`);
+                            target.CONFIG.tty.write(` ${rec.f_ctrlc ? "\u0003 " : ""}${rec.cmd}${rec.f_enter ? "\r" : ""}`);
         
                             // Return a response.
                             msg = `*SUCCESS* ${infoLine1}, title: ${rec.title}, (sId: ${req.body.sId}, gId: ${req.body.gId}, cId: ${req.body.cId})`;

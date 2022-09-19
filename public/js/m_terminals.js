@@ -326,7 +326,7 @@ _APP.terminals = {
         createRow:function(table, rec, empty=false){
             if(empty){
                 let tr = table.insertRow(-1);
-                for(let i=0; i<6; i+=1){
+                for(let i=0; i<7; i+=1){
                     let td = tr.insertCell(-1); td.innerText = "";
                     td.classList.add("spacer");
                 }
@@ -358,6 +358,17 @@ _APP.terminals = {
             if(rec.f_hidden){ td.classList.add("disabled"); }
             td.append(sendButton);
             
+            td = tr.insertCell(-1);
+            let loadButton = document.createElement("button");
+            loadButton.innerText = "Load";
+            loadButton.addEventListener("click", (ev)=>{ 
+                this.parent.rolodex.populate_selects_for_specific_command(rec.cId);
+                this.parent.rolodex.openTerminalRolodex();
+                this.toggleFullTerminalRolodex();
+            }, false);
+            if(rec.f_hidden){ td.classList.add("disabled"); }
+            td.append(loadButton);
+            
             td = tr.insertCell(-1); td.innerText = rec.cmd;
             td.classList.add("textAlignLeft");
         },
@@ -374,7 +385,7 @@ _APP.terminals = {
             let table = document.createElement("table");
             let tr_headers = table.insertRow(-1);
 
-            let headers = [ "Section", "Group", "Command Title", "Edit", "Send", "Command" ];
+            let headers = [ "Section", "Group", "Command Title", "Edit", "Send", "Load", "Command" ];
             headers.forEach(function(d){
                 let th = tr_headers.insertCell(-1).outerHTML = `<th>${d}</th>`; th.outerHTML = `<th>${d}</th>`;
             });
@@ -409,7 +420,7 @@ _APP.terminals = {
             let table = document.createElement("table");
             let tr_headers = table.insertRow(-1);
 
-            let headers = [ "Section", "Group", "Command Title", "Edit", "Send", "Command" ];
+            let headers = [ "Section", "Group", "Command Title", "Edit", "Send", "Load", "Command" ];
             headers.forEach(function(d){
                 let th = tr_headers.insertCell(-1); th.outerHTML = `<th>${d}</th>`;
             });
@@ -470,6 +481,36 @@ _APP.terminals = {
         parent: null,
         DOM: {},
 
+        // Copy of altS_cmdSend with "this" bound correctly. (Required for event listener removal.)
+        altS_cmdSend_bound: null,
+        altS_cmdSend: function(event){
+            if(event.altKey && event.keyCode == 83){
+                this.DOM.terminalRolodex_command_send.classList.add("activated");
+                this.DOM.terminalRolodex_command_send.dispatchEvent(new Event("click"));
+                setTimeout(()=>{
+                    this.DOM.terminalRolodex_command_send.classList.remove("activated");
+                }, 500);
+                event.preventDefault();
+                return false;
+            }
+        },
+
+        // Open the command rolodex.
+        openTerminalRolodex     : function(){
+            // Open the command rolodex.
+            this.DOM.terminalRolodex.classList.add("active");
+
+            // Shrink the terminal views to fit.
+            this.parent.refitActiveTerms();
+        },
+        // Close the command rolodex.
+        closeTerminalRolodex     : function(){
+            // Open the command rolodex.
+            this.DOM.terminalRolodex.classList.remove("active");
+
+            // Shrink the terminal views to fit.
+            this.parent.refitActiveTerms();
+        },
         // Open/close the command rolodex.
         toggleTerminalRolodex     : function(){
             // Open the command rolodex.
@@ -635,6 +676,10 @@ _APP.terminals = {
 
             // Add event listeners for the command rolodex open/close.
             this.DOM.terminalRolodex_btn.addEventListener("click", (ev)=>{ this.toggleTerminalRolodex(); }, false);
+
+            // BoundEventHandlers.
+            this.altS_cmdSend_bound = this.altS_cmdSend.bind(this);
+            document.body.addEventListener("keydown", this.altS_cmdSend_bound, false);
 
             // Add event listeners for editing/sending a command.
             this.DOM.terminalRolodex_command_edit.addEventListener("click", (ev)=>{ this.editCommand(); }, false);

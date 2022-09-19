@@ -157,12 +157,18 @@ div#terminalRolodex.active {
 }
 
 #terminalRolodex_table2 td:nth-child(1) {
-    width: 15%;
+    width: 10%;
 }
+#terminalRolodex_table2 td:nth-child(1) button { width:100%; }
 
 #terminalRolodex_table2 td:nth-child(2) {
-    width: 85%;
+    width: 80%;
 }
+#terminalRolodex_table2 td:nth-child(3) {
+    width: 10%;
+}
+#terminalRolodex_table2 td:nth-child(3) button { width:100%; }
+
 
 #terminalRolodex_section_select {
     width: 100%;
@@ -181,8 +187,12 @@ div#terminalRolodex.active {
 }
 
 #terminalRolodex_command_send {
-/*     width: 46%; */
+    /*     width: 46%; */
 }
+#terminalRolodex_command_send.activated {
+    background-color:yellow;
+}
+    
 
 #terminalRolodex_command {
     border: 1px solid rgb(218 209 195);

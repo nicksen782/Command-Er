@@ -342,9 +342,10 @@ _APP.editor = {
 
         disableEditorTableActions : function(){
             // return true; 
-            // console.log("disableEditorTableActions");
-            this.editor_table.table.classList.add("disabled");
-            this.actions.add   .classList.add("disabled");
+            // console.log("disableEditorTableActions", this.editor_table, this.actions.add);
+            
+            // this.editor_table.table.classList.add("disabled");
+            // this.actions.add   .classList.add("disabled");
             this.actions.reset .classList.add("disabled");
             this.actions.remove.classList.add("disabled");
             this.actions.update.classList.add("disabled");

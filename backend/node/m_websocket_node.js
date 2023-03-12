@@ -328,14 +328,34 @@ let _MOD = {
                         "name"    : data.data.added.name,
                     };
     
-                    // Add the command to the database. 
+                    // Add the section to the database. 
                     let resp = await _MOD.queries.ADD_ONE_SECTION(obj);
+                    
+                    // Add the first group to the section.
+                    let resp2 = await _MOD.queries.ADD_ONE_GROUP({
+                        "sId"  : resp.lastID,
+                        "name" : "GRP: NEW - CHANGE ME",
+                    });
+
+                    // Add the first command to the group.
+                    let resp3 = await _MOD.queries.ADD_ONE_COMMAND({
+                        "sId"     : resp.lastID,
+                        "gId"     : resp2.lastID,
+                        "title"   : "CMD: NEW - CHANGE ME",
+                        "cmd"     : "whoami",
+                        "f_ctrlc" : 0,
+                        "f_enter" : 1,
+                        "f_hidden": 0,
+
+                    });
     
                     // Send back the status of the request and the new record. 
                     ws.send( JSON.stringify( { 
                         "mode":"ADD_ONE_SECTION", 
                         "data":{
-                            newRec : await _MOD.queries.GET_ONE_SECTION(resp.lastID), 
+                            newRec  : await _MOD.queries.GET_ONE_SECTION(resp.lastID), 
+                            newRec2 : await _MOD.queries.GET_ONE_GROUP  (resp2.lastID),
+                            newRec3 : await _MOD.queries.GET_ONE_CMD    (resp.lastID, resp2.lastID, resp3.lastID),
                             _err: resp.err ? resp.err : false
                         } 
                     } ) );

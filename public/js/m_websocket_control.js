@@ -162,10 +162,16 @@ _APP.ws_control = {
         },
         ADD_ONE_SECTION:function(data){
             // Server will send updated command record.
-            console.log("ADD_ONE_SECTION:", data, this.parent.parent.commands.sections);
+            // console.log("ADD_ONE_SECTION:", data, this.parent.parent.commands);
             
             // Add the new record to the sections list. 
             this.parent.parent.commands.sections.push(data.data.newRec);
+            
+            // Add the new record to the groups list.
+            this.parent.parent.commands.groups.push(data.data.newRec2);
+            
+            // Add the new record to the commands list.
+            this.parent.parent.commands.commands.push(data.data.newRec3);
 
             // Repopulate the sections. 
             this.parent.parent.editor.selects.populate_sections();

@@ -32,6 +32,47 @@ let _MOD = {
             // HTTP routes. (Intended for Command-Er MINI).
             // ********************************************
 
+            // Used by Command-Er Mini to confirm if the provided uuid is still active.
+            _APP.addToRouteList({ path: "/MINI/STILLCONNECTED", method: "post", args: [], file: __filename, desc: "Check from MINI to make sure there is still a connection." });
+            app.post('/MINI/STILLCONNECTED'    ,express.json(), async (req, res) => {
+                // Passed a uuid. Need to find that uuid.
+                let target;
+                let msg = ``;
+                let infoLine1;
+                let rec;
+
+                // Look through each Websocket connect to find the target.
+                _APP.m_websocket_node.ws.clients.forEach(function each(ws) { 
+                    // If the target was already found then quit looking. 
+                    if(target){ return; }
+
+                    // Try to find the matching target.
+                    if (
+                        ws.readyState === 1                // Is open.
+                        && ws.CONFIG.isTerm                // Is a term.
+                        && ws.CONFIG.uuid == req.body.uuid // Matching UUID.
+                        && ws.CONFIG.type == "MINI"        // Terminal type of "MINI".
+                    ) {
+                        // Save the target. Stop looking. 
+                        target = ws; return;
+                    }
+                });
+
+                // Was the matching target found? 
+                if(!target){
+                    msg = `*FAILURE* TARGET NOT FOUND: STILLCONNECTED: uuid: ${req.body.uuid}`;
+                    console.log(msg); 
+                    // res.json(msg);
+                    res.json({ active: false });
+                    return;
+                }
+
+                // Target found. Return true.
+                else{
+                    res.json({ active: true });
+                }
+            });
+
             // /MINI/GET_UNIQUE_UUIDS : Clients connected to this Command-Er server.
             _APP.addToRouteList({ path: "/MINI/GET_UNIQUE_UUIDS", method: "post", args: [], file: __filename, desc: "Get clients connected to this Command-Er server." });
             app.post('/MINI/GET_UNIQUE_UUIDS'    ,express.json(), async (req, res) => {
